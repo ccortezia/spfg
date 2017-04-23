@@ -1,0 +1,13 @@
+.vscode
+build
+htmlcov
+htmldoc
+tests/test
+*.o
+*.a
+*.so
+*.gcno
+*.gcda
+*.gcov
+*.info
+*.map

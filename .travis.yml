@@ -1,0 +1,18 @@
+language: c
+sudo: required
+dist: trusty
+script: make ci
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y graphviz doxygen lcov
+  - sudo apt-get install -y gcc-arm-linux-gnueabihf
+  - sudo apt-get install -y gcc-avr binutils-avr avr-libc
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+env:
+  matrix:
+    - ARCH=x86_64 CC=gcc
+    - ARCH=x86_64 CC=clang
+    - ARCH=arm CI_TESTS=n
+    - ARCH=atmega328 BUILD_SHARED=n CI_TESTS=n
+    - ARCH=atmega168 BUILD_SHARED=n CI_TESTS=n
