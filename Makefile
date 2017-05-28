@@ -115,7 +115,7 @@ devel:
 ci:
 	(make clean)
 	(BUILDCOV=y make)
-	if [ ${CI_TESTS} == y ]; then make test && make htmlcov && make htmldoc; fi
+	if test "${CI_TESTS}" = "y"; then make test && make htmlcov && make htmldoc; fi
 
 dirs:
 	(mkdir -p ${STAGE_LIB})
