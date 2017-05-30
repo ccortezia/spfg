@@ -106,6 +106,9 @@ unity: dirs
 test:
 	DYLD_LIBRARY_PATH=${ROOT_PATH}/${STAGE_LIB} LD_LIBRARY_PATH=${ROOT_PATH}/${STAGE_LIB} ${STAGE_BIN}/test
 
+debug:
+	DYLD_LIBRARY_PATH=${ROOT_PATH}/${STAGE_LIB} LD_LIBRARY_PATH=${ROOT_PATH}/${STAGE_LIB} gdb -tui ${STAGE_BIN}/test
+
 devel:
 	(BUILDCOV=y make)
 	(make test)
