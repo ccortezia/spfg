@@ -92,13 +92,19 @@ typedef struct spfg_fn {
     spfg_block_name_t name;
     spfg_phase_t phase;
     spfg_fn_type_t type;
+    spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
+    spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
+} spfg_fn_t;
+
+typedef struct spfg_fnx {
+    spfg_fn_t *fn;
     spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
-} spfg_fn_t;
+} spfg_fnx_t;
 
 typedef struct spfg_gr_ctl {
     spfg_phase_t curr_phase;
-    spfg_step_t curr_fn_step;
+    spfg_step_t curr_fnx_idx;
 }  spfg_gr_ctl_t;
 
 typedef struct spfg_gr {
@@ -108,6 +114,11 @@ typedef struct spfg_gr {
     spfg_fn_t fns[SPFG_MAX_GRID_FNS];
     spfg_gr_ctl_t ctl;
 } spfg_gr_t;
+
+typedef struct spfg_grx {
+    spfg_gr_t *gr;
+    spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
+} spfg_grx_t;
 
 
 // ----------------------------------------------------------------------------
@@ -141,12 +152,13 @@ spfg_err_t spfg_dp_set_word(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, spfg_word_
 spfg_err_t spfg_fn_create(spfg_gr_id_t grid_id,
                           spfg_fn_type_t type,
                           spfg_phase_t phase,
-                          spfg_dp_id_t *in_dps, size_t in_dps_len,
-                          spfg_dp_id_t *out_dps, size_t out_dps_len,
+                          spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                          spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
                           const char *name,
                           spfg_fn_id_t *fn_id);
 spfg_err_t spfg_fn_remove(spfg_gr_id_t grid_id, spfg_fn_id_t fn_id);
 
+spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id);
 spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts);
 
 #ifdef __cplusplus

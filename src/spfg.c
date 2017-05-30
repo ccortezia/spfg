@@ -3,10 +3,11 @@
 #include "spfg/spfg.h"
 
 #define SPFG_GR_ID0 1
-#define GEN_SPFG_DP_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + idx)
-#define GEN_SPFG_FN_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + idx)
+#define GEN_SPFG_DP_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + idx + 1)
+#define GEN_SPFG_FN_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + idx + 1)
 
 static spfg_gr_t global_grs[SPFG_GR_TOTAL];
+static spfg_grx_t global_grxs[SPFG_GR_TOTAL];
 
 static char initialized;
 
@@ -144,15 +145,15 @@ static spfg_err_t find_free_fn(spfg_gr_t *gr, unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-static spfg_err_t find_changed_input_for_fn(spfg_fn_t *fn, unsigned int *idx)
+static spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS; i++) {
 
-        if (!fn->in_dps[i]->name.chars[0]) {
+        if (!fnx->in_dps[i]->name.chars[0]) {
             continue;
         }
 
-        if (fn->in_dps[i]->emitted) {
+        if (fnx->in_dps[i]->emitted) {
             if (idx) {
                 *idx = i;
             }
@@ -163,10 +164,10 @@ static spfg_err_t find_changed_input_for_fn(spfg_fn_t *fn, unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-static spfg_err_t clear_changed_input_for_fn(spfg_fn_t *fn)
+static spfg_err_t clear_changed_input_for_fnx(spfg_fnx_t *fnx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS; i++) {
-        fn->in_dps[i]->emitted = 0;
+        fnx->in_dps[i]->emitted = 0;
     }
 
     return SPFG_ERROR_NO;
@@ -186,6 +187,7 @@ extern spfg_err_t spfg_init()
     // TODO: check if ID0's for internal data won't overflow runtime storage size for the id types.
 
     memset(global_grs, 0, sizeof(global_grs));
+    memset(global_grxs, 0, sizeof(global_grxs));
 
     initialized = 1;
 
@@ -199,6 +201,7 @@ extern spfg_err_t spfg_finish()
     }
 
     memset(global_grs, 0, sizeof(global_grs));
+    memset(global_grxs, 0, sizeof(global_grxs));
 
     initialized = 0;
 
@@ -234,6 +237,7 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
+    global_grxs[gr_idx].gr = gr;
     *gr_id = gr_idx + SPFG_GR_ID0;
     gr->id = *gr_id;
 
@@ -363,8 +367,8 @@ extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
 extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                                  spfg_fn_type_t type,
                                  spfg_phase_t phase,
-                                 spfg_dp_id_t *in_dps, size_t in_dps_len,
-                                 spfg_dp_id_t *out_dps, size_t out_dps_len,
+                                 spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                                 spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
                                  const char *name,
                                  spfg_fn_id_t *fn_id)
 {
@@ -386,7 +390,8 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
     unsigned int fn_idx;
 
-    spfg_gr_t *gr = &global_grs[gr_idx];
+    spfg_grx_t *grx = &global_grxs[gr_idx];
+    spfg_gr_t *gr = grx->gr;
 
     if ((err = find_free_fn(gr, &fn_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
@@ -399,26 +404,31 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
-    *fn_id = GEN_SPFG_FN_ID(gr_id, fn_idx);
-
-    fn->id = *fn_id;
     fn->type = type;
     fn->phase = phase;
+    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
+    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
+    *fn_id = GEN_SPFG_FN_ID(gr_id, fn_idx);
+    fn->id = *fn_id;
+
+    spfg_fnx_t *fnx = &grx->fnx[fn_idx];
+    fnx->fn = fn;
+    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
 
     spfg_dp_t *tmp_dp;
 
-    for (int i = 0; i < in_dps_len; i++) {
-        if ((err = resolve_dp_from_id(gr, in_dps[i], &tmp_dp)) != SPFG_ERROR_NO) {
+    for (int i = 0; i < in_dp_ids_len; i++) {
+        if ((err = resolve_dp_from_id(gr, in_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
-        fn->in_dps[i] = tmp_dp;
+        fnx->in_dps[i] = tmp_dp;
     }
 
-    for (int i = 0; i < out_dps_len; i++) {
-        if ((err = resolve_dp_from_id(gr, out_dps[i], &tmp_dp)) != SPFG_ERROR_NO) {
+    for (int i = 0; i < out_dp_ids_len; i++) {
+        if ((err = resolve_dp_from_id(gr, out_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
-        fn->out_dps[i] = tmp_dp;
+        fnx->out_dps[i] = tmp_dp;
     }
 
     return SPFG_ERROR_NO;
@@ -441,19 +451,19 @@ static spfg_err_t impl_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t 
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_fn_and_bool_bool_ret_bool(spfg_fn_t *fn, spfg_ts_t ts)
+static spfg_err_t spfg_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_boolean_t out;
     spfg_err_t err;
 
     if ((err = impl_and_bool_bool_ret_bool(
-        fn->in_dps[0]->value.boolean,
-        fn->in_dps[1]->value.boolean,
+        fnx->in_dps[0]->value.boolean,
+        fnx->in_dps[1]->value.boolean,
         &out)) != SPFG_ERROR_NO) {
         return err;
     }
 
-    if ((err = _spfg_dp_set_bool(fn->out_dps[0], out)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
         return err;
     }
 
@@ -463,9 +473,9 @@ static spfg_err_t spfg_fn_and_bool_bool_ret_bool(spfg_fn_t *fn, spfg_ts_t ts)
 // ---
 
 
-static spfg_err_t run_fn(spfg_fn_t *fn, spfg_ts_t ts) {
+static spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
 
-    switch (fn->type) {
+    switch (fnx->fn->type) {
 
         case SPFG_FN_INVERT_BOOL_RET_BOOL:
         {
@@ -474,7 +484,7 @@ static spfg_err_t run_fn(spfg_fn_t *fn, spfg_ts_t ts) {
 
         case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
         {
-            return spfg_fn_and_bool_bool_ret_bool(fn, ts);
+            return spfg_fn_and_bool_bool_ret_bool(fnx, ts);
         }
 
         default:
@@ -484,76 +494,92 @@ static spfg_err_t run_fn(spfg_fn_t *fn, spfg_ts_t ts) {
     }
 }
 
-static spfg_err_t spfg_run_gr_fn_step(spfg_gr_t *gr, spfg_fn_t *fn, spfg_ts_t ts)
+static spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if ((err = find_changed_input_for_fn(fn, NULL)) != SPFG_ERROR_NO) {
+    if ((err = find_changed_input_for_fnx(fnx, NULL)) != SPFG_ERROR_NO) {
         if (err == SPFG_ERROR_NOT_FOUND) {
             return SPFG_ERROR_NO;
         }
-        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%04X]\n", fn->name.chars, gr->id, err);
+        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
-    if ((err = run_fn(fn, ts)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fn->name.chars, gr->id, err);
+    if ((err = eval_fnx(fnx, ts)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
-    if ((err = clear_changed_input_for_fn(fn)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%04X]\n", fn->name.chars, gr->id, err);
+    if ((err = clear_changed_input_for_fnx(fnx)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_run_gr_phase(spfg_gr_t *gr, spfg_ts_t ts, spfg_phase_t phase)
+static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, int step_count)
 {
     spfg_err_t err = SPFG_ERROR_NO;
+    int steps_performed = 0;
+    spfg_fnx_t *fnx;
 
-    for (gr->ctl.curr_fn_step = 0; gr->ctl.curr_fn_step < SPFG_MAX_GRID_FNS; gr->ctl.curr_fn_step++) {
+    for (;;) {
 
-        spfg_fn_t *fn = &gr->fns[gr->ctl.curr_fn_step];
-
-        if (!fn->name.chars[0]) {
-            continue;
+        // Stop condition: control parameter.
+        if (step_count > -1 && steps_performed >= step_count) {
+            break;
         }
 
-        if (fn->phase != phase) {
-            continue;
+        // Stop condition: array boundary protection.
+        if (grx->gr->ctl.curr_fnx_idx >= SPFG_MAX_GRID_FNS) {
+            break;
         }
 
-        if ((err = spfg_run_gr_fn_step(gr, fn, ts)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fn->name.chars, gr->id, err);
+        fnx = &grx->fnx[grx->gr->ctl.curr_fnx_idx];
+
+        // Stop condition: no more pending functions to evaluate.
+        if (!fnx->fn) {
+            break;
+        }
+
+        // Stop condition: no more pending functions to evaluate.
+        if (!fnx->fn->name.chars[0]) {
+            break;
+        }
+
+        if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
+            grx->gr->ctl.curr_phase += 1;
+        }
+
+        if ((err = spfg_run_fnx(grx, fnx, ts)) != SPFG_ERROR_NO) {
+            fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
             return SPFG_ERROR_CYCLE_FAILURE;
         }
+
+        grx->gr->ctl.curr_fnx_idx += 1;
     }
 
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_run_gr_cycle(spfg_gr_t *gr, spfg_ts_t ts)
+
+extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 {
+    unsigned int gr_idx;
     spfg_err_t err = SPFG_ERROR_NO;
 
-    for (int i = 0; i < SPFG_MAX_PHASES; i++) {
-
-        if ((err = spfg_run_gr_phase(gr, ts, gr->ctl.curr_phase)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to run phase %d on grid %d: err=[%04X]\n", gr->ctl.curr_phase, gr->id, err);
-            return SPFG_ERROR_CYCLE_FAILURE;
-        }
-
-        gr->ctl.curr_phase += 1;
+    if ((err = find_gr_by_id(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    gr->ctl.curr_phase = 0;
-    gr->ctl.curr_fn_step = 0;
-    return SPFG_ERROR_NO;
-
+    spfg_grx_t *grx = &global_grxs[gr_idx];
+    grx->gr->ctl.curr_phase = 0;
+    grx->gr->ctl.curr_fnx_idx = 0;
     return SPFG_ERROR_NO;
 }
+
 
 extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts)
 {
@@ -564,5 +590,5 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts)
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    return spfg_run_gr_cycle(&global_grs[gr_idx], ts);
+    return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, -1);
 }
