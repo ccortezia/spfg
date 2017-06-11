@@ -21,6 +21,7 @@ extern "C" {
 #define SPFG_ERROR_INVALID_FN_ID           -10
 #define SPFG_ERROR_CYCLE_FAILURE           -11
 #define SPFG_ERROR_UNIMPLEMENTED           -12
+#define SPFG_ERROR_REINDEX_FN              -13
 
 // ----------------------------------------------------------------------------
 // Storage sizes

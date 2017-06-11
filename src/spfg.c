@@ -364,6 +364,34 @@ extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
 
 // ---
 
+static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
+{
+    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
+
+    spfg_err_t err;
+    spfg_dp_t *tmp_dp;
+
+    memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
+
+    for (int i = 0; fnx->fn->in_dp_ids[i]; i++) {
+        if ((err = resolve_dp_from_id(grx->gr, fnx->fn->in_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_INVALID_DP_ID;
+        }
+        fnx->in_dps[i] = tmp_dp;
+    }
+
+    memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
+
+    for (int i = 0; fnx->fn->out_dp_ids[i]; i++) {
+        if ((err = resolve_dp_from_id(grx->gr, fnx->fn->out_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_INVALID_DP_ID;
+        }
+        fnx->out_dps[i] = tmp_dp;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
 extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                                  spfg_fn_type_t type,
                                  spfg_phase_t phase,
@@ -413,22 +441,10 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
-    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
 
-    spfg_dp_t *tmp_dp;
-
-    for (int i = 0; i < in_dp_ids_len; i++) {
-        if ((err = resolve_dp_from_id(gr, in_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-        fnx->in_dps[i] = tmp_dp;
-    }
-
-    for (int i = 0; i < out_dp_ids_len; i++) {
-        if ((err = resolve_dp_from_id(gr, out_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-        fnx->out_dps[i] = tmp_dp;
+    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to reindex function: err=[%04X]\n", err);
+        return SPFG_ERROR_REINDEX_FN;
     }
 
     return SPFG_ERROR_NO;
