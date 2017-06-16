@@ -652,3 +652,64 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts)
 
     return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, -1);
 }
+
+
+// ----------------------------------------------------------------------------
+// Import / Export API
+// ----------------------------------------------------------------------------
+
+spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf_len)
+{
+    spfg_err_t err;
+
+    if (!outbuf) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (outbuf_len < sizeof(spfg_grxp_t)) {
+        return SPFG_ERROR_BUFFER_OVERFLOW;
+    }
+
+    unsigned int gr_idx;
+
+    if ((err = find_gr_by_id(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    spfg_gr_t *gr = &global_grs[gr_idx];
+
+    spfg_grxp_t *grxp = (spfg_grxp_t *)outbuf;
+
+    for (int dp_idx = 0; dp_idx < SPFG_MAX_GRID_DPS; dp_idx++) {
+
+        if (!gr->dps[dp_idx].name.chars[0]) {
+            continue;
+        }
+
+        if ((err = _spfg_dp_create(&grxp->data, dp_idx,
+                                   gr->dps[dp_idx].type,
+                                   gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
+            return err;
+        }
+    }
+
+    for (int fn_idx = 0; fn_idx < SPFG_MAX_GRID_FNS; fn_idx++) {
+
+        if (!gr->fns[fn_idx].name.chars[0]) {
+            continue;
+        }
+
+        if ((err = _spfg_fn_create(&grxp->data, fn_idx,
+                                   gr->fns[fn_idx].type,
+                                   gr->fns[fn_idx].phase,
+                                   gr->fns[fn_idx].in_dp_ids,
+                                   gr->fns[fn_idx].in_dp_ids_len,
+                                   gr->fns[fn_idx].out_dp_ids,
+                                   gr->fns[fn_idx].out_dp_ids_len,
+                                   gr->fns[fn_idx].name.chars)) != SPFG_ERROR_NO) {
+            return err;
+        }
+    }
+
+    return SPFG_ERROR_NO;
+}

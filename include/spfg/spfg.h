@@ -22,6 +22,7 @@ extern "C" {
 #define SPFG_ERROR_CYCLE_FAILURE           -11
 #define SPFG_ERROR_UNIMPLEMENTED           -12
 #define SPFG_ERROR_REINDEX_FN              -13
+#define SPFG_ERROR_BUFFER_OVERFLOW         -14
 
 // ----------------------------------------------------------------------------
 // Storage sizes
@@ -125,6 +126,15 @@ typedef struct spfg_grx {
 } spfg_grx_t;
 
 
+typedef struct spfg_grxph {
+} spfg_grxph_t;
+
+typedef struct spfg_grxp {
+    spfg_grxph_t header;
+    spfg_gr_t data;
+} spfg_grxp_t;
+
+
 // ----------------------------------------------------------------------------
 // Utility API
 // ----------------------------------------------------------------------------
@@ -168,6 +178,12 @@ spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
 
 spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id);
 spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts);
+
+// ----------------------------------------------------------------------------
+// Import / Export API
+// ----------------------------------------------------------------------------
+
+spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf_len);
 
 #ifdef __cplusplus
 }

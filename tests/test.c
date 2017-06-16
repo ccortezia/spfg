@@ -1,3 +1,4 @@
+#include <string.h>
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
@@ -143,6 +144,45 @@ TEST(spfg_lifecycle_tests, run_grid_cycle_should_not_err)
 
 // ---
 
+TEST_GROUP(spfg_export_tests);
+
+TEST_SETUP(spfg_export_tests) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(spfg_export_tests) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+
+char export_outbuf[sizeof(spfg_grxp_t)];
+
+TEST(spfg_export_tests, run_grid_export_should_not_err)
+{
+    spfg_gr_id_t gr_id;
+    spfg_fn_id_t fn_id;
+    spfg_dp_id_t dp0p0_id;
+    spfg_dp_id_t dp0p1_id;
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
+
+    spfg_dp_id_t in_dps[] = {dp0p0_id};
+    spfg_dp_id_t out_dps[] = {dp0p0_id};
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 1, out_dps, 1, "fn1", &fn_id));
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_schema(gr_id, export_outbuf, sizeof(export_outbuf)));
+    TEST_ASSERT_EQUAL_STRING("fn1", ((spfg_grxp_t *)export_outbuf)->data.fns[0].name.chars);
+    TEST_ASSERT_EQUAL_STRING("", ((spfg_grxp_t *)export_outbuf)->data.fns[1].name.chars);
+    TEST_ASSERT_EQUAL_STRING("dp0p0", ((spfg_grxp_t *)export_outbuf)->data.dps[0].name.chars);
+    TEST_ASSERT_EQUAL_STRING("dp0p1", ((spfg_grxp_t *)export_outbuf)->data.dps[1].name.chars);
+    TEST_ASSERT_EQUAL_STRING("", ((spfg_grxp_t *)export_outbuf)->data.dps[2].name.chars);
+}
+
+
+// ---
+
 TEST_GROUP_RUNNER(spfg_lifecycle_tests) {
     RUN_TEST_CASE(spfg_lifecycle_tests, init_twice_should_err);
     RUN_TEST_CASE(spfg_lifecycle_tests, finish_twice_should_err);
@@ -155,6 +195,7 @@ TEST_GROUP_RUNNER(spfg_lifecycle_tests) {
     RUN_TEST_CASE(spfg_lifecycle_tests, create_block_name_should_not_overflow);
     RUN_TEST_CASE(spfg_lifecycle_tests, setup_grid_should_not_err);
     RUN_TEST_CASE(spfg_lifecycle_tests, run_grid_cycle_should_not_err);
+    RUN_TEST_CASE(spfg_export_tests, run_grid_export_should_not_err);
 }
 
 int main(void)
