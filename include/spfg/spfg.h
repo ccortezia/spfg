@@ -21,6 +21,8 @@ extern "C" {
 #define SPFG_ERROR_INVALID_FN_ID           -10
 #define SPFG_ERROR_CYCLE_FAILURE           -11
 #define SPFG_ERROR_UNIMPLEMENTED           -12
+#define SPFG_ERROR_REINDEX_FN              -13
+#define SPFG_ERROR_BUFFER_OVERFLOW         -14
 
 // ----------------------------------------------------------------------------
 // Storage sizes
@@ -30,8 +32,8 @@ extern "C" {
 
 #define SPFG_MAX_FN_IN_DPS 2
 #define SPFG_MAX_FN_OUT_DPS 2
-#define SPFG_MAX_GRID_FNS 256
-#define SPFG_MAX_GRID_DPS 512
+#define SPFG_MAX_GRID_FNS 64
+#define SPFG_MAX_GRID_DPS 256
 #define SPFG_MAX_PHASES SPFG_MAX_GRID_FNS
 
 #define SPFG_BLOCK_NAME_MAX_LENGTH 20
@@ -78,6 +80,7 @@ typedef struct spfg_block_name {
 
 typedef struct spfg_dp {
     spfg_dp_id_t id;
+    spfg_dp_type_t type;
     spfg_block_name_t name;
     spfg_boolean_t emitted;
     union value_u {
@@ -89,16 +92,24 @@ typedef struct spfg_dp {
 
 typedef struct spfg_fn {
     spfg_fn_id_t id;
+    spfg_fn_type_t type;
     spfg_block_name_t name;
     spfg_phase_t phase;
-    spfg_fn_type_t type;
+    spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
+    size_t in_dp_ids_len;
+    spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
+    size_t out_dp_ids_len;
+} spfg_fn_t;
+
+typedef struct spfg_fnx {
+    spfg_fn_t *fn;
     spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
-} spfg_fn_t;
+} spfg_fnx_t;
 
 typedef struct spfg_gr_ctl {
     spfg_phase_t curr_phase;
-    spfg_step_t curr_fn_step;
+    spfg_step_t curr_fnx_idx;
 }  spfg_gr_ctl_t;
 
 typedef struct spfg_gr {
@@ -108,6 +119,20 @@ typedef struct spfg_gr {
     spfg_fn_t fns[SPFG_MAX_GRID_FNS];
     spfg_gr_ctl_t ctl;
 } spfg_gr_t;
+
+typedef struct spfg_grx {
+    spfg_gr_t *gr;
+    spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
+} spfg_grx_t;
+
+
+typedef struct spfg_grxph {
+} spfg_grxph_t;
+
+typedef struct spfg_grxp {
+    spfg_grxph_t header;
+    spfg_gr_t data;
+} spfg_grxp_t;
 
 
 // ----------------------------------------------------------------------------
@@ -130,24 +155,35 @@ spfg_err_t spfg_finish();
 spfg_err_t spfg_gr_create(spfg_gr_id_t *id, const char *name);
 spfg_err_t spfg_gr_remove(spfg_gr_id_t id);
 
-spfg_err_t spfg_dp_create(spfg_gr_id_t grid_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
-spfg_err_t spfg_dp_remove(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id);
-spfg_err_t spfg_dp_set_int(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, int value);
-spfg_err_t spfg_dp_set_real(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, spfg_real_t value);
-spfg_err_t spfg_dp_set_bool(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, spfg_boolean_t value);
-spfg_err_t spfg_dp_get_bool(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted);
-spfg_err_t spfg_dp_set_word(spfg_gr_id_t grid_id, spfg_dp_id_t dp_id, spfg_word_t word);
+spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
+spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id);
+spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value);
+spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value);
+spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t value);
+spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted);
+spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word);
 
-spfg_err_t spfg_fn_create(spfg_gr_id_t grid_id,
+spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                           spfg_fn_type_t type,
                           spfg_phase_t phase,
-                          spfg_dp_id_t *in_dps, size_t in_dps_len,
-                          spfg_dp_id_t *out_dps, size_t out_dps_len,
+                          spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                          spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
                           const char *name,
                           spfg_fn_id_t *fn_id);
-spfg_err_t spfg_fn_remove(spfg_gr_id_t grid_id, spfg_fn_id_t fn_id);
+spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
 
+// ----------------------------------------------------------------------------
+// Grid Evaluation API
+// ----------------------------------------------------------------------------
+
+spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id);
 spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts);
+
+// ----------------------------------------------------------------------------
+// Import / Export API
+// ----------------------------------------------------------------------------
+
+spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf_len);
 
 #ifdef __cplusplus
 }
