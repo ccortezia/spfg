@@ -91,9 +91,9 @@ typedef struct spfg_dp {
 
 typedef struct spfg_fn {
     spfg_fn_id_t id;
+    spfg_fn_type_t type;
     spfg_block_name_t name;
     spfg_phase_t phase;
-    spfg_fn_type_t type;
     spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
     size_t in_dp_ids_len;
     spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
