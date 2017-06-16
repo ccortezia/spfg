@@ -61,7 +61,7 @@ static spfg_err_t resolve_gr_from_id(spfg_gr_id_t gr_id, spfg_gr_t **gr)
     }
 
     if ((err = find_gr_by_id(gr_id, &idx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to resolve gr from id: err=[%04X]\n", err);
+        fprintf(stderr, "failed to resolve gr from id: err=[%d]\n", err);
         return SPFG_ERROR_NOT_FOUND;
     }
 
@@ -233,7 +233,7 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
     spfg_gr_t *gr = &global_grs[gr_idx];
 
     if ((err = spfg_block_name_create(name, &gr->name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set grid name: err=[%04X]\n", err);
+        fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
@@ -443,7 +443,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     fnx->fn = fn;
 
     if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to reindex function: err=[%04X]\n", err);
+        fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
         return SPFG_ERROR_REINDEX_FN;
     }
 
@@ -518,17 +518,17 @@ static spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
         if (err == SPFG_ERROR_NOT_FOUND) {
             return SPFG_ERROR_NO;
         }
-        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
+        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
     if ((err = eval_fnx(fnx, ts)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
+        fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
     if ((err = clear_changed_input_for_fnx(fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
+        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
@@ -570,7 +570,7 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, int step_
         }
 
         if ((err = spfg_run_fnx(grx, fnx, ts)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to run fn %s on grid %d: err=[%04X]\n", fnx->fn->name.chars, grx->gr->id, err);
+            fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
             return SPFG_ERROR_CYCLE_FAILURE;
         }
 
