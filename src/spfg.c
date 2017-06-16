@@ -450,10 +450,6 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if (!gr_id) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     if (!name) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
