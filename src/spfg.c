@@ -246,7 +246,7 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
 
 extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 // ---
@@ -289,19 +289,19 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
 
 extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 
 extern spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 
 extern spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 
@@ -359,7 +359,7 @@ extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
 
 extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 // ---
@@ -453,7 +453,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
 extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
 {
-    return SPFG_ERROR_NO;
+    return SPFG_ERROR_UNIMPLEMENTED;
 }
 
 
