@@ -392,6 +392,33 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
+static spfg_err_t _spfg_fn_create(spfg_gr_t *gr, int fn_idx,
+                                  spfg_fn_type_t type,
+                                  spfg_phase_t phase,
+                                  spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                                  spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
+                                  const char *name)
+{
+    spfg_err_t err;
+    spfg_fn_t *fn = &gr->fns[fn_idx];
+
+    if ((err = spfg_block_name_create(name, &fn->name)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to set function name: err=[%d]\n", err);
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    fn->type = type;
+    fn->phase = phase;
+    fn->id = GEN_SPFG_FN_ID(gr->id, fn_idx);
+    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
+    fn->in_dp_ids_len = in_dp_ids_len;
+    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
+    fn->out_dp_ids_len = out_dp_ids_len;
+
+    return SPFG_ERROR_NO;
+}
+
+
 extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                                  spfg_fn_type_t type,
                                  spfg_phase_t phase,
@@ -410,35 +437,35 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
+    // Resolve input id into local memory references.
+
     unsigned int gr_idx;
 
     if ((err = find_gr_by_id(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    unsigned int fn_idx;
-
+    spfg_gr_t *gr = &global_grs[gr_idx];
     spfg_grx_t *grx = &global_grxs[gr_idx];
-    spfg_gr_t *gr = grx->gr;
+
+    // Evolve grid schema (generic memory construction).
+
+    unsigned int fn_idx;
 
     if ((err = find_free_fn(gr, &fn_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    spfg_fn_t *fn = &gr->fns[fn_idx];
-
-    if ((err = spfg_block_name_create(name, &fn->name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set function name: err=[%04X]\n", err);
-        return SPFG_ERROR_BAD_BLOCK_NAME;
+    if ((err = _spfg_fn_create(gr, fn_idx, type, phase,
+                               in_dp_ids, in_dp_ids_len,
+                               out_dp_ids, out_dp_ids_len,
+                               name)) != SPFG_ERROR_NO) {
+        return err;
     }
 
-    fn->type = type;
-    fn->phase = phase;
-    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
-    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
-    *fn_id = GEN_SPFG_FN_ID(gr_id, fn_idx);
-    fn->id = *fn_id;
+    // Review function indexing (specific to local memory construction).
 
+    spfg_fn_t *fn = &gr->fns[fn_idx];
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
 
