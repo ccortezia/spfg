@@ -265,7 +265,7 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
 
 // ---
 
-extern spfg_err_t _spfg_dp_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
+extern spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
@@ -313,7 +313,7 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = _spfg_dp_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+    if ((err = spfg_dp_gr_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
         return err;
     }
 
@@ -428,12 +428,12 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t _spfg_fn_create(spfg_gr_t *gr, int fn_idx,
-                                  spfg_fn_type_t type,
-                                  spfg_phase_t phase,
-                                  spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
-                                  spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
-                                  const char *name)
+static spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
+                                    spfg_fn_type_t type,
+                                    spfg_phase_t phase,
+                                    spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                                    spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
+                                    const char *name)
 {
     spfg_err_t err;
     spfg_fn_t *fn = &gr->fns[fn_idx];
@@ -489,7 +489,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = _spfg_fn_create(gr, fn_idx, type, phase,
+    if ((err = spfg_fn_gr_create(gr, fn_idx, type, phase,
                                in_dp_ids, in_dp_ids_len,
                                out_dp_ids, out_dp_ids_len,
                                name)) != SPFG_ERROR_NO) {
@@ -701,7 +701,7 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf
             continue;
         }
 
-        if ((err = _spfg_dp_create(&grxp->data, dp_idx,
+        if ((err = spfg_dp_gr_create(&grxp->data, dp_idx,
                                    gr->dps[dp_idx].type,
                                    gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
             return err;
@@ -714,7 +714,7 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf
             continue;
         }
 
-        if ((err = _spfg_fn_create(&grxp->data, fn_idx,
+        if ((err = spfg_fn_gr_create(&grxp->data, fn_idx,
                                    gr->fns[fn_idx].type,
                                    gr->fns[fn_idx].phase,
                                    gr->fns[fn_idx].in_dp_ids,
