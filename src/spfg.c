@@ -86,7 +86,7 @@ static spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **d
     return SPFG_ERROR_NOT_FOUND;
 }
 
-static spfg_err_t find_free_global_gr(unsigned int *idx)
+static spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
 {
     if (!idx) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -96,6 +96,11 @@ static spfg_err_t find_free_global_gr(unsigned int *idx)
 
         if (!global_grs[i].name.chars[0]) {
             *idx = i;
+
+            if (gr) {
+                *gr = &global_grs[i];
+            }
+
             return SPFG_ERROR_NO;
         }
     }
@@ -103,7 +108,7 @@ static spfg_err_t find_free_global_gr(unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-static spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx)
+static spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx, spfg_dp_t **dp)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -117,6 +122,11 @@ static spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx)
 
         if (!gr->dps[i].name.chars[0]) {
             *idx = i;
+
+            if (dp) {
+                *dp = &gr->dps[i];
+            }
+
             return SPFG_ERROR_NO;
         }
     }
@@ -124,7 +134,7 @@ static spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-static spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx)
+static spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx, spfg_fn_t **fn)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -138,6 +148,11 @@ static spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx)
 
         if (!gr->fns[i].name.chars[0]) {
             *idx = i;
+
+            if (fn) {
+                *fn = &gr->fns[i];
+            }
+
             return SPFG_ERROR_NO;
         }
     }
@@ -224,13 +239,12 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
+    spfg_gr_t *gr;
     unsigned int gr_idx;
 
-    if ((err = find_free_global_gr(&gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_free_global_gr(&gr_idx, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
-
-    spfg_gr_t *gr = &global_grs[gr_idx];
 
     if ((err = spfg_block_name_create(name, &gr->name)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
@@ -286,23 +300,24 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    unsigned int gr_idx;
+    spfg_gr_t *gr;
 
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
     unsigned int dp_idx;
+    spfg_dp_t *dp;
 
-    if ((err = find_free_gr_dp(&global_grs[gr_idx], &dp_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_free_gr_dp(gr, &dp_idx, &dp)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = _spfg_dp_create(&global_grs[gr_idx], dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_dp_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
         return err;
     }
 
-    *dp_id = global_grs[gr_idx].dps[dp_idx].id;
+    *dp_id = dp->id;
 
     return SPFG_ERROR_NO;
 }
@@ -468,8 +483,9 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     // Evolve grid schema (generic memory construction).
 
     unsigned int fn_idx;
+    spfg_fn_t *fn;
 
-    if ((err = find_free_gr_fn(gr, &fn_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
@@ -482,7 +498,6 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
     // Review function indexing (specific to local memory construction).
 
-    spfg_fn_t *fn = &gr->fns[fn_idx];
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
 
