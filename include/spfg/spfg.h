@@ -79,6 +79,7 @@ typedef struct spfg_block_name {
 
 typedef struct spfg_dp {
     spfg_dp_id_t id;
+    spfg_dp_type_t type;
     spfg_block_name_t name;
     spfg_boolean_t emitted;
     union value_u {

@@ -251,15 +251,38 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
 
 // ---
 
-extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+extern spfg_err_t _spfg_dp_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if (!gr_id) {
+    if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
     if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if ((err = spfg_block_name_create(name, &gr->dps[dp_idx].name)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to set datapoint name: err=[%d]\n", err);
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    gr->dps[dp_idx].id = GEN_SPFG_DP_ID(gr->id, dp_idx);
+    gr->dps[dp_idx].type = dp_type;
+
+    return SPFG_ERROR_NO;
+}
+
+extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+{
+    spfg_err_t err = SPFG_ERROR_NO;
+
+    if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (!dp_id) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
@@ -275,13 +298,11 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_block_name_create(name, &global_grs[gr_idx].dps[dp_idx].name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set datapoint name: err=[%04X]\n", err);
-        return SPFG_ERROR_BAD_BLOCK_NAME;
+    if ((err = _spfg_dp_create(&global_grs[gr_idx], dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+        return err;
     }
 
-    *dp_id = GEN_SPFG_DP_ID(gr_id, dp_idx);
-    global_grs[gr_idx].dps[dp_idx].id = *dp_id;
+    *dp_id = global_grs[gr_idx].dps[dp_idx].id;
 
     return SPFG_ERROR_NO;
 }
