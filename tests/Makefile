@@ -20,8 +20,7 @@ $(OBJECTS): $(SOURCES)
 
 $(COVERAGE): $(GCNOS) $(GCDAS)
 	(lcov -t "Coverage on ${TARGET}" -o ${COVERAGE} -c -d . --no-external)
-
-# (gcov *.c)
+	(gcov *.c)
 
 .PHONY: clean
 
