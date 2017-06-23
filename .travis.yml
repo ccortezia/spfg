@@ -1,23 +1,38 @@
 language: c
 sudo: required
 dist: trusty
-script: make ci
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y graphviz doxygen lcov
+  - sudo apt-get install -y clang graphviz doxygen lcov
   - sudo apt-get install -y gcc-arm-linux-gnueabihf
   - sudo apt-get install -y gcc-avr binutils-avr avr-libc
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-env:
-  matrix:
-    - ARCH=x86_64 CC=gcc
-    - ARCH=x86_64 CC=gcc EXTRA_CFLAGS="-g0 -Os"
-    - ARCH=x86_64 CC=clang
-    - ARCH=x86_64 CC=clang EXTRA_CFLAGS="-g0 -Os"
-    - ARCH=arm CI_TESTS=n
-    - ARCH=arm CI_TESTS=n  EXTRA_CFLAGS="-g0 -Os"
-    - ARCH=atmega328 BUILD_SHARED=n CI_TESTS=n
-    - ARCH=atmega328 BUILD_SHARED=n CI_TESTS=n EXTRA_CFLAGS="-g0 -Os"
-    - ARCH=atmega168 BUILD_SHARED=n CI_TESTS=n
-    - ARCH=atmega168 BUILD_SHARED=n CI_TESTS=n EXTRA_CFLAGS="-g0 -Os"
+matrix:
+  include:
+  - script: make CC=gcc ci
+    env: ARCH=x86_64 CC=gcc
+  - script: make CC=gcc ci
+    env: ARCH=x86_64 CC=gcc EXTRA_CFLAGS="-g0 -Os"
+  - script: make CC=clang
+    env: ARCH=x86_64 CC=clang
+  - script: make CC=clang
+    env: ARCH=x86_64 CC=clang EXTRA_CFLAGS="-g0 -Os"
+  - script: make
+    env: ARCH=arm
+  - script: make
+    env: ARCH=arm EXTRA_CFLAGS="-g0 -Os"
+  - script: make BUILD_SHARED=n
+    env: ARCH=atmega328
+  - script: make BUILD_SHARED=n
+    env: ARCH=atmega328 EXTRA_CFLAGS="-g0 -Os"
+  - script: make BUILD_SHARED=n
+    env: ARCH=atmega168
+  - script: make BUILD_SHARED=n
+    env: ARCH=atmega168 EXTRA_CFLAGS="-g0 -Os"
+  - script: source /tmp/emsdk-portable/emsdk_env.sh make CC=emcc BUILD_SHARED=n BUILD_STATIC=n
+    env: ARCH=wasm CC=emcc
+    before_install:
+      - sudo apt-get -qq update
+      - pushd /tmp && wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz && popd
+      - pushd /tmp && tar -xzvf emsdk-portable.tar.gz && pushd emsdk-portable && ./emsdk update >/dev/null && ./emsdk install latest >/dev/null && ./emsdk activate latest >/dev/null && popd && popd

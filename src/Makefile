@@ -1,19 +1,44 @@
 NAME = spfg
+JS_LIB = $(NAME).js
+BC_LIB = $(NAME).bc
 SHARED_LIB = lib$(NAME).so
 STATIC_LIB = lib$(NAME).a
+COVERAGE = $(NAME).info
+
+ifeq ($(BUILD_SHARED),y)
+	EXTRA_CFLAGS += -fPIC
+	EXTRA_LDFLAGS += -shared
+endif
+
 CC = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
+WFLAGS = -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_gr_create', '_spfg_fn_create', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_schema']"
 CFLAGS = -I${ROOT_PATH}/include -Wall -g3 -O0 -std=gnu99 $(EXTRA_CFLAGS)
-LDFLAGS = -shared $(EXTRA_LDFLAGS)
+LDFLAGS = $(EXTRA_LDFLAGS)
 ARFLAGS = rcs
+
 SOURCES = $(shell find . -name *.c)
 OBJECTS = $(SOURCES:%.c=%.o)
 GCNOS = $(SOURCES:%.c=%.gcno)
 GCDAS = $(SOURCES:%.c=%.gcda)
 GCOVS = $(shell find . -name *.gcov)
-COVERAGE = $(NAME).info
+WASMS = $(SOURCES:%.c=%.wasm)
+WASTS = $(SOURCES:%.c=%.wast)
+BCS = $(SOURCES:%.c=%.bc)
+JSS = $(SOURCES:%.c=%.js)
+TMP_MAIN = _main.c
+
 
 all: $(SHARED_LIB) $(STATIC_LIB)
+
+$(JS_LIB): $(SOURCES)
+	echo '#include "spfg/spfg.h"' > ${TMP_MAIN}
+	echo 'int main(void){}' >> ${TMP_MAIN}
+	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^ ${TMP_MAIN}
+	rm -f ${TMP_MAIN}
+
+$(BC_LIB): $(SOURCES)
+	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^
 
 $(STATIC_LIB): $(OBJECTS)
 	$(AR) ${ARFLAGS} $@ $^
@@ -31,4 +56,4 @@ $(COVERAGE): $(GCNOS) $(GCDAS)
 .PHONY: clean
 
 clean:
-	$(RM) $(GCNOS) $(GCDAS) $(GCOVS) $(COVERAGE) $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB)
+	$(RM) $(TMP_MAIN) $(GCNOS) $(GCDAS) $(GCOVS) $(COVERAGE) $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB) $(JSS) $(BCS) $(WASMS) $(WASTS)

@@ -7,7 +7,7 @@ export BUILDCOV ?=
 export BUILDPROF ?=
 export ROOT_PATH = $(CURDIR)
 export BUILD_SHARED ?= y
-export CI_TESTS ?= y
+export BUILD_STATIC ?= y
 
 # ----
 
@@ -24,11 +24,15 @@ export STAGE_INC = $(STAGE)/include
 
 # ----
 
-LIBRARIES = $(STAGE_LIB)/libspfg.a
+LIBRARIES =
+EXECUTABLES = $(STAGE_BIN)/test
+
+ifeq ($(BUILD_STATIC),y)
+	LIBRARIES += $(STAGE_LIB)/libspfg.a
+endif
 
 ifeq ($(BUILD_SHARED),y)
 	LIBRARIES += $(STAGE_LIB)/libspfg.so
-	EXTRA_CFLAGS += -fPIC
 endif
 
 # ----
@@ -60,15 +64,26 @@ ifeq ($(CROSS_COMPILE),avr-)
 	EXTRA_LDFLAGS += -mmcu=${ARCH}
 endif
 
+ifeq ($(ARCH),wasm)
+	EXTRA_CFLAGS += -s WASM=1
+	LIBRARIES += $(STAGE_LIB)/spfg.wasm
+	EXECUTABLES = $(STAGE_BIN)/test.html
+endif
+
 # ----
 
-
-all: $(STAGE_BIN)/test
+all: $(EXECUTABLES)
 
 
 $(STAGE_BIN)/test: unity $(STAGE_INC)/spfg $(LIBRARIES)
-	(make -C tests)
+	(make -C tests test)
 	(cp tests/test ${STAGE_BIN})
+
+$(STAGE_BIN)/test.html: unity $(STAGE_INC)/spfg $(LIBRARIES)
+	(make -C tests test.html)
+	(cp tests/test.js ${STAGE_BIN})
+	(cp tests/test.wasm ${STAGE_BIN})
+	(cp tests/test.html ${STAGE_BIN})
 
 $(STAGE_LIB)/libspfg.so: dirs
 	(make -C src libspfg.so)
@@ -77,6 +92,20 @@ $(STAGE_LIB)/libspfg.so: dirs
 $(STAGE_LIB)/libspfg.a: dirs
 	(make -C src libspfg.a)
 	(cp src/libspfg.a ${STAGE_LIB})
+
+$(STAGE_LIB)/spfg.wasm: $(STAGE_LIB)/spfg.wast
+	(cp src/spfg.wasm ${STAGE_LIB})
+
+$(STAGE_LIB)/spfg.wast: $(STAGE_LIB)/spfg.js
+	(cp src/spfg.wast ${STAGE_LIB})
+
+$(STAGE_LIB)/spfg.js: $(STAGE_LIB)/spfg.bc
+	(make -C src spfg.js)
+	(cp src/spfg.js ${STAGE_LIB})
+
+$(STAGE_LIB)/spfg.bc: dirs
+	(make -C src spfg.bc)
+	(cp src/spfg.bc ${STAGE_LIB})
 
 $(STAGE_INC)/spfg: dirs
 	(cp -r include/spfg ${STAGE_INC})
@@ -117,8 +146,8 @@ devel:
 
 ci:
 	(make clean)
-	(BUILDCOV=y make)
-	if test "${CI_TESTS}" = "y"; then make test && make htmlcov && make htmldoc; fi
+	(BUILDCOV=y make && make test && make htmlcov)
+	(make htmldoc)
 
 dirs:
 	(mkdir -p ${STAGE_LIB})

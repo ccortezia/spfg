@@ -2,7 +2,11 @@
 build
 htmlcov
 htmldoc
+src/*.html
+src/*.js
 tests/test
+tests/*.html
+tests/*.js
 *.o
 *.a
 *.so
@@ -11,3 +15,6 @@ tests/test
 *.gcov
 *.info
 *.map
+*.wasm
+*.wast
+*.bc
