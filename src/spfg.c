@@ -594,18 +594,12 @@ static spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, int step_count)
+static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     spfg_err_t err = SPFG_ERROR_NO;
-    int steps_performed = 0;
     spfg_fnx_t *fnx;
 
     for (;;) {
-
-        // Stop condition: control parameter.
-        if (step_count > -1 && steps_performed >= step_count) {
-            break;
-        }
 
         // Stop condition: array boundary protection.
         if (grx->gr->ctl.curr_fnx_idx >= SPFG_MAX_GRID_FNS) {
@@ -622,6 +616,20 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, int step_
         // Stop condition: no more pending functions to evaluate.
         if (!fnx->fn->name.chars[0]) {
             break;
+        }
+
+        // Stop condition: control callback.
+        if (cb) {
+            err = cb(grx->gr->id, fnx->fn->id, grx->gr->ctl.curr_phase, udata);
+
+            if (err == SPFG_LOOP_CONTROL_STOP) {
+                break;
+            }
+
+            if (err != SPFG_ERROR_NO) {
+                fprintf(stderr, "failed to run cb on grid %d: err=[%d]\n", grx->gr->id, err);
+                return SPFG_ERROR_CYCLE_FAILURE;
+            }
         }
 
         if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
@@ -656,7 +664,7 @@ extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 }
 
 
-extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts)
+extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     unsigned int gr_idx;
     spfg_err_t err = SPFG_ERROR_NO;
@@ -665,7 +673,7 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts)
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, -1);
+    return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, cb, udata);
 }
 
 

@@ -8,6 +8,7 @@ extern "C" {
 // Error and Info return codes
 // ----------------------------------------------------------------------------
 
+#define SPFG_LOOP_CONTROL_STOP              1
 #define SPFG_ERROR_NO                       0
 #define SPFG_ERROR_BAD_PARAM_NULL_POINTER  -1
 #define SPFG_ERROR_BAD_PARAM_INVALID_VALUE -2
@@ -134,6 +135,7 @@ typedef struct spfg_grxp {
     spfg_gr_t data;
 } spfg_grxp_t;
 
+typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata);
 
 // ----------------------------------------------------------------------------
 // Utility API
@@ -177,7 +179,7 @@ spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
 // ----------------------------------------------------------------------------
 
 spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id);
-spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts);
+spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata);
 
 // ----------------------------------------------------------------------------
 // Import / Export API
