@@ -26,6 +26,7 @@ export STAGE_INC = $(STAGE)/include
 
 LIBRARIES =
 EXECUTABLES = $(STAGE_BIN)/test
+HEADERS = $(STAGE_INC)/spfg
 
 ifeq ($(BUILD_STATIC),y)
 	LIBRARIES += $(STAGE_LIB)/libspfg.a
@@ -66,7 +67,7 @@ endif
 
 ifeq ($(ARCH),wasm)
 	EXTRA_CFLAGS += -s WASM=1
-	LIBRARIES += $(STAGE_LIB)/spfg.wasm
+	LIBRARIES += $(STAGE_LIB)/libspfg.wasm
 	EXECUTABLES = $(STAGE_BIN)/test.html
 endif
 
@@ -75,11 +76,11 @@ endif
 all: $(EXECUTABLES)
 
 
-$(STAGE_BIN)/test: unity $(STAGE_INC)/spfg $(LIBRARIES)
+$(STAGE_BIN)/test: unity $(HEADERS) $(LIBRARIES)
 	(make -C tests test)
 	(cp tests/test ${STAGE_BIN})
 
-$(STAGE_BIN)/test.html: unity $(STAGE_INC)/spfg $(LIBRARIES)
+$(STAGE_BIN)/test.html: unity $(HEADERS) $(LIBRARIES)
 	(make -C tests test.html)
 	(cp tests/test.js ${STAGE_BIN})
 	(cp tests/test.wasm ${STAGE_BIN})
@@ -93,19 +94,19 @@ $(STAGE_LIB)/libspfg.a: dirs
 	(make -C src libspfg.a)
 	(cp src/libspfg.a ${STAGE_LIB})
 
-$(STAGE_LIB)/spfg.wasm: $(STAGE_LIB)/spfg.wast
-	(cp src/spfg.wasm ${STAGE_LIB})
+$(STAGE_LIB)/libspfg.wasm: $(STAGE_LIB)/libspfg.wast
+	(cp src/libspfg.wasm ${STAGE_LIB})
 
-$(STAGE_LIB)/spfg.wast: $(STAGE_LIB)/spfg.js
-	(cp src/spfg.wast ${STAGE_LIB})
+$(STAGE_LIB)/libspfg.wast: $(STAGE_LIB)/libspfg.js
+	(cp src/libspfg.wast ${STAGE_LIB})
 
-$(STAGE_LIB)/spfg.js: $(STAGE_LIB)/spfg.bc
-	(make -C src spfg.js)
-	(cp src/spfg.js ${STAGE_LIB})
+$(STAGE_LIB)/libspfg.js: $(STAGE_LIB)/libspfg.bc
+	(make -C src libspfg.js)
+	(cp src/libspfg.js ${STAGE_LIB})
 
-$(STAGE_LIB)/spfg.bc: dirs
-	(make -C src spfg.bc)
-	(cp src/spfg.bc ${STAGE_LIB})
+$(STAGE_LIB)/libspfg.bc: dirs
+	(make -C src libspfg.bc)
+	(cp src/libspfg.bc ${STAGE_LIB})
 
 $(STAGE_INC)/spfg: dirs
 	(cp -r include/spfg ${STAGE_INC})

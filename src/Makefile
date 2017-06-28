@@ -1,6 +1,6 @@
 NAME = spfg
-JS_LIB = $(NAME).js
-BC_LIB = $(NAME).bc
+JS_LIB = lib$(NAME).js
+BC_LIB = lib$(NAME).bc
 SHARED_LIB = lib$(NAME).so
 STATIC_LIB = lib$(NAME).a
 COVERAGE = $(NAME).info

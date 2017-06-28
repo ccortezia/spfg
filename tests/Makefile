@@ -26,7 +26,7 @@ $(NATIVE_EXE): $(OBJECTS)
 	$(CC) $^ ${LDFLAGS} ${LDLIBS} -o $@
 
 $(WASM_RUNNER): $(SOURCES)
-	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^ ${ROOT_PATH}/${STAGE_LIB}/spfg.bc --shell-file skel.html
+	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^ ${ROOT_PATH}/${STAGE_LIB}/libspfg.bc --shell-file skel.html
 
 $(OBJECTS): $(SOURCES)
 

@@ -1,5 +1,7 @@
 #ifndef __SPFG_H__
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
