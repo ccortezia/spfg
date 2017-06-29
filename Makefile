@@ -123,6 +123,9 @@ htmlcov: src/*.gcno src/*.gcda tests/*.gcno tests/*.gcno
 htmldoc:
 	(doxygen)
 
+binding_js: $(STAGE_LIB)/libspfg.wasm
+	(cd contrib/binding-js; npm install && npm test)
+
 # ----
 
 .PHONY: all dirs sclean clean test devel unity
