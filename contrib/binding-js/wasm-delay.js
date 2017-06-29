@@ -5,7 +5,10 @@
  * finishes loading the declared files, specially because the .wasm binary is
  * fetched asynchronously. For this reason a hardcoded delay is added below.
  */
-window.__karma__.loaded = function() {};
+window.__karma__.loaded = function() {
+    window.ModuleSPFG = ModuleSPFG();
+};
+
 setTimeout(function(){
     window.__karma__.start();
-}, 1000);
+}, 250);
