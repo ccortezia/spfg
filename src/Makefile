@@ -16,7 +16,7 @@ TMP_POSTJS = _postjs.js
 
 CC = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
-WFLAGS = --pre-js ${TMP_PREJS} --post-js ${TMP_POSTJS} -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_gr_create', '_spfg_fn_create', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_schema']"
+WFLAGS = --pre-js ${TMP_PREJS} --post-js ${TMP_POSTJS} -s RESERVED_FUNCTION_POINTERS=10 -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_gr_create', '_spfg_fn_create', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_schema']"
 CFLAGS = -I${ROOT_PATH}/include -Wall -g3 -O0 -std=gnu99 $(EXTRA_CFLAGS)
 LDFLAGS = $(EXTRA_LDFLAGS)
 ARFLAGS = rcs
