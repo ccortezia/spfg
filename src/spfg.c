@@ -252,8 +252,9 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
     }
 
     global_grxs[gr_idx].gr = gr;
-    *gr_id = gr_idx + SPFG_GR_ID0;
-    gr->id = *gr_id;
+    gr->id = gr_idx + SPFG_GR_ID0;
+
+    *gr_id = gr->id;
 
     return SPFG_ERROR_NO;
 }
