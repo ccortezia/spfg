@@ -506,6 +506,8 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_REINDEX_FN;
     }
 
+    *fn_id = fn->id;
+
     return SPFG_ERROR_NO;
 }
 
