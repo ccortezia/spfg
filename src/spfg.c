@@ -618,6 +618,10 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
             break;
         }
 
+        if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
+            grx->gr->ctl.curr_phase += 1;
+        }
+
         // Stop condition: control callback.
         if (cb) {
             err = cb(grx->gr->id, fnx->fn->id, grx->gr->ctl.curr_phase, udata);
@@ -630,10 +634,6 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
                 fprintf(stderr, "failed to run cb on grid %d: err=[%d]\n", grx->gr->id, err);
                 return SPFG_ERROR_CYCLE_FAILURE;
             }
-        }
-
-        if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
-            grx->gr->ctl.curr_phase += 1;
         }
 
         if ((err = spfg_run_fnx(grx, fnx, ts)) != SPFG_ERROR_NO) {
