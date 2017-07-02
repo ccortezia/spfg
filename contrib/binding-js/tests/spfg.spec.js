@@ -1,6 +1,185 @@
 
-describe("spfg_init", function() {
-  it("should not fail", function() {
-    expect(ModuleSPFG._spfg_init()).toBe(0);
+describe("SPFG initialization", function() {
+
+  beforeEach(naiveFinish);
+
+  it("when init is called for the first time should not fail", function() {
+    expect(SPFG.init()).toBe(undefined);
+  });
+
+  it("when init is called a second time without finishing first should fail", function() {
+    expect(SPFG.init()).toBe(undefined);
+    expect(SPFG.init).toThrowError(SPFG.Error, 'SPFG_ERROR_ALREADY_INITIALIZED');
+  });
+
+  it("when init is called a second time with finishing first should not fail", function() {
+    expect(SPFG.init()).toBe(undefined);
+    expect(SPFG.finish()).toBe(undefined);
+    expect(SPFG.init()).toBe(undefined);
   });
 });
+
+describe("SPFG grid", function() {
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  it("creation should not fail", function() {
+    expect(SPFG.createGrid.bind(SPFG.createGrid, 'gr0')).not.toThrow();
+  });
+
+  it("creation should return valid grid id", function() {
+    expect(SPFG.createGrid('gr0')).toBeGreaterThan(0);
+  });
+
+  it("creation with empty name should fail", function() {
+    expect(SPFG.createGrid.bind(SPFG.createGrid, '')).toThrowError('needs a non-empty name');
+  });
+
+  xit("removal should work with valid id", function() {
+    // TODO
+  });
+});
+
+describe("SPFG datapoint", function() {
+  var gr0;
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  beforeEach(function(){
+    gr0 = SPFG.createGrid('gr0');
+  });
+
+  it("creation should not raise", function() {
+    expect(SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'bool', 'dp0')).not.toThrow();
+  });
+
+  it("creation should return valid datapoint id", function() {
+    expect(SPFG.createDatapoint(gr0, 'bool', 'dp0')).toBeGreaterThan(0);
+  });
+
+  it("creation with empty name should fail", function() {
+    expect(SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'bool', '')).toThrowError('needs a non-empty name');
+  });
+
+  it("creation with invalid type should fail", function() {
+    expect(SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'booleanus', 'dp0')).toThrowError('needs a valid datapoint type');
+  });
+
+  xit("removal should work with valid id", function() {
+    // TODO
+  });
+});
+
+describe("SPFG function", function() {
+  var gr0, dp0, dp1, dp2;
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  beforeEach(function(){
+    gr0 = SPFG.createGrid('gr0');
+    dp0 = SPFG.createDatapoint(gr0, 'bool', 'dp0');
+    dp1 = SPFG.createDatapoint(gr0, 'bool', 'dp1');
+    dp2 = SPFG.createDatapoint(gr0, 'bool', 'dp2');
+  });
+
+  it("creation should not raise", function() {
+    expect(SPFG.createFunction.bind(SPFG.createFunction,
+      gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0')).not.toThrow();
+  });
+
+  it("creation should return valid function id", function() {
+    expect(SPFG.createFunction(gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0')).toBeGreaterThan(0);
+  });
+
+  it("creation with empty name should fail", function() {
+    expect(SPFG.createFunction.bind(SPFG.createFunction,
+      gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], '')).toThrow(Error('needs a non-empty name'));
+  });
+
+  it("creation with invalid type should fail", function() {
+    expect(SPFG.createFunction.bind(SPFG.createFunction,
+      gr0, 'blargh(bool,real)->real', 0, [dp0, dp1], [dp2], 'fn0')).toThrow(Error('needs a valid function type'));
+  });
+
+  xit("removal should work with valid id", function() {
+    // TODO
+  });
+});
+
+
+describe("SPFG cycle", function() {
+  var gr0, dp0, dp1, dp2, dp3, dp4, fn0, fn1;
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  beforeEach(function(){
+    gr0 = SPFG.createGrid('gr0');
+    dp0 = SPFG.createDatapoint(gr0, 'bool', 'dp0');
+    dp1 = SPFG.createDatapoint(gr0, 'bool', 'dp1');
+    dp2 = SPFG.createDatapoint(gr0, 'bool', 'dp2');
+    dp3 = SPFG.createDatapoint(gr0, 'bool', 'dp3');
+    dp4 = SPFG.createDatapoint(gr0, 'bool', 'dp4');
+    fn0 = SPFG.createFunction(gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0');
+    fn1 = SPFG.createFunction(gr0, 'and(bool,bool)->bool', 1, [dp2, dp3], [dp4], 'fn1');
+  });
+
+  it("reset should not raise", function() {
+    expect(SPFG.resetCycle.bind(SPFG.resetCycle, gr0)).not.toThrow();
+  });
+
+  it("run should not raise", function() {
+    expect(SPFG.resetCycle.bind(SPFG.resetCycle, gr0)).not.toThrow();
+    expect(SPFG.runCycle.bind(SPFG.runCycle, gr0, 0, 0)).not.toThrow();
+  });
+
+  it("run with a callback should call with arguments", function() {
+    var expectedPhase = 0;
+    var expectedFunctionId = fn0;
+
+    function callback(gridId, functionId, phase) {
+      expect(this.xyz).toEqual(123);
+      expect(gridId).toEqual(gr0);
+      expect(phase).toEqual(expectedPhase);
+      expect(functionId).toEqual(expectedFunctionId);
+      expectedPhase = 1;
+      expectedFunctionId = fn1;
+    }
+
+    expect(SPFG.resetCycle.bind(SPFG.resetCycle, gr0)).not.toThrow();
+    expect(SPFG.runCycle.bind(SPFG.runCycle, gr0, 0, callback, {xyz: 123})).not.toThrow();
+  });
+
+  it("run with a callback returning stop should stop cycle", function() {
+    var expectedPhase = 0;
+
+    function callback1(gridId, functionId, phase) {
+      expect(phase).toEqual(expectedPhase);
+      return SPFG.codes.ctl.SPFG_LOOP_CONTROL_STOP;
+    }
+
+    function callback2(gridId, functionId, phase) {
+      expect(phase).toEqual(expectedPhase);
+      expectedPhase += 1;
+      return SPFG.codes.ctl.SPFG_ERROR_NO;
+    }
+
+    expect(SPFG.resetCycle.bind(SPFG.resetCycle, gr0)).not.toThrow();
+    expect(SPFG.runCycle.bind(SPFG.runCycle, gr0, 0, callback1)).not.toThrow();
+    expect(SPFG.runCycle.bind(SPFG.runCycle, gr0, 1, callback2)).not.toThrow();
+  });
+});
+
+// -------------------------------------
+// Test Helper functions
+// -------------------------------------
+
+function naiveFinish() {
+  try {
+    SPFG.finish();
+  } catch (e) {
+    // ignore
+  }
+}
