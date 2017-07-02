@@ -63,14 +63,14 @@ typedef struct word {
 } spfg_word_t;
 
 typedef enum spfg_dp_type_e {
-    SPFG_DP_INT,
-    SPFG_DP_REAL,
-    SPFG_DP_BOOL,
+    SPFG_DP_INT  = 1,
+    SPFG_DP_REAL = 2,
+    SPFG_DP_BOOL = 3,
 } spfg_dp_type_t;
 
 typedef enum spfg_fn_type_e {
-    SPFG_FN_INVERT_BOOL_RET_BOOL,
-    SPFG_FN_AND_BOOL_BOOL_RET_BOOL,
+    SPFG_FN_INVERT_BOOL_RET_BOOL   = 1,
+    SPFG_FN_AND_BOOL_BOOL_RET_BOOL = 2,
  } spfg_fn_type_t;
 
 
