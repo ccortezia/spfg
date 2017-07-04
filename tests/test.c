@@ -2,47 +2,62 @@
 #include "unity/unity_fixture.h"
 #include "spfg.c"
 
-TEST_GROUP(spfg_lifecycle_tests);
+// ------------------------------------------------------------------------------------------------
 
-TEST_SETUP(spfg_lifecycle_tests) {
+TEST_GROUP(initialization);
+
+TEST_SETUP(initialization) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
 }
 
-TEST_TEAR_DOWN(spfg_lifecycle_tests) {
+TEST_TEAR_DOWN(initialization) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
 }
 
-// ---
-
-TEST(spfg_lifecycle_tests, init_twice_should_err)
+TEST(initialization, init_twice_should_err)
 {
     TEST_ASSERT_EQUAL(SPFG_ERROR_ALREADY_INITIALIZED, spfg_init());
 }
 
-TEST(spfg_lifecycle_tests, finish_twice_should_err)
+TEST(initialization, finish_twice_should_err)
 {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
     TEST_ASSERT_EQUAL(SPFG_ERROR_NOT_INITIALIZED, spfg_finish());
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
 }
 
-// ---
+TEST_GROUP_RUNNER(initialization) {
+    RUN_TEST_CASE(initialization, init_twice_should_err);
+    RUN_TEST_CASE(initialization, finish_twice_should_err);
+}
 
-TEST(spfg_lifecycle_tests, create_block_name_should_set_result)
+// ------------------------------------------------------------------------------------------------
+
+TEST_GROUP(spfg_private_nameblock_tests);
+
+TEST_SETUP(spfg_private_nameblock_tests) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(spfg_private_nameblock_tests) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+TEST(spfg_private_nameblock_tests, create_block_name_should_set_result)
 {
     spfg_block_name_t name;
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_block_name_create("block name", &name));
     TEST_ASSERT_EQUAL_STRING("block name", name.chars);
 }
 
-TEST(spfg_lifecycle_tests, create_block_name_with_null_param_should_err)
+TEST(spfg_private_nameblock_tests, create_block_name_with_null_param_should_err)
 {
     spfg_block_name_t name;
     TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_block_name_create(NULL, &name));
     TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_block_name_create("block name", NULL));
 }
 
-TEST(spfg_lifecycle_tests, create_block_name_should_not_overflow)
+TEST(spfg_private_nameblock_tests, create_block_name_should_not_overflow)
 {
     spfg_block_name_t name;
     const char ascii[SPFG_BLOCK_NAME_MAX_LENGTH + 1] = "ccccccccccccccccccc";
@@ -50,28 +65,44 @@ TEST(spfg_lifecycle_tests, create_block_name_should_not_overflow)
     TEST_ASSERT_EQUAL_STRING("ccccccccccccccccccc", name.chars);
 }
 
-// ---
+TEST_GROUP_RUNNER(spfg_private_nameblock_tests) {
+    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_should_set_result);
+    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_with_null_param_should_err);
+    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_should_not_overflow);
+}
 
-TEST(spfg_lifecycle_tests, create_grid_should_not_err)
+// ------------------------------------------------------------------------------------------------
+
+TEST_GROUP(grid_creation);
+
+TEST_SETUP(grid_creation) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(grid_creation) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+TEST(grid_creation, create_grid_should_not_err)
 {
     spfg_gr_id_t gr_id;
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid grid name"));
 }
 
-TEST(spfg_lifecycle_tests, create_grid_with_null_param_should_err)
+TEST(grid_creation, create_grid_with_null_param_should_err)
 {
     spfg_gr_id_t gr_id;
     TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_create(NULL, ""));
     TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_create(&gr_id, NULL));
 }
 
-TEST(spfg_lifecycle_tests, create_grid_with_empty_name_should_err)
+TEST(grid_creation, create_grid_with_empty_name_should_err)
 {
     spfg_gr_id_t gr_id;
     TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_BLOCK_NAME, spfg_gr_create(&gr_id, ""));
 }
 
-TEST(spfg_lifecycle_tests, create_grid_beyond_max_should_err)
+TEST(grid_creation, create_grid_beyond_max_should_err)
 {
     spfg_gr_id_t gr_id;
 
@@ -81,9 +112,26 @@ TEST(spfg_lifecycle_tests, create_grid_beyond_max_should_err)
     TEST_ASSERT_EQUAL(SPFG_ERROR_OUT_OF_SLOTS, spfg_gr_create(&gr_id, "valid name"));
 }
 
-// ---
+TEST_GROUP_RUNNER(grid_creation) {
+    RUN_TEST_CASE(grid_creation, create_grid_should_not_err);
+    RUN_TEST_CASE(grid_creation, create_grid_with_empty_name_should_err);
+    RUN_TEST_CASE(grid_creation, create_grid_with_null_param_should_err);
+    RUN_TEST_CASE(grid_creation, create_grid_beyond_max_should_err);
+}
 
-TEST(spfg_lifecycle_tests, setup_grid_should_not_err)
+// ------------------------------------------------------------------------------------------------
+
+TEST_GROUP(function_creation);
+
+TEST_SETUP(function_creation) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(function_creation) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+TEST(function_creation, create_fn_should_err)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn_id;
@@ -99,7 +147,23 @@ TEST(spfg_lifecycle_tests, setup_grid_should_not_err)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 1, out_dps, 1, "fn1", &fn_id));
 }
 
-TEST(spfg_lifecycle_tests, run_grid_cycle_should_not_err)
+TEST_GROUP_RUNNER(function_creation) {
+    RUN_TEST_CASE(function_creation, create_fn_should_err);
+}
+
+// ------------------------------------------------------------------------------------------------
+
+TEST_GROUP(cycle_running);
+
+TEST_SETUP(cycle_running) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(cycle_running) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+TEST(cycle_running, run_grid_cycle_should_not_err)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn_id;
@@ -141,7 +205,6 @@ TEST(spfg_lifecycle_tests, run_grid_cycle_should_not_err)
     TEST_ASSERT_EQUAL(1, emitted);
 }
 
-
 typedef struct test_cb_ctl {
     int counter;
     int stop_at;
@@ -157,7 +220,7 @@ spfg_err_t cycle_callback_stop_ctl(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_
     return SPFG_ERROR_NO;
 }
 
-TEST(spfg_lifecycle_tests, run_grid_cycle_should_stop_on_callback)
+TEST(cycle_running, run_grid_cycle_should_stop_on_callback)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn0p0_id;
@@ -207,22 +270,26 @@ TEST(spfg_lifecycle_tests, run_grid_cycle_should_stop_on_callback)
     TEST_ASSERT_EQUAL(0, emitted);
 }
 
-// ---
+TEST_GROUP_RUNNER(cycle_running) {
+    RUN_TEST_CASE(cycle_running, run_grid_cycle_should_not_err);
+    RUN_TEST_CASE(cycle_running, run_grid_cycle_should_stop_on_callback);
+}
 
-TEST_GROUP(spfg_export_tests);
+// ------------------------------------------------------------------------------------------------
 
-TEST_SETUP(spfg_export_tests) {
+TEST_GROUP(schema_exporting);
+
+TEST_SETUP(schema_exporting) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
 }
 
-TEST_TEAR_DOWN(spfg_export_tests) {
+TEST_TEAR_DOWN(schema_exporting) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
 }
 
-
 char export_outbuf[sizeof(spfg_grxp_t)];
 
-TEST(spfg_export_tests, run_grid_export_should_not_err)
+TEST(schema_exporting, run_grid_export_should_not_err)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn_id;
@@ -245,29 +312,23 @@ TEST(spfg_export_tests, run_grid_export_should_not_err)
     TEST_ASSERT_EQUAL_STRING("", ((spfg_grxp_t *)export_outbuf)->data.dps[2].name.chars);
 }
 
+TEST_GROUP_RUNNER(schema_exporting) {
+    RUN_TEST_CASE(schema_exporting, run_grid_export_should_not_err);
+}
 
 // ---
 
-TEST_GROUP_RUNNER(spfg_lifecycle_tests) {
-    RUN_TEST_CASE(spfg_lifecycle_tests, init_twice_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, finish_twice_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_grid_should_not_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_grid_with_empty_name_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_grid_with_null_param_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_grid_beyond_max_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_block_name_should_set_result);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_block_name_with_null_param_should_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, create_block_name_should_not_overflow);
-    RUN_TEST_CASE(spfg_lifecycle_tests, setup_grid_should_not_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, run_grid_cycle_should_not_err);
-    RUN_TEST_CASE(spfg_lifecycle_tests, run_grid_cycle_should_stop_on_callback);
-    RUN_TEST_CASE(spfg_export_tests, run_grid_export_should_not_err);
+static void run_all_tests(void)
+{
+    RUN_TEST_GROUP(initialization);
+    RUN_TEST_GROUP(grid_creation);
+    RUN_TEST_GROUP(function_creation);
+    RUN_TEST_GROUP(cycle_running);
+    RUN_TEST_GROUP(schema_exporting);
 }
 
-int main(void)
+int main(int argc, const char* argv[])
 {
-    UNITY_BEGIN();
-    RUN_TEST_GROUP(spfg_lifecycle_tests);
-    return UNITY_END();
+    return UnityMain(argc, argv, run_all_tests);
 }
 
