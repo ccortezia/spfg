@@ -1,6 +1,6 @@
 #include <string.h>
 #include "unity/unity_fixture.h"
-#include "spfg/spfg.h"
+#include "spfg.c"
 
 TEST_GROUP(spfg_lifecycle_tests);
 

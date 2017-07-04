@@ -6,7 +6,7 @@ COVERAGE = $(NAME).info
 CC = $(CROSS_COMPILE)gcc
 LINK = $(CROSS_COMPILE)gcc
 WFLAGS = -s WASM=1 -s EXPORT_ALL=1
-CFLAGS = -I${ROOT_PATH}/${STAGE_INC} -I${ROOT_PATH}/${STAGE_INC}/unity -g3 -O0 -std=c99 $(EXTRA_CFLAGS)
+CFLAGS = -I${ROOT_PATH}/src -I${ROOT_PATH}/${STAGE_INC} -I${ROOT_PATH}/${STAGE_INC}/unity -g3 -O0 -std=c99 $(EXTRA_CFLAGS)
 LDLIBS = -lspfg
 LDFLAGS = -g3 -L${ROOT_PATH}/${STAGE_LIB} $(EXTRA_LDFLAGS)
 EXTRA_SOURCES = ${ROOT_PATH}/lib/Unity/src/unity.c ${ROOT_PATH}/lib/Unity/extras/fixture/src/unity_fixture.c

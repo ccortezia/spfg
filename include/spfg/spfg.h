@@ -45,13 +45,12 @@ extern "C" {
 // Type definitions
 // ----------------------------------------------------------------------------
 
-typedef unsigned int spfg_ts_t;
 typedef signed char spfg_err_t;
 typedef unsigned char spfg_gr_id_t;
 typedef unsigned int spfg_dp_id_t;
 typedef unsigned int spfg_fn_id_t;
+typedef unsigned int spfg_ts_t;
 typedef unsigned short spfg_phase_t;
-typedef unsigned short spfg_step_t;
 
 typedef int spfg_int_t;
 typedef double spfg_real_t;
@@ -74,75 +73,7 @@ typedef enum spfg_fn_type_e {
  } spfg_fn_type_t;
 
 
-
-typedef struct spfg_block_name {
-    char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
-} spfg_block_name_t;
-
-
-typedef struct spfg_dp {
-    spfg_dp_id_t id;
-    spfg_dp_type_t type;
-    spfg_block_name_t name;
-    spfg_boolean_t emitted;
-    union value_u {
-        spfg_real_t real;
-        spfg_int_t integer;
-        spfg_boolean_t boolean;
-    } value;
-} spfg_dp_t;
-
-typedef struct spfg_fn {
-    spfg_fn_id_t id;
-    spfg_fn_type_t type;
-    spfg_block_name_t name;
-    spfg_phase_t phase;
-    spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
-    size_t in_dp_ids_len;
-    spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
-    size_t out_dp_ids_len;
-} spfg_fn_t;
-
-typedef struct spfg_fnx {
-    spfg_fn_t *fn;
-    spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
-    spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
-} spfg_fnx_t;
-
-typedef struct spfg_gr_ctl {
-    spfg_phase_t curr_phase;
-    spfg_step_t curr_fnx_idx;
-}  spfg_gr_ctl_t;
-
-typedef struct spfg_gr {
-    spfg_gr_id_t id;
-    spfg_block_name_t name;
-    spfg_dp_t dps[SPFG_MAX_GRID_DPS];
-    spfg_fn_t fns[SPFG_MAX_GRID_FNS];
-    spfg_gr_ctl_t ctl;
-} spfg_gr_t;
-
-typedef struct spfg_grx {
-    spfg_gr_t *gr;
-    spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
-} spfg_grx_t;
-
-
-typedef struct spfg_grxph {
-} spfg_grxph_t;
-
-typedef struct spfg_grxp {
-    spfg_grxph_t header;
-    spfg_gr_t data;
-} spfg_grxp_t;
-
 typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata);
-
-// ----------------------------------------------------------------------------
-// Utility API
-// ----------------------------------------------------------------------------
-
-spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name);
 
 // ----------------------------------------------------------------------------
 // Initialization API
