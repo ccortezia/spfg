@@ -29,9 +29,13 @@ extern spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *n
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
-    strncpy(name->chars, ascii, SPFG_BLOCK_NAME_MAX_LENGTH);
-    name->chars[SPFG_BLOCK_NAME_MAX_LENGTH - 1] = 0;
-    name->len = strnlen(name->chars, SPFG_BLOCK_NAME_MAX_LENGTH);
+    if (strnlen(ascii, sizeof(name->chars)) >= sizeof(name->chars)) {
+        return SPFG_ERROR_BUFFER_OVERFLOW;
+    }
+
+    memset(name->chars, 0, sizeof(name->chars));
+    strcpy(name->chars, ascii);
+    name->chars[sizeof(name->chars) - 1] = 0;
     return SPFG_ERROR_NO;
 }
 

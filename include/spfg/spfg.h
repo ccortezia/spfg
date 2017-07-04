@@ -77,7 +77,6 @@ typedef enum spfg_fn_type_e {
 
 typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
-    size_t len;
 } spfg_block_name_t;
 
 

@@ -45,9 +45,8 @@ TEST(spfg_lifecycle_tests, create_block_name_with_null_param_should_err)
 TEST(spfg_lifecycle_tests, create_block_name_should_not_overflow)
 {
     spfg_block_name_t name;
-    const char ascii[SPFG_BLOCK_NAME_MAX_LENGTH + 1] = "ccccccccccccccccccccJ";
+    const char ascii[SPFG_BLOCK_NAME_MAX_LENGTH + 1] = "ccccccccccccccccccc";
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_block_name_create(ascii, &name));
-    TEST_ASSERT_EQUAL(SPFG_BLOCK_NAME_MAX_LENGTH - 1, name.len);
     TEST_ASSERT_EQUAL_STRING("ccccccccccccccccccc", name.chars);
 }
 
