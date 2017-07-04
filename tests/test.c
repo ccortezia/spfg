@@ -1,6 +1,6 @@
 #include <string.h>
 #include "unity/unity_fixture.h"
-#include "spfg.c"
+#include "spfg/spfg.h"
 
 // ------------------------------------------------------------------------------------------------
 
@@ -29,46 +29,6 @@ TEST(initialization, finish_twice_should_err)
 TEST_GROUP_RUNNER(initialization) {
     RUN_TEST_CASE(initialization, init_twice_should_err);
     RUN_TEST_CASE(initialization, finish_twice_should_err);
-}
-
-// ------------------------------------------------------------------------------------------------
-
-TEST_GROUP(spfg_private_nameblock_tests);
-
-TEST_SETUP(spfg_private_nameblock_tests) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(spfg_private_nameblock_tests) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
-
-TEST(spfg_private_nameblock_tests, create_block_name_should_set_result)
-{
-    spfg_block_name_t name;
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_block_name_create("block name", &name));
-    TEST_ASSERT_EQUAL_STRING("block name", name.chars);
-}
-
-TEST(spfg_private_nameblock_tests, create_block_name_with_null_param_should_err)
-{
-    spfg_block_name_t name;
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_block_name_create(NULL, &name));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_block_name_create("block name", NULL));
-}
-
-TEST(spfg_private_nameblock_tests, create_block_name_should_not_overflow)
-{
-    spfg_block_name_t name;
-    const char ascii[SPFG_BLOCK_NAME_MAX_LENGTH + 1] = "ccccccccccccccccccc";
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_block_name_create(ascii, &name));
-    TEST_ASSERT_EQUAL_STRING("ccccccccccccccccccc", name.chars);
-}
-
-TEST_GROUP_RUNNER(spfg_private_nameblock_tests) {
-    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_should_set_result);
-    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_with_null_param_should_err);
-    RUN_TEST_CASE(spfg_private_nameblock_tests, create_block_name_should_not_overflow);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -286,9 +246,9 @@ TEST_TEAR_DOWN(schema_exporting) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
 }
 
-char export_outbuf[sizeof(spfg_grxp_t)];
+char export_outbuf[1024 * 20];
 
-TEST(schema_exporting, run_grid_export_should_not_err)
+TEST(schema_exporting, run_grid_export_parameter_validation)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn_id;
@@ -304,15 +264,13 @@ TEST(schema_exporting, run_grid_export_should_not_err)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 1, out_dps, 1, "fn1", &fn_id));
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_schema(gr_id, export_outbuf, sizeof(export_outbuf)));
-    TEST_ASSERT_EQUAL_STRING("fn1", ((spfg_grxp_t *)export_outbuf)->data.fns[0].name.chars);
-    TEST_ASSERT_EQUAL_STRING("", ((spfg_grxp_t *)export_outbuf)->data.fns[1].name.chars);
-    TEST_ASSERT_EQUAL_STRING("dp0p0", ((spfg_grxp_t *)export_outbuf)->data.dps[0].name.chars);
-    TEST_ASSERT_EQUAL_STRING("dp0p1", ((spfg_grxp_t *)export_outbuf)->data.dps[1].name.chars);
-    TEST_ASSERT_EQUAL_STRING("", ((spfg_grxp_t *)export_outbuf)->data.dps[2].name.chars);
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_gr_export_schema(gr_id, export_outbuf, 1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_INVALID_GR_ID, spfg_gr_export_schema(-1, export_outbuf, sizeof(export_outbuf)));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_export_schema(gr_id, 0, sizeof(export_outbuf)));
 }
 
 TEST_GROUP_RUNNER(schema_exporting) {
-    RUN_TEST_CASE(schema_exporting, run_grid_export_should_not_err);
+    RUN_TEST_CASE(schema_exporting, run_grid_export_parameter_validation);
 }
 
 // ---
