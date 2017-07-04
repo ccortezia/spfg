@@ -212,7 +212,6 @@ typedef struct test_cb_ctl {
 
 spfg_err_t cycle_callback_stop_ctl(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata) {
     test_loop_ctl_t *ctl = (test_loop_ctl_t *)cdata;
-    printf("counter: %d\n", ctl->counter);
     if (ctl->stop_at >= 0 && ctl->counter == ctl->stop_at) {
         return SPFG_LOOP_CONTROL_STOP;
     }

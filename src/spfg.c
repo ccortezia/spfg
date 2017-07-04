@@ -2,17 +2,17 @@
 #include <stdio.h>
 #include "spfg/spfg.h"
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Local macros
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #define SPFG_GR_ID0 1
 #define GEN_SPFG_DP_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + idx + 1)
 #define GEN_SPFG_FN_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + idx + 1)
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Private Type Definitions
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 typedef unsigned short spfg_step_t;
 
@@ -76,9 +76,9 @@ typedef struct spfg_grxp {
 } spfg_grxp_t;
 
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Private Library Data
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 static spfg_gr_t global_grs[SPFG_GR_TOTAL];
 static spfg_grx_t global_grxs[SPFG_GR_TOTAL];
@@ -86,11 +86,11 @@ static spfg_grx_t global_grxs[SPFG_GR_TOTAL];
 static char initialized;
 
 
-// ----------------------------------------------------------------------------
-// Utility API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
+// Private utilities
+// -------------------------------------------------------------------------------------------------
 
-extern spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name)
+static spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name)
 {
     if (!name) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -267,85 +267,11 @@ static spfg_err_t clear_changed_input_for_fnx(spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
+// -------------------------------------------------------------------------------------------------
+// Private Grid Composition API
+// -------------------------------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// Initialization API
-// ----------------------------------------------------------------------------
-
-extern spfg_err_t spfg_init()
-{
-    if (initialized) {
-        return SPFG_ERROR_ALREADY_INITIALIZED;
-    }
-
-    // TODO: check if ID0's for internal data won't overflow runtime storage size for the id types.
-
-    memset(global_grs, 0, sizeof(global_grs));
-    memset(global_grxs, 0, sizeof(global_grxs));
-
-    initialized = 1;
-
-    return SPFG_ERROR_NO;
-}
-
-extern spfg_err_t spfg_finish()
-{
-    if (!initialized) {
-        return SPFG_ERROR_NOT_INITIALIZED;
-    }
-
-    memset(global_grs, 0, sizeof(global_grs));
-    memset(global_grxs, 0, sizeof(global_grxs));
-
-    initialized = 0;
-
-    return SPFG_ERROR_NO;
-}
-
-// ----------------------------------------------------------------------------
-// Grid Composition API
-// ----------------------------------------------------------------------------
-
-extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if (!gr_id) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    spfg_gr_t *gr;
-    unsigned int gr_idx;
-
-    if ((err = find_free_global_gr(&gr_idx, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    if ((err = spfg_block_name_create(name, &gr->name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    global_grxs[gr_idx].gr = gr;
-    gr->id = gr_idx + SPFG_GR_ID0;
-
-    *gr_id = gr->id;
-
-    return SPFG_ERROR_NO;
-}
-
-extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-// ---
-
-extern spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
+static spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
@@ -367,118 +293,6 @@ extern spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_
 
     return SPFG_ERROR_NO;
 }
-
-extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!dp_id) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    spfg_gr_t *gr;
-
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    unsigned int dp_idx;
-    spfg_dp_t *dp;
-
-    if ((err = find_free_gr_dp(gr, &dp_idx, &dp)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    if ((err = spfg_dp_gr_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    *dp_id = dp->id;
-
-    return SPFG_ERROR_NO;
-}
-
-
-extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-
-extern spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-
-extern spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-
-static spfg_err_t _spfg_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
-{
-    dp->emitted = dp->value.boolean != value;
-    dp->value.boolean = value;
-    return SPFG_ERROR_NO;
-}
-
-extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t value)
-{
-    spfg_err_t err;
-    spfg_dp_t *dp;
-    spfg_gr_t *gr;
-
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    if ((err = resolve_gr_dp(gr, dp_id, &dp)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_DP_ID;
-    }
-
-    return _spfg_dp_set_bool(dp, value);
-}
-
-extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
-{
-    spfg_err_t err;
-    spfg_dp_t *dp;
-    spfg_gr_t *gr;
-
-    if (!value) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    if ((err = resolve_gr_dp(gr, dp_id, &dp)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_DP_ID;
-    }
-
-    *value = dp->value.boolean;
-
-    if (emitted) {
-        *emitted = dp->value.boolean;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-
-extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-// ---
 
 static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
 {
@@ -535,72 +349,16 @@ static spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
 }
 
 
-extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
-                                 spfg_fn_type_t type,
-                                 spfg_phase_t phase,
-                                 spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
-                                 spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
-                                 const char *name,
-                                 spfg_fn_id_t *fn_id)
+// -------------------------------------------------------------------------------------------------
+// Private Grid Evaluation API
+// -------------------------------------------------------------------------------------------------
+
+static spfg_err_t impl_spfg_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
 {
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    // Resolve input id into local memory references.
-
-    unsigned int gr_idx;
-
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    spfg_gr_t *gr = &global_grs[gr_idx];
-    spfg_grx_t *grx = &global_grxs[gr_idx];
-
-    // Evolve grid schema (generic memory construction).
-
-    unsigned int fn_idx;
-    spfg_fn_t *fn;
-
-    if ((err = find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    if ((err = spfg_fn_gr_create(gr, fn_idx, type, phase,
-                               in_dp_ids, in_dp_ids_len,
-                               out_dp_ids, out_dp_ids_len,
-                               name)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    // Review function indexing (specific to local memory construction).
-
-    spfg_fnx_t *fnx = &grx->fnx[fn_idx];
-    fnx->fn = fn;
-
-    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
-        return SPFG_ERROR_REINDEX_FN;
-    }
-
-    *fn_id = fn->id;
-
+    dp->emitted = dp->value.boolean != value;
+    dp->value.boolean = value;
     return SPFG_ERROR_NO;
 }
-
-
-extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
-{
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
-
-
-// ----------------------------------------------------------------------------
-// Grid Evaluation API
-// ----------------------------------------------------------------------------
 
 static spfg_err_t impl_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
 {
@@ -620,15 +378,12 @@ static spfg_err_t spfg_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
         return err;
     }
 
-    if ((err = _spfg_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
+    if ((err = impl_spfg_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
         return err;
     }
 
     return SPFG_ERROR_NO;
 }
-
-// ---
-
 
 static spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
 
@@ -729,6 +484,253 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
     return SPFG_ERROR_NO;
 }
 
+// -------------------------------------------------------------------------------------------------
+// Initialization API
+// -------------------------------------------------------------------------------------------------
+
+extern spfg_err_t spfg_init()
+{
+    if (initialized) {
+        return SPFG_ERROR_ALREADY_INITIALIZED;
+    }
+
+    // TODO: check if ID0's for internal data won't overflow runtime storage size for the id types.
+
+    memset(global_grs, 0, sizeof(global_grs));
+    memset(global_grxs, 0, sizeof(global_grxs));
+
+    initialized = 1;
+
+    return SPFG_ERROR_NO;
+}
+
+extern spfg_err_t spfg_finish()
+{
+    if (!initialized) {
+        return SPFG_ERROR_NOT_INITIALIZED;
+    }
+
+    memset(global_grs, 0, sizeof(global_grs));
+    memset(global_grxs, 0, sizeof(global_grxs));
+
+    initialized = 0;
+
+    return SPFG_ERROR_NO;
+}
+
+// -------------------------------------------------------------------------------------------------
+// Public Grid Composition API
+// -------------------------------------------------------------------------------------------------
+
+extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
+{
+    spfg_err_t err = SPFG_ERROR_NO;
+
+    if (!gr_id) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    spfg_gr_t *gr;
+    unsigned int gr_idx;
+
+    if ((err = find_free_global_gr(&gr_idx, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_OUT_OF_SLOTS;
+    }
+
+    if ((err = spfg_block_name_create(name, &gr->name)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    global_grxs[gr_idx].gr = gr;
+    gr->id = gr_idx + SPFG_GR_ID0;
+
+    *gr_id = gr->id;
+
+    return SPFG_ERROR_NO;
+}
+
+extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+// ---
+
+extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+{
+    spfg_err_t err = SPFG_ERROR_NO;
+
+    if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (!dp_id) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    spfg_gr_t *gr;
+
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    unsigned int dp_idx;
+    spfg_dp_t *dp;
+
+    if ((err = find_free_gr_dp(gr, &dp_idx, &dp)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_OUT_OF_SLOTS;
+    }
+
+    if ((err = spfg_dp_gr_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+        return err;
+    }
+
+    *dp_id = dp->id;
+
+    return SPFG_ERROR_NO;
+}
+
+
+extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+// ---
+
+extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
+                                 spfg_fn_type_t type,
+                                 spfg_phase_t phase,
+                                 spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
+                                 spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
+                                 const char *name,
+                                 spfg_fn_id_t *fn_id)
+{
+    spfg_err_t err = SPFG_ERROR_NO;
+
+    if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    // Resolve input id into local memory references.
+
+    unsigned int gr_idx;
+
+    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    spfg_gr_t *gr = &global_grs[gr_idx];
+    spfg_grx_t *grx = &global_grxs[gr_idx];
+
+    // Evolve grid schema (generic memory construction).
+
+    unsigned int fn_idx;
+    spfg_fn_t *fn;
+
+    if ((err = find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_OUT_OF_SLOTS;
+    }
+
+    if ((err = spfg_fn_gr_create(gr, fn_idx, type, phase,
+                               in_dp_ids, in_dp_ids_len,
+                               out_dp_ids, out_dp_ids_len,
+                               name)) != SPFG_ERROR_NO) {
+        return err;
+    }
+
+    // Review function indexing (specific to local memory construction).
+
+    spfg_fnx_t *fnx = &grx->fnx[fn_idx];
+    fnx->fn = fn;
+
+    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+        fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
+        return SPFG_ERROR_REINDEX_FN;
+    }
+
+    *fn_id = fn->id;
+
+    return SPFG_ERROR_NO;
+}
+
+
+extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+
+// -------------------------------------------------------------------------------------------------
+// Public Grid Evaluation API
+// -------------------------------------------------------------------------------------------------
+
+extern spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+
+extern spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t value)
+{
+    spfg_err_t err;
+    spfg_dp_t *dp;
+    spfg_gr_t *gr;
+
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    if ((err = resolve_gr_dp(gr, dp_id, &dp)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    return impl_spfg_dp_set_bool(dp, value);
+}
+
+extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
+{
+    spfg_err_t err;
+    spfg_dp_t *dp;
+    spfg_gr_t *gr;
+
+    if (!value) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    if ((err = resolve_gr_dp(gr, dp_id, &dp)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    *value = dp->value.boolean;
+
+    if (emitted) {
+        *emitted = dp->value.boolean;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word)
+{
+    return SPFG_ERROR_UNIMPLEMENTED;
+}
+
+// ---
 
 extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 {
@@ -759,9 +761,9 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
 }
 
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Import / Export API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf_len)
 {
