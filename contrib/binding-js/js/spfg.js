@@ -115,7 +115,7 @@ SPFG = (function SPFG() {
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength - 1);
-        checkErr(module._spfg_dp_create(gridId, type, nameInPtr, idOutPtr));
+        checkErr(module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr));
         return module.getValue(idOutPtr, 'i32');
     }
 
@@ -158,7 +158,7 @@ SPFG = (function SPFG() {
         module.HEAPU32.set(outDpIdsArray, outDpIdsInPtr / 4);
 
         checkErr(module._spfg_fn_create(
-            gridId, type, phase,
+            gridId, functionTypes[type], phase,
             inDpIdsInPtr, inDpIds.length,
             outDpIdsInPtr, outDpIds.length,
             nameInPtr, idOutPtr));
