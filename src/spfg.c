@@ -299,6 +299,8 @@ static spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
+    // TODO: dp type validation
+
     if ((err = spfg_block_name_create(name, &gr->dps[dp_idx].name)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to set datapoint name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
