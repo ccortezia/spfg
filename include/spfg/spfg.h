@@ -1,7 +1,5 @@
 #ifndef __SPFG_H__
 
-#include <stddef.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,6 +45,7 @@ extern "C" {
 // Type definitions
 // ----------------------------------------------------------------------------
 
+typedef unsigned int length_t;
 typedef signed char spfg_err_t;
 typedef unsigned char spfg_gr_id_t;
 typedef unsigned int spfg_dp_id_t;
@@ -60,7 +59,7 @@ typedef char spfg_boolean_t;
 
 typedef struct word {
     char *str;
-    size_t len;
+    length_t len;
 } spfg_word_t;
 
 typedef enum spfg_dp_type_e {
@@ -102,8 +101,8 @@ spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t 
 spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                           spfg_fn_type_t type,
                           spfg_phase_t phase,
-                          spfg_dp_id_t *in_dp_ids, size_t in_dp_ids_len,
-                          spfg_dp_id_t *out_dp_ids, size_t out_dp_ids_len,
+                          spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len,
+                          spfg_dp_id_t *out_dp_ids, length_t out_dp_ids_len,
                           const char *name,
                           spfg_fn_id_t *fn_id);
 spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
@@ -119,7 +118,7 @@ spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb_t cb, 
 // Import / Export API
 // ----------------------------------------------------------------------------
 
-spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf_len);
+spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
 
 #ifdef __cplusplus
 }
