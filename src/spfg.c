@@ -722,7 +722,6 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     }
 
     spfg_gr_t *gr = &global_grs[gr_idx];
-    spfg_grx_t *grx = &global_grxs[gr_idx];
 
     // Validate datapoints against target function signature.
 
@@ -759,6 +758,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
     // Review function indexing (specific to local memory construction).
 
+    spfg_grx_t *grx = &global_grxs[gr_idx];
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
 
