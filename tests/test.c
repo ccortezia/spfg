@@ -352,14 +352,16 @@ TEST(schema_exporting, run_grid_export_parameter_validation)
     spfg_fn_id_t fn_id;
     spfg_dp_id_t dp0p0_id;
     spfg_dp_id_t dp0p1_id;
+    spfg_dp_id_t dp1p0_id;
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
 
-    spfg_dp_id_t in_dps[] = {dp0p0_id};
-    spfg_dp_id_t out_dps[] = {dp0p0_id};
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 1, out_dps, 1, "fn1", &fn_id));
+    spfg_dp_id_t in_dps[] = {dp0p0_id, dp0p1_id};
+    spfg_dp_id_t out_dps[] = {dp1p0_id};
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 1, "fn1", &fn_id));
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_schema(gr_id, export_outbuf, sizeof(export_outbuf)));
     TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_gr_export_schema(gr_id, export_outbuf, 1));
