@@ -907,8 +907,9 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf
         }
 
         if ((err = spfg_dp_gr_create(&grxp->data, dp_idx,
-                                   gr->dps[dp_idx].type,
-                                   gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
+                                     gr->dps[dp_idx].type,
+                                     gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
+            fprintf(stderr, "failed to export dp\n");
             return err;
         }
     }
@@ -920,13 +921,14 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, size_t outbuf
         }
 
         if ((err = spfg_fn_gr_create(&grxp->data, fn_idx,
-                                   gr->fns[fn_idx].type,
-                                   gr->fns[fn_idx].phase,
-                                   gr->fns[fn_idx].in_dp_ids,
-                                   gr->fns[fn_idx].in_dp_ids_len,
-                                   gr->fns[fn_idx].out_dp_ids,
-                                   gr->fns[fn_idx].out_dp_ids_len,
-                                   gr->fns[fn_idx].name.chars)) != SPFG_ERROR_NO) {
+                                     gr->fns[fn_idx].type,
+                                     gr->fns[fn_idx].phase,
+                                     gr->fns[fn_idx].in_dp_ids,
+                                     gr->fns[fn_idx].in_dp_ids_len,
+                                     gr->fns[fn_idx].out_dp_ids,
+                                     gr->fns[fn_idx].out_dp_ids_len,
+                                     gr->fns[fn_idx].name.chars)) != SPFG_ERROR_NO) {
+            fprintf(stderr, "failed to export fn\n");
             return err;
         }
     }
