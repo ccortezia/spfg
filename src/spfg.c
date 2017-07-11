@@ -644,10 +644,17 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
 
 extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
 {
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
+    spfg_err_t err;
+    spfg_gr_t *gr;
 
-// ---
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    memset(gr, 0, sizeof(spfg_gr_t));
+
+    return SPFG_ERROR_NO;
+}
 
 extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
 {

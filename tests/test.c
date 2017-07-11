@@ -72,11 +72,22 @@ TEST(grid_creation, create_grid_beyond_max_should_err)
     TEST_ASSERT_EQUAL(SPFG_ERROR_OUT_OF_SLOTS, spfg_gr_create(&gr_id, "valid name"));
 }
 
+TEST(grid_creation, remove_grid)
+{
+    spfg_gr_id_t gr_id;
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid grid name"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_INVALID_GR_ID, spfg_gr_remove(-1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_remove(gr_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "another grid name"));
+}
+
+
 TEST_GROUP_RUNNER(grid_creation) {
     RUN_TEST_CASE(grid_creation, create_grid_should_not_err);
     RUN_TEST_CASE(grid_creation, create_grid_with_empty_name_should_err);
     RUN_TEST_CASE(grid_creation, create_grid_with_null_param_should_err);
     RUN_TEST_CASE(grid_creation, create_grid_beyond_max_should_err);
+    RUN_TEST_CASE(grid_creation, remove_grid);
 }
 
 // ------------------------------------------------------------------------------------------------
