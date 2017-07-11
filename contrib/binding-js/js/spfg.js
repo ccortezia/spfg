@@ -1,6 +1,7 @@
 
 SPFG = (function SPFG() {
 
+    // Maps native error return codes.
     var errors = {
         SPFG_ERROR_NO:  0,
         SPFG_ERROR_BAD_PARAM_NULL_POINTER: -1,
@@ -21,37 +22,43 @@ SPFG = (function SPFG() {
         SPFG_ERROR_FN_INTEGRITY: -16
     };
 
+    // Maps native control return codes.
     var control = {
         SPFG_LOOP_CONTROL_STOP: 1,
     };
 
+    // Keys from this map are accepted as createDatapoint() parameter.
     var datapointTypes = {
-        'int': 1,
-        'real': 2,
         'bool': 3,
     };
 
+    // Keys from this map are accepted as .createFunction() parameter.
     var functionTypes = {
-        'inv(bool)->bool': 1,
         'and(bool,bool)->bool': 2,
     };
 
+    // Prepare custom exception function.
     CustomError = createCustomError();
 
+    // Private map to manage memory.
     var allocations = {};
 
     return {
-        // API functions
-        init: spfg_init,
-        finish: spfg_finish,
-        createGrid: spfg_gr_create,
-        removeGrid: spfg_gr_remove,
-        createDatapoint: spfg_dp_create,
-        removeDatapoint: spfg_dp_remove,
-        createFunction: spfg_fn_create,
-        removeFunction: spfg_fn_remove,
-        resetCycle: spfg_reset_cycle,
-        runCycle: spfg_run_cycle,
+        // Lifecycle functions
+        init: spfgInit,
+        finish: spfgFinish,
+
+        // Composition functions
+        createGrid: spfgCreateGrid,
+        createDatapoint: spfgCreateDatapoint,
+        createFunction: spfgCreateFunction,
+        removeGrid: spfgRemoveGrid,
+        removeDatapoint: spfgRemoveDatapoint,
+        removeFunction: spfgRemoveFunction,
+
+        // Evaluation functions
+        resetCycle: spfgResetCycle,
+        runCycle: spfgRunCycle,
 
         // Exported symbols
         codes: {
@@ -68,26 +75,32 @@ SPFG = (function SPFG() {
     // --------------------------------------------------------------
 
     /**
+     * Initializes the underlying library.
      *
+     * @return undefined
      */
-    function spfg_init() {
+    function spfgInit() {
         var module = getModule();
         cleanErr(module._spfg_init());
     }
 
     /**
+     * Finalizes the underlying library.
      *
+     * @return undefined
      */
-    function spfg_finish() {
+    function spfgFinish() {
         var module = getModule();
         cleanErr(module._spfg_finish());
     }
 
     /**
+     * Creates a grid.
      *
-     * @param string name
+     * @param string name: symbolic name for the grid
+     * @return number, the created grid id
      */
-    function spfg_gr_create(name) {
+    function spfgCreateGrid(name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
@@ -111,19 +124,27 @@ SPFG = (function SPFG() {
         return id;
     }
 
-    function spfg_gr_remove(id) {
+    /**
+     * Removes a grid.
+     *
+     * @param number gridId
+     * @return undefined
+     */
+    function spfgRemoveGrid(gridId) {
         var module = getModule();
-        cleanErr(module._spfg_gr_remove(id));
-        releaseAllocations(id, null, null);
+        cleanErr(module._spfg_gr_remove(gridId));
+        releaseAllocations(gridId, null, null);
     }
 
     /**
+     * Creates a grid datapoint.
      *
-     * @param number gridId
-     * @param string type
-     * @param string name
+     * @param number gridId: id of the target grid
+     * @param string type: refer to datapointTypes for the available types
+     * @param string name: symbolic name for the datapoint
+     * @return number, the created datapoint id
      */
-    function spfg_dp_create(gridId, type, name) {
+    function spfgCreateDatapoint(gridId, type, name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
@@ -151,23 +172,31 @@ SPFG = (function SPFG() {
         return id;
     }
 
-    function spfg_dp_remove(grId, dpId) {
+    /**
+     * Removes a grid datapoint.
+     *
+     * @param number gridId
+     * @param number datapointId
+     * @return undefined
+     */
+    function spfgRemoveDatapoint(gridId, datapointId) {
         var module = getModule();
-        cleanErr(module._spfg_dp_remove(grId, dpId));
-        releaseAllocations(grId, null, dpId);
+        cleanErr(module._spfg_dp_remove(gridId, datapointId));
+        releaseAllocations(gridId, null, datapointId);
     }
 
     /**
+     * Creates a grid function.
      *
-     * @param number gridId
-     * @param string type
-     * @param number phase
-     * @param array[number] inDpIds
-     * @param array[number] outDpIds
-     * @param string name
-     * @return number
+     * @param number gridId: id of the target grid
+     * @param string type: refer to functionType for the available types
+     * @param number phase: evaluation phase to attach the function to
+     * @param array[number] inDpIds: list of datapoint ids to use as input for the function
+     * @param array[number] outDpIds: list of datapoint ids to use as output for the function
+     * @param string name: symbolic name for the function
+     * @return number, the created function id
      */
-    function spfg_fn_create(gridId, type, phase, inDpIds, outDpIds, name) {
+    function spfgCreateFunction(gridId, type, phase, inDpIds, outDpIds, name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
@@ -216,30 +245,39 @@ SPFG = (function SPFG() {
         return id;
     }
 
-    function spfg_fn_remove(grId, dpId) {
+    /**
+     * Removes a grid function.
+     *
+     * @param number gridId
+     * @param number functionId
+     * @return undefined
+     */
+    function spfgRemoveFunction(gridId, functionId) {
         var module = getModule();
-        cleanErr(module._spfg_dp_remove(grId, dpId));
-        releaseAllocations(grId, null, dpId);
+        cleanErr(module._spfg_dp_remove(gridId, functionId));
+        releaseAllocations(gridId, null, functionId);
     }
 
     /**
+     * Restart the evaluation cycle for the given grid.
      *
-     * @param number gridId
+     * @param number gridId: id of the target grid
      * @return undefined
      */
-    function spfg_reset_cycle(gridId) {
+    function spfgResetCycle(gridId) {
         cleanErr(getModule()._spfg_reset_cycle(gridId));
     }
 
     /**
+     * Resumes the evaluation cycle for the given grid.
      *
-     * @param number gridId
-     * @param number timestamp
-     * @param function callback [optional]
-     * @param object context [optional]
+     * @param number gridId: id of the target grid
+     * @param number timestamp: number representing the passage of time
+     * @param function callback [optional]: called upon each cycle iteration
+     * @param object context [optional]: context to bind the callback upon each call
      * @return undefined
      */
-    function spfg_run_cycle(gridId, timestamp, callback, thisCtx) {
+    function spfgRunCycle(gridId, timestamp, callback, thisCtx) {
         var module = getModule();
         callback = (callback && thisCtx) ? callback.bind(thisCtx) : callback;
         var cbInPtr = (callback || 0) && module.Runtime.addFunction(callback);
@@ -258,9 +296,11 @@ SPFG = (function SPFG() {
     }
 
     /**
+     * Process an error code returned from the underlying API, and potentially throws an error
      *
-     * @param number err
-     * @param callback callback
+     * @param number err: return value from wrapped library
+     * @param function callback: called before throwing an error
+     * @throws SPFGError, in case of error
      */
     function cleanErr(err, callback) {
         if (err != errors.SPFG_ERROR_NO) {
@@ -270,7 +310,9 @@ SPFG = (function SPFG() {
     }
 
     /**
+     * Creates the custom library error.
      *
+     * @return function
      */
     function createCustomError() {
 
@@ -290,16 +332,42 @@ SPFG = (function SPFG() {
         return CustomError;
     }
 
+    /**
+     * Creates a key for the allocation map.
+     *
+     * @param number grId
+     * @param number fnId
+     * @param number dpId
+     * @return string, the lookup key
+     */
     function allocationKey(grId, fnId, dpId) {
         return grId + '/' + fnId + '/' + dpId;
     }
 
+    /**
+     * Takes note of the pointer for a dynamically allocated memory area, and add it to a
+     * pointer bucket for later deallocation.
+     *
+     * @param number grId
+     * @param number fnId
+     * @param number dpId
+     * @param number pointer
+     * @return undefined
+     */
     function markAllocation(grId, fnId, dpId, pointer) {
         var key = allocationKey(grId, fnId, dpId);
         allocations[key] = allocations[key] || [];
         allocations[key].push(pointer);
     }
 
+    /**
+     * Deallocates memory from the pointers in a bucket.
+     *
+     * @param number grId
+     * @param number fnId
+     * @param number dpId
+     * @return undefined
+     */
     function releaseAllocations(grId, fnId, dpId) {
         var module = getModule();
         var key = allocationKey(grId, fnId, dpId);
