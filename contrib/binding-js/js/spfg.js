@@ -16,7 +16,9 @@ SPFG = (function SPFG() {
         SPFG_ERROR_CYCLE_FAILURE: -11,
         SPFG_ERROR_UNIMPLEMENTED: -12,
         SPFG_ERROR_REINDEX_FN: -13,
-        SPFG_ERROR_BUFFER_OVERFLOW: -14,
+        SPFG_ERROR_VALIDATE_FN: -14,
+        SPFG_ERROR_BUFFER_OVERFLOW: -15,
+        SPFG_ERROR_FN_INTEGRITY: -16
     };
 
     var control = {
