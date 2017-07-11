@@ -441,32 +441,32 @@ static spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
 // Private Grid Evaluation API
 // -------------------------------------------------------------------------------------------------
 
-static spfg_err_t impl_spfg_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
+static spfg_err_t impl_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
 {
     dp->emitted = dp->value.boolean != value;
     dp->value.boolean = value;
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t impl_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
+static spfg_err_t impl_fn_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
 {
     *result = p0 && p1;
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
+static spfg_err_t eval_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_boolean_t out;
     spfg_err_t err;
 
-    if ((err = impl_and_bool_bool_ret_bool(
+    if ((err = impl_fn_and_bool_bool_ret_bool(
         fnx->in_dps[0]->value.boolean,
         fnx->in_dps[1]->value.boolean,
         &out)) != SPFG_ERROR_NO) {
         return err;
     }
 
-    if ((err = impl_spfg_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
+    if ((err = impl_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
         return err;
     }
 
@@ -484,7 +484,7 @@ static spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
 
         case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
         {
-            return spfg_fn_and_bool_bool_ret_bool(fnx, ts);
+            return eval_fn_and_bool_bool_ret_bool(fnx, ts);
         }
 
         default:
@@ -808,7 +808,7 @@ extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    return impl_spfg_dp_set_bool(dp, value);
+    return impl_dp_set_bool(dp, value);
 }
 
 extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
