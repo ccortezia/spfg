@@ -299,24 +299,21 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
 
     spfg_err_t err;
-    spfg_dp_t *tmp_dp;
 
     memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
 
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
+        if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i])) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
-        fnx->in_dps[i] = tmp_dp;
     }
 
     memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
 
     for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
+        if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i])) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
-        fnx->out_dps[i] = tmp_dp;
     }
 
     return SPFG_ERROR_NO;
