@@ -241,7 +241,7 @@ static spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx, spfg_fn_t **
 
 static spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
 {
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS; i++) {
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
 
         if (!fnx->in_dps[i]->name.chars[0]) {
             continue;
@@ -260,7 +260,7 @@ static spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
 
 static spfg_err_t clear_changed_input_for_fnx(spfg_fnx_t *fnx)
 {
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS; i++) {
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
         fnx->in_dps[i]->emitted = 0;
     }
 
@@ -303,7 +303,7 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
 
     memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
 
-    for (int i = 0; fnx->fn->in_dp_ids[i]; i++) {
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
         if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
@@ -312,7 +312,7 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
 
     memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
 
-    for (int i = 0; fnx->fn->out_dp_ids[i]; i++) {
+    for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
         if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &tmp_dp)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
