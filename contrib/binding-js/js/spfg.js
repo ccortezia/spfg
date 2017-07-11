@@ -38,14 +38,22 @@ SPFG = (function SPFG() {
 
     CustomError = createCustomError();
 
+    var allocations = {};
+
     return {
+        // API functions
         init: spfg_init,
         finish: spfg_finish,
         createGrid: spfg_gr_create,
+        removeGrid: spfg_gr_remove,
         createDatapoint: spfg_dp_create,
+        removeDatapoint: spfg_dp_remove,
         createFunction: spfg_fn_create,
+        removeFunction: spfg_fn_remove,
         resetCycle: spfg_reset_cycle,
         runCycle: spfg_run_cycle,
+
+        // Exported symbols
         codes: {
             dp: datapointTypes,
             fn: functionTypes,
@@ -64,7 +72,7 @@ SPFG = (function SPFG() {
      */
     function spfg_init() {
         var module = getModule();
-        checkErr(module._spfg_init());
+        cleanErr(module._spfg_init());
     }
 
     /**
@@ -72,7 +80,7 @@ SPFG = (function SPFG() {
      */
     function spfg_finish() {
         var module = getModule();
-        checkErr(module._spfg_finish());
+        cleanErr(module._spfg_finish());
     }
 
     /**
@@ -90,8 +98,23 @@ SPFG = (function SPFG() {
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength - 1);
-        checkErr(module._spfg_gr_create(idOutPtr, nameInPtr));
-        return module.getValue(idOutPtr, 'i32');
+        var err = module._spfg_gr_create(idOutPtr, nameInPtr);
+
+        cleanErr(err, function(){
+            module._free(idOutPtr);
+            module._free(nameInPtr);
+        });
+
+        var id = module.getValue(idOutPtr, 'i32');
+        markAllocation(id, null, null, idOutPtr);
+        markAllocation(id, null, null, nameInPtr);
+        return id;
+    }
+
+    function spfg_gr_remove(id) {
+        var module = getModule();
+        cleanErr(module._spfg_gr_remove(id));
+        releaseAllocations(id, null, null);
     }
 
     /**
@@ -115,8 +138,23 @@ SPFG = (function SPFG() {
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength - 1);
-        checkErr(module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr));
-        return module.getValue(idOutPtr, 'i32');
+        var err = module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr);
+
+        cleanErr(err, function(){
+            module._free(idOutPtr);
+            module._free(nameInPtr);
+        });
+
+        var id = module.getValue(idOutPtr, 'i32');
+        markAllocation(gridId, null, id, idOutPtr);
+        markAllocation(gridId, null, id, nameInPtr);
+        return id;
+    }
+
+    function spfg_dp_remove(grId, dpId) {
+        var module = getModule();
+        cleanErr(module._spfg_dp_remove(grId, dpId));
+        releaseAllocations(grId, null, dpId);
     }
 
     /**
@@ -157,13 +195,31 @@ SPFG = (function SPFG() {
         var outDpIdsInPtr = module._malloc(outDpIds.length * 4);
         module.HEAPU32.set(outDpIdsArray, outDpIdsInPtr / 4);
 
-        checkErr(module._spfg_fn_create(
+        var err = module._spfg_fn_create(
             gridId, functionTypes[type], phase,
             inDpIdsInPtr, inDpIds.length,
             outDpIdsInPtr, outDpIds.length,
-            nameInPtr, idOutPtr));
+            nameInPtr, idOutPtr);
 
-        return module.getValue(idOutPtr, 'i32');
+        cleanErr(err, function(){
+            module._free(idOutPtr);
+            module._free(nameInPtr);
+            module._free(inDpIdsInPtr);
+            module._free(outDpIdsInPtr);
+        });
+
+        var id = module.getValue(idOutPtr, 'i32');
+        markAllocation(gridId, id, null, idOutPtr);
+        markAllocation(gridId, id, null, nameInPtr);
+        markAllocation(gridId, id, null, inDpIdsInPtr);
+        markAllocation(gridId, id, null, outDpIdsInPtr);
+        return id;
+    }
+
+    function spfg_fn_remove(grId, dpId) {
+        var module = getModule();
+        cleanErr(module._spfg_dp_remove(grId, dpId));
+        releaseAllocations(grId, null, dpId);
     }
 
     /**
@@ -172,7 +228,7 @@ SPFG = (function SPFG() {
      * @return undefined
      */
     function spfg_reset_cycle(gridId) {
-        checkErr(getModule()._spfg_reset_cycle(gridId));
+        cleanErr(getModule()._spfg_reset_cycle(gridId));
     }
 
     /**
@@ -187,7 +243,7 @@ SPFG = (function SPFG() {
         var module = getModule();
         callback = (callback && thisCtx) ? callback.bind(thisCtx) : callback;
         var cbInPtr = (callback || 0) && module.Runtime.addFunction(callback);
-        checkErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
+        cleanErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
     }
 
     // --------------------------------------------------------------
@@ -195,7 +251,7 @@ SPFG = (function SPFG() {
     // --------------------------------------------------------------
 
     /**
-     *
+     * Retrieves the loaded wasm module
      */
     function getModule() {
         return window.ModuleSPFG;
@@ -204,9 +260,11 @@ SPFG = (function SPFG() {
     /**
      *
      * @param number err
+     * @param callback callback
      */
-    function checkErr(err) {
+    function cleanErr(err, callback) {
         if (err != errors.SPFG_ERROR_NO) {
+            callback && callback();
             throw new CustomError(err);
         }
     }
@@ -230,6 +288,22 @@ SPFG = (function SPFG() {
         CustomError.prototype = Object.create(Error.prototype);
         CustomError.prototype.constructor = CustomError;
         return CustomError;
+    }
+
+    function allocationKey(grId, fnId, dpId) {
+        return grId + '/' + fnId + '/' + dpId;
+    }
+
+    function markAllocation(grId, fnId, dpId, pointer) {
+        var key = allocationKey(grId, fnId, dpId);
+        allocations[key] = allocations[key] || [];
+        allocations[key].push(pointer);
+    }
+
+    function releaseAllocations(grId, fnId, dpId) {
+        var module = getModule();
+        var key = allocationKey(grId, fnId, dpId);
+        (allocations[key] || []).forEach(module._free.bind(module));
     }
 
 })();

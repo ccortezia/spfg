@@ -35,8 +35,9 @@ describe("SPFG grid", function() {
     expect(SPFG.createGrid.bind(SPFG.createGrid, '')).toThrowError('needs a non-empty name');
   });
 
-  xit("removal should work with valid id", function() {
-    // TODO
+  it("removal should work with valid id", function() {
+    var id = SPFG.createGrid.bind(SPFG.createGrid, 'gr0');
+    expect(SPFG.removeGrid.bind(SPFG.removeGrid, id)).not.toThrow();
   });
 });
 
@@ -66,8 +67,9 @@ describe("SPFG datapoint", function() {
     expect(SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'booleanus', 'dp0')).toThrowError('needs a valid datapoint type');
   });
 
-  xit("removal should work with valid id", function() {
-    // TODO
+  it("removal should work with valid id", function() {
+    var id = SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'booleanus', 'dp0');
+    expect(SPFG.removeDatapoint.bind(SPFG.removeFunction, gr0, id)).not.toThrow();
   });
 });
 
@@ -103,8 +105,9 @@ describe("SPFG function", function() {
       gr0, 'blargh(bool,real)->real', 0, [dp0, dp1], [dp2], 'fn0')).toThrow(Error('needs a valid function type'));
   });
 
-  xit("removal should work with valid id", function() {
-    // TODO
+  it("removal should work with valid id", function() {
+    var id = SPFG.createFunction.bind(SPFG.createFunction, gr0, 'blargh(bool,real)->real', 0, [dp0, dp1], [dp2], 'fn0');
+    expect(SPFG.removeFunction.bind(SPFG.removeFunction, gr0, id)).not.toThrow();
   });
 });
 
