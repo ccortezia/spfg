@@ -26,7 +26,8 @@ extern "C" {
 #define SPFG_ERROR_UNIMPLEMENTED           -12
 #define SPFG_ERROR_REINDEX_FN              -13
 #define SPFG_ERROR_VALIDATE_FN             -14
-#define SPFG_ERROR_BUFFER_OVERFLOW         -14
+#define SPFG_ERROR_BUFFER_OVERFLOW         -15
+#define SPFG_ERROR_FN_INTEGRITY            -16
 
 // ----------------------------------------------------------------------------
 // Storage sizes

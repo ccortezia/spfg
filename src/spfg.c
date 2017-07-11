@@ -709,10 +709,38 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
 
 extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
 {
-    return SPFG_ERROR_UNIMPLEMENTED;
-}
+    spfg_err_t err;
+    spfg_gr_t *gr;
+    spfg_dp_t *dp;
 
-// ---
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
+        if (!gr->fns[i].name.chars[0]) {
+            continue;
+        }
+        for (int j = 0; j < SPFG_MAX_FN_IN_DPS; j++) {
+            if (gr->fns[i].in_dp_ids[j] == dp_id) {
+                return SPFG_ERROR_FN_INTEGRITY;
+            }
+        }
+        for (int j = 0; j < SPFG_MAX_FN_OUT_DPS; j++) {
+            if (gr->fns[i].out_dp_ids[j] == dp_id) {
+                return SPFG_ERROR_FN_INTEGRITY;
+            }
+        }
+    }
+
+    if ((err = resolve_gr_dp(gr, dp_id, &dp)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    memset(dp, 0, sizeof(spfg_dp_t));
+
+    return SPFG_ERROR_NO;
+}
 
 extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                                  spfg_fn_type_t type,
