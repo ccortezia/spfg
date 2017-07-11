@@ -25,6 +25,7 @@ extern "C" {
 #define SPFG_ERROR_CYCLE_FAILURE           -11
 #define SPFG_ERROR_UNIMPLEMENTED           -12
 #define SPFG_ERROR_REINDEX_FN              -13
+#define SPFG_ERROR_VALIDATE_FN             -14
 #define SPFG_ERROR_BUFFER_OVERFLOW         -14
 
 // ----------------------------------------------------------------------------
@@ -33,8 +34,8 @@ extern "C" {
 
 #define SPFG_GR_TOTAL 1
 
-#define SPFG_MAX_FN_IN_DPS 2
-#define SPFG_MAX_FN_OUT_DPS 2
+#define SPFG_MAX_FN_IN_DPS 3
+#define SPFG_MAX_FN_OUT_DPS 3
 #define SPFG_MAX_GRID_FNS 64
 #define SPFG_MAX_GRID_DPS 256
 #define SPFG_MAX_PHASES SPFG_MAX_GRID_FNS
