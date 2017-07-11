@@ -165,6 +165,22 @@ static spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **d
     return SPFG_ERROR_NOT_FOUND;
 }
 
+static spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
+{
+    if (!fn) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
+        if (gr->fns[i].id == fn_id) {
+            *fn = &gr->fns[i];
+            return SPFG_ERROR_NO;
+        }
+    }
+
+    return SPFG_ERROR_NOT_FOUND;
+}
+
 static spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
 {
     if (!idx) {
@@ -779,10 +795,23 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     return SPFG_ERROR_NO;
 }
 
-
 extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
 {
-    return SPFG_ERROR_UNIMPLEMENTED;
+    spfg_err_t err;
+    spfg_gr_t *gr;
+    spfg_fn_t *fn;
+
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    if ((err = resolve_gr_fn(gr, fn_id, &fn)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_FN_ID;
+    }
+
+    memset(fn, 0, sizeof(spfg_fn_t));
+
+    return SPFG_ERROR_NO;
 }
 
 
