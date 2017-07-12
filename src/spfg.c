@@ -831,6 +831,8 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
     spfg_gr_t *gr;
     spfg_fn_t *fn;
 
+    // TODO: study if reindex is necessary
+
     if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
