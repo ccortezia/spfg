@@ -31,8 +31,7 @@ extern "C" {
 // Storage sizes
 // ----------------------------------------------------------------------------
 
-#define SPFG_GR_TOTAL 1
-
+#define SPFG_MAX_GRID_CNT 1
 #define SPFG_MAX_FN_IN_DPS 3
 #define SPFG_MAX_FN_OUT_DPS 3
 #define SPFG_MAX_GRID_FNS 64

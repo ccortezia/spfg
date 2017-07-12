@@ -66,7 +66,7 @@ TEST(grid_creation, create_grid_beyond_max_should_err)
 {
     spfg_gr_id_t gr_id;
 
-    for (int i = 0 ; i < SPFG_GR_TOTAL; i++) {
+    for (int i = 0 ; i < SPFG_MAX_GRID_CNT; i++) {
         TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
     }
     TEST_ASSERT_EQUAL(SPFG_ERROR_OUT_OF_SLOTS, spfg_gr_create(&gr_id, "valid name"));

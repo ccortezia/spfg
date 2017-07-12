@@ -80,8 +80,8 @@ typedef struct spfg_grxp {
 // Private Library Data
 // -------------------------------------------------------------------------------------------------
 
-static spfg_gr_t global_grs[SPFG_GR_TOTAL];
-static spfg_grx_t global_grxs[SPFG_GR_TOTAL];
+static spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
+static spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
 static char initialized;
 
@@ -120,7 +120,7 @@ static spfg_err_t find_global_gr(spfg_gr_id_t gr_id, unsigned int *idx)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    for (int i = 0; i < SPFG_GR_TOTAL; i++) {
+    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
         if (global_grs[i].id == gr_id) {
             *idx = i;
             return SPFG_ERROR_NO;
@@ -187,7 +187,7 @@ static spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    for (int i = 0; i < SPFG_GR_TOTAL; i++) {
+    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
 
         if (!global_grs[i].name.chars[0]) {
             *idx = i;
