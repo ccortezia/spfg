@@ -968,6 +968,8 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outb
 
     spfg_grxp_t *grxp = (spfg_grxp_t *)outbuf;
 
+    memset(grxp, 0, sizeof(spfg_grxp_t));
+
     for (int dp_idx = 0; dp_idx < SPFG_MAX_GRID_DPS; dp_idx++) {
 
         if (!gr->dps[dp_idx].name.chars[0]) {
@@ -978,6 +980,7 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outb
                                      gr->dps[dp_idx].type,
                                      gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
             fprintf(stderr, "failed to export dp\n");
+            memset(grxp, 0, sizeof(spfg_grxp_t));
             return err;
         }
     }
@@ -997,6 +1000,7 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outb
                                      gr->fns[fn_idx].out_dp_ids_len,
                                      gr->fns[fn_idx].name.chars)) != SPFG_ERROR_NO) {
             fprintf(stderr, "failed to export fn\n");
+            memset(grxp, 0, sizeof(spfg_grxp_t));
             return err;
         }
     }
