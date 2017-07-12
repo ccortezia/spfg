@@ -45,7 +45,6 @@ extern "C" {
 #define SPFG_MAX_GRID_FNS 64
 #define SPFG_MAX_GRID_DPS 256
 #define SPFG_MAX_PHASES SPFG_MAX_GRID_FNS
-
 #define SPFG_BLOCK_NAME_MAX_LENGTH 20
 
 // ----------------------------------------------------------------------------
@@ -64,7 +63,7 @@ typedef int spfg_int_t;
 typedef double spfg_real_t;
 typedef char spfg_boolean_t;
 
-typedef struct word {
+typedef struct word_s {
     char *str;
     length_t len;
 } spfg_word_t;
@@ -95,47 +94,41 @@ typedef struct spfg_info_s {
     unsigned int max_phases;
 } spfg_info_t;
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Initialization API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_init();
 spfg_err_t spfg_finish();
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Grid Composition API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_gr_create(spfg_gr_id_t *id, const char *name);
 spfg_err_t spfg_gr_remove(spfg_gr_id_t id);
-
 spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
 spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id);
-spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value);
-spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value);
-spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t value);
-spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted);
-spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word);
-
-spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
-                          spfg_fn_type_t type,
-                          spfg_phase_t phase,
-                          spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len,
-                          spfg_dp_id_t *out_dp_ids, length_t out_dp_ids_len,
-                          const char *name,
-                          spfg_fn_id_t *fn_id);
+spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id, spfg_fn_type_t type, spfg_phase_t phase,
+                          spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len, spfg_dp_id_t *out_dp_ids,
+                          length_t out_dp_ids_len, const char *name, spfg_fn_id_t *fn_id);
 spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Grid Evaluation API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id);
 spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata);
+spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value);
+spfg_err_t spfg_dp_set_real(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_real_t value);
+spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_word_t word);
+spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t value);
+spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted);
 
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Import / Export API
-// ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
 
