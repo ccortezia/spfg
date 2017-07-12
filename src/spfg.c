@@ -1001,3 +1001,28 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outb
 
     return SPFG_ERROR_NO;
 }
+
+// -------------------------------------------------------------------------------------------------
+// Inspection API
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t spfg_info(spfg_info_t *info)
+{
+    if (!info) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    memset(info, 0, sizeof(spfg_info_t));
+
+    info->version_major = VERSION_MAJOR;
+    info->version_minor = VERSION_MINOR;
+    info->version_patch = VERSION_PATCH;
+    info->max_grid_cnt = SPFG_MAX_GRID_CNT;
+    info->max_fn_in_dps = SPFG_MAX_FN_IN_DPS;
+    info->max_fn_out_dps = SPFG_MAX_FN_OUT_DPS;
+    info->max_grid_fns = SPFG_MAX_GRID_FNS;
+    info->max_grid_dps = SPFG_MAX_GRID_DPS;
+    info->max_phases = SPFG_MAX_PHASES;
+
+    return SPFG_ERROR_NO;
+}

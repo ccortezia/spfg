@@ -373,6 +373,38 @@ TEST_GROUP_RUNNER(schema_exporting) {
     RUN_TEST_CASE(schema_exporting, run_grid_export_parameter_validation);
 }
 
+// ------------------------------------------------------------------------------------------------
+
+TEST_GROUP(inspection);
+
+TEST_SETUP(inspection) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
+}
+
+TEST_TEAR_DOWN(inspection) {
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
+}
+
+TEST(inspection, spfg_info)
+{
+    spfg_info_t info;
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_info(NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_info(&info));
+    TEST_ASSERT_EQUAL(VERSION_MAJOR, info.version_major);
+    TEST_ASSERT_EQUAL(VERSION_MINOR, info.version_minor);
+    TEST_ASSERT_EQUAL(VERSION_PATCH, info.version_patch);
+    TEST_ASSERT_EQUAL(SPFG_MAX_GRID_CNT, info.max_grid_cnt);
+    TEST_ASSERT_EQUAL(SPFG_MAX_FN_IN_DPS, info.max_fn_in_dps);
+    TEST_ASSERT_EQUAL(SPFG_MAX_FN_OUT_DPS, info.max_fn_out_dps);
+    TEST_ASSERT_EQUAL(SPFG_MAX_GRID_FNS, info.max_grid_fns);
+    TEST_ASSERT_EQUAL(SPFG_MAX_GRID_DPS, info.max_grid_dps);
+    TEST_ASSERT_EQUAL(SPFG_MAX_PHASES, info.max_phases);
+}
+
+TEST_GROUP_RUNNER(inspection) {
+    RUN_TEST_CASE(inspection, spfg_info);
+}
+
 // ---
 
 static void run_all_tests(void)
@@ -383,6 +415,7 @@ static void run_all_tests(void)
     RUN_TEST_GROUP(datapoint_creation);
     RUN_TEST_GROUP(cycle_running);
     RUN_TEST_GROUP(schema_exporting);
+    RUN_TEST_GROUP(inspection);
 }
 
 int main(int argc, const char* argv[])

@@ -5,6 +5,14 @@ extern "C" {
 #endif
 
 // ----------------------------------------------------------------------------
+// Version Information
+// ----------------------------------------------------------------------------
+
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
+
+// ----------------------------------------------------------------------------
 // Error and Info return codes
 // ----------------------------------------------------------------------------
 
@@ -75,6 +83,18 @@ typedef enum spfg_fn_type_e {
 
 typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata);
 
+typedef struct spfg_info_s {
+    unsigned int version_major;
+    unsigned int version_minor;
+    unsigned int version_patch;
+    unsigned int max_grid_cnt;
+    unsigned int max_fn_in_dps;
+    unsigned int max_fn_out_dps;
+    unsigned int max_grid_fns;
+    unsigned int max_grid_dps;
+    unsigned int max_phases;
+} spfg_info_t;
+
 // ----------------------------------------------------------------------------
 // Initialization API
 // ----------------------------------------------------------------------------
@@ -118,6 +138,13 @@ spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb_t cb, 
 // ----------------------------------------------------------------------------
 
 spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
+
+// -------------------------------------------------------------------------------------------------
+// Inspection API
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t spfg_info(spfg_info_t *info);
+
 
 #ifdef __cplusplus
 }
