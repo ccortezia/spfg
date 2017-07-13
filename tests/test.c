@@ -221,7 +221,7 @@ TEST_TEAR_DOWN(cycle_running) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
 }
 
-TEST(cycle_running, run_grid_cycle_should_not_err)
+TEST(cycle_running, run_cycle)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn_id;
@@ -277,7 +277,7 @@ spfg_err_t cycle_callback_stop_ctl(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_
     return SPFG_ERROR_NO;
 }
 
-TEST(cycle_running, run_grid_cycle_should_stop_on_callback)
+TEST(cycle_running, run_cycle_with_callback)
 {
     spfg_gr_id_t gr_id;
     spfg_fn_id_t fn0p0_id;
@@ -328,8 +328,8 @@ TEST(cycle_running, run_grid_cycle_should_stop_on_callback)
 }
 
 TEST_GROUP_RUNNER(cycle_running) {
-    RUN_TEST_CASE(cycle_running, run_grid_cycle_should_not_err);
-    RUN_TEST_CASE(cycle_running, run_grid_cycle_should_stop_on_callback);
+    RUN_TEST_CASE(cycle_running, run_cycle);
+    RUN_TEST_CASE(cycle_running, run_cycle_with_callback);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -346,31 +346,53 @@ TEST_TEAR_DOWN(schema_exporting) {
 
 char export_outbuf[1024 * 20];
 
-TEST(schema_exporting, run_grid_export_parameter_validation)
+TEST(schema_exporting, export_import)
 {
-    spfg_gr_id_t gr_id;
+    spfg_gr_id_t gr0_id;
+    spfg_gr_id_t gr1_id;
+    spfg_gr_id_t gr2_id;
     spfg_fn_id_t fn_id;
     spfg_dp_id_t dp0p0_id;
-    spfg_dp_id_t dp0p1_id;
     spfg_dp_id_t dp1p0_id;
+    spfg_dp_id_t dp0p1_id;
+    spfg_boolean_t output;
+    spfg_boolean_t emitted;
 
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr0_id, "gr0"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
 
-    spfg_dp_id_t in_dps[] = {dp0p0_id, dp0p1_id};
-    spfg_dp_id_t out_dps[] = {dp1p0_id};
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 1, "fn1", &fn_id));
+    spfg_dp_id_t in_dps[] = {dp0p0_id, dp1p0_id};
+    spfg_dp_id_t out_dps[] = {dp0p1_id};
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr0_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps, 2, out_dps, 1, "fn1", &fn_id));
 
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_schema(gr_id, export_outbuf, sizeof(export_outbuf)));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_gr_export_schema(gr_id, export_outbuf, 1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_INVALID_GR_ID, spfg_gr_export_schema(-1, export_outbuf, sizeof(export_outbuf)));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_export_schema(gr_id, 0, sizeof(export_outbuf)));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp0p0_id, 1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp1p0_id, 1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr0_id, 0, NULL, NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr0_id, dp0p1_id, &output, &emitted));
+    TEST_ASSERT_EQUAL(1, output);
+    TEST_ASSERT_EQUAL(1, emitted);
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_gr_export_bin(gr0_id, export_outbuf, 1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_INVALID_GR_ID, spfg_gr_export_bin(-1, export_outbuf, sizeof(export_outbuf)));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_export_bin(gr0_id, 0, sizeof(export_outbuf)));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_bin(gr0_id, export_outbuf, sizeof(export_outbuf)));
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_import_bin(NULL, sizeof(export_outbuf), &gr1_id, "gr1"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_import_bin(export_outbuf, sizeof(export_outbuf), NULL, "gr1"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_import_bin(export_outbuf, sizeof(export_outbuf), &gr1_id, NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_INVALID_VALUE, spfg_gr_import_bin(export_outbuf, 1, &gr1_id, "gr1"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_import_bin(export_outbuf, sizeof(export_outbuf), &gr1_id, "gr1"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_OUT_OF_SLOTS, spfg_gr_import_bin(export_outbuf, sizeof(export_outbuf), &gr2_id, "gr2"));
+
+    TEST_ASSERT_NOT_EQUAL(0, gr1_id);
+    TEST_ASSERT_NOT_EQUAL(gr0_id, gr1_id);
 }
 
 TEST_GROUP_RUNNER(schema_exporting) {
-    RUN_TEST_CASE(schema_exporting, run_grid_export_parameter_validation);
+    RUN_TEST_CASE(schema_exporting, export_import);
 }
 
 // ------------------------------------------------------------------------------------------------

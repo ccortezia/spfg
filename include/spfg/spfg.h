@@ -39,7 +39,7 @@ extern "C" {
 // Storage sizes
 // ----------------------------------------------------------------------------
 
-#define SPFG_MAX_GRID_CNT 1
+#define SPFG_MAX_GRID_CNT 2
 #define SPFG_MAX_FN_IN_DPS 3
 #define SPFG_MAX_FN_OUT_DPS 3
 #define SPFG_MAX_GRID_FNS 64
@@ -130,7 +130,8 @@ spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean
 // Import / Export API
 // -------------------------------------------------------------------------------------------------
 
-spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
+spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
+spfg_err_t spfg_gr_import_bin(void *data, length_t data_len, spfg_gr_id_t *gr_id, const char *name);
 
 // -------------------------------------------------------------------------------------------------
 // Inspection API

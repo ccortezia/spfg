@@ -67,13 +67,13 @@ typedef struct spfg_grx {
     spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
 } spfg_grx_t;
 
-typedef struct spfg_grxph {
-} spfg_grxph_t;
+typedef struct spfg_gr_exph {
+} spfg_gr_exph_t;
 
-typedef struct spfg_grxp {
-    spfg_grxph_t header;
+typedef struct spfg_gr_exp {
+    spfg_gr_exph_t header;
     spfg_gr_t data;
-} spfg_grxp_t;
+} spfg_gr_exp_t;
 
 
 // -------------------------------------------------------------------------------------------------
@@ -946,7 +946,7 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
 // Import / Export API
 // -------------------------------------------------------------------------------------------------
 
-spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len)
+spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len)
 {
     spfg_err_t err;
 
@@ -954,56 +954,56 @@ spfg_err_t spfg_gr_export_schema(spfg_gr_id_t gr_id, void *outbuf, length_t outb
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    if (outbuf_len < sizeof(spfg_grxp_t)) {
+    if (outbuf_len < sizeof(spfg_gr_exp_t)) {
         return SPFG_ERROR_BUFFER_OVERFLOW;
     }
 
-    unsigned int gr_idx;
+    spfg_gr_t *gr;
 
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    spfg_gr_t *gr = &global_grs[gr_idx];
+    spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)outbuf;
+    memset(grxp, 0, sizeof(spfg_gr_exp_t));
+    memcpy(&grxp->data, gr, sizeof(spfg_gr_t));
 
-    spfg_grxp_t *grxp = (spfg_grxp_t *)outbuf;
+    return SPFG_ERROR_NO;
+}
 
-    memset(grxp, 0, sizeof(spfg_grxp_t));
+spfg_err_t spfg_gr_import_bin(void *data, length_t data_len, spfg_gr_id_t *gr_id, const char *name)
+{
+    spfg_err_t err;
 
-    for (int dp_idx = 0; dp_idx < SPFG_MAX_GRID_DPS; dp_idx++) {
-
-        if (!gr->dps[dp_idx].name.chars[0]) {
-            continue;
-        }
-
-        if ((err = spfg_dp_gr_create(&grxp->data, dp_idx,
-                                     gr->dps[dp_idx].type,
-                                     gr->dps[dp_idx].name.chars)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to export dp\n");
-            memset(grxp, 0, sizeof(spfg_grxp_t));
-            return err;
-        }
+    if (!data) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    for (int fn_idx = 0; fn_idx < SPFG_MAX_GRID_FNS; fn_idx++) {
-
-        if (!gr->fns[fn_idx].name.chars[0]) {
-            continue;
-        }
-
-        if ((err = spfg_fn_gr_create(&grxp->data, fn_idx,
-                                     gr->fns[fn_idx].type,
-                                     gr->fns[fn_idx].phase,
-                                     gr->fns[fn_idx].in_dp_ids,
-                                     gr->fns[fn_idx].in_dp_ids_len,
-                                     gr->fns[fn_idx].out_dp_ids,
-                                     gr->fns[fn_idx].out_dp_ids_len,
-                                     gr->fns[fn_idx].name.chars)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to export fn\n");
-            memset(grxp, 0, sizeof(spfg_grxp_t));
-            return err;
-        }
+    if (!gr_id) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
+
+    if (!name) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (data_len < sizeof(spfg_gr_exp_t)) {
+        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
+    }
+
+    if ((err = spfg_gr_create(gr_id, name)) != SPFG_ERROR_NO) {
+        return err;
+    }
+
+    spfg_gr_t *gr;
+
+    (void) resolve_global_gr(*gr_id, &gr);
+
+    spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)data;
+
+    memcpy(&gr->dps, &grxp->data.dps, sizeof(grxp->data.dps));
+    memcpy(&gr->fns, &grxp->data.fns, sizeof(grxp->data.fns));
+    memcpy(&gr->ctl, &grxp->data.ctl, sizeof(spfg_gr_ctl_t));
 
     return SPFG_ERROR_NO;
 }
