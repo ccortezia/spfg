@@ -38,9 +38,9 @@ typedef struct spfg_fn {
     spfg_block_name_t name;
     spfg_phase_t phase;
     spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
-    length_t in_dp_ids_len;
+    uint8_t in_dp_ids_len;
     spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
-    length_t out_dp_ids_len;
+    uint8_t out_dp_ids_len;
 } spfg_fn_t;
 
 typedef struct spfg_fnx {
@@ -337,7 +337,7 @@ static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], length_t length)
+static spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
     spfg_err_t err;
 
@@ -350,46 +350,46 @@ static spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_
     return SPFG_ERROR_NO;
 }
 
-static spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], length_t in_dps_len,
-                                        spfg_dp_t *out_dps[], length_t out_dps_len,
-                                        spfg_dp_type_t *in_dp_types, length_t in_dp_types_len,
-                                        spfg_dp_type_t *out_dp_types, length_t out_dp_types_len,
+static spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                                        spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
+                                        spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
                                         const char *fn_name) {
 
-    length_t cnt = 0;
+    uint8_t cnt = 0;
 
     if (in_dps_len < in_dp_types_len) {
-        fprintf(stderr, "%u missing input datapoints for function '%s' expecting %u input datapoints\n", in_dp_types_len - in_dps_len, fn_name, in_dp_types_len);
+        fprintf(stderr, "%d missing input datapoints for function '%s' expecting %d input datapoints\n", in_dp_types_len - in_dps_len, fn_name, in_dp_types_len);
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
     for (cnt = 0; cnt < in_dps_len && cnt < SPFG_MAX_FN_IN_DPS; cnt++) {
 
         if (cnt >= in_dp_types_len) {
-            fprintf(stderr, "unexpected input datapoint '%s' (position %u) for function '%s' expecting only %u input datapoints\n", in_dps[cnt]->name.chars, cnt, fn_name, in_dp_types_len);
+            fprintf(stderr, "unexpected input datapoint '%s' (position %d) for function '%s' expecting only %d input datapoints\n", in_dps[cnt]->name.chars, cnt, fn_name, in_dp_types_len);
             return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
         }
 
         if (in_dps[cnt]->type != in_dp_types[cnt]) {
-            fprintf(stderr, "input datapoint '%s' type %d is incompatible with expected input type %d (position %u) for function '%s'\n", in_dps[cnt]->name.chars, in_dps[cnt]->type, in_dp_types[cnt], cnt, fn_name);
+            fprintf(stderr, "input datapoint '%s' type %d is incompatible with expected input type %d (position %d) for function '%s'\n", in_dps[cnt]->name.chars, in_dps[cnt]->type, in_dp_types[cnt], cnt, fn_name);
             return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
         }
     }
 
     if (out_dps_len < out_dp_types_len) {
-        fprintf(stderr, "%u missing output datapoints for function '%s' expecting %u output datapoints\n", out_dp_types_len - out_dps_len, fn_name, out_dp_types_len);
+        fprintf(stderr, "%d missing output datapoints for function '%s' expecting %d output datapoints\n", out_dp_types_len - out_dps_len, fn_name, out_dp_types_len);
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
     for (cnt = 0; cnt < out_dps_len && cnt < SPFG_MAX_FN_OUT_DPS; cnt++) {
 
         if (cnt >= out_dp_types_len) {
-            fprintf(stderr, "unexpected output datapoint '%s' (position %u) for function '%s' expecting only %u output datapoints\n", out_dps[cnt]->name.chars, cnt, fn_name, out_dp_types_len);
+            fprintf(stderr, "unexpected output datapoint '%s' (position %d) for function '%s' expecting only %d output datapoints\n", out_dps[cnt]->name.chars, cnt, fn_name, out_dp_types_len);
             return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
         }
 
         if (out_dps[cnt]->type != out_dp_types[cnt]) {
-            fprintf(stderr, "output datapoint '%s' type %d is incompatible with expected output type %d (position %u) for function '%s'\n", out_dps[cnt]->name.chars, out_dps[cnt]->type, out_dp_types[cnt], cnt, fn_name);
+            fprintf(stderr, "output datapoint '%s' type %d is incompatible with expected output type %d (position %d) for function '%s'\n", out_dps[cnt]->name.chars, out_dps[cnt]->type, out_dp_types[cnt], cnt, fn_name);
             return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
         }
     }
@@ -398,8 +398,8 @@ static spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], length_t in_dps_len
 }
 
 static spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
-                                   spfg_dp_t *in_dps[], length_t in_dps_len,
-                                   spfg_dp_t *out_dps[], length_t out_dps_len,
+                                   spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                                   spfg_dp_t *out_dps[], uint8_t out_dps_len,
                                    const char *fn_name) {
 
     switch (type) {
@@ -431,8 +431,8 @@ static spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
 static spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
                                     spfg_fn_type_t type,
                                     spfg_phase_t phase,
-                                    spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len,
-                                    spfg_dp_id_t *out_dp_ids, length_t out_dp_ids_len,
+                                    spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
+                                    spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
                                     const char *name)
 {
     spfg_err_t err;
@@ -747,8 +747,8 @@ extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
 extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
                                  spfg_fn_type_t type,
                                  spfg_phase_t phase,
-                                 spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len,
-                                 spfg_dp_id_t *out_dp_ids, length_t out_dp_ids_len,
+                                 spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
+                                 spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
                                  const char *name,
                                  spfg_fn_id_t *fn_id)
 {
@@ -946,7 +946,7 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
 // Import / Export API
 // -------------------------------------------------------------------------------------------------
 
-spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len)
+spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, uint32_t outbuf_len)
 {
     spfg_err_t err;
 
@@ -971,7 +971,7 @@ spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t spfg_gr_import_bin(void *data, length_t data_len, spfg_gr_id_t *gr_id, const char *name)
+spfg_err_t spfg_gr_import_bin(void *data, uint32_t data_len, spfg_gr_id_t *gr_id, const char *name)
 {
     spfg_err_t err;
 

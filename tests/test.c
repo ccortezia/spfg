@@ -243,24 +243,24 @@ TEST(cycle_running, run_cycle)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, 0, NULL, NULL));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p1_id, &output, &emitted));
-    TEST_ASSERT_EQUAL(0, output);
-    TEST_ASSERT_EQUAL(0, emitted);
+    TEST_ASSERT_EQUAL(false, output);
+    TEST_ASSERT_EQUAL(false, emitted);
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr_id));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp0p0_id, 1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p0_id, 0));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp0p0_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p0_id, false));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, 0, NULL, NULL));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p1_id, &output, &emitted));
-    TEST_ASSERT_EQUAL(0, output);
-    TEST_ASSERT_EQUAL(0, emitted);
+    TEST_ASSERT_EQUAL(false, output);
+    TEST_ASSERT_EQUAL(false, emitted);
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr_id));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp0p0_id, 1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p0_id, 1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp0p0_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p0_id, true));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, 0, NULL, NULL));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p1_id, &output, &emitted));
-    TEST_ASSERT_EQUAL(1, output);
-    TEST_ASSERT_EQUAL(1, emitted);
+    TEST_ASSERT_EQUAL(true, output);
+    TEST_ASSERT_EQUAL(true, emitted);
 }
 
 typedef struct test_cb_ctl {
@@ -311,8 +311,8 @@ TEST(cycle_running, run_cycle_with_callback)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, 0, cycle_callback_stop_ctl, &loop_ctl_1));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p2_id, &output, &emitted));
     TEST_ASSERT_EQUAL(2, loop_ctl_1.counter);
-    TEST_ASSERT_EQUAL(0, output);
-    TEST_ASSERT_EQUAL(0, emitted);
+    TEST_ASSERT_EQUAL(false, output);
+    TEST_ASSERT_EQUAL(false, emitted);
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp0p0_id, 1));
@@ -320,11 +320,11 @@ TEST(cycle_running, run_cycle_with_callback)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, 0, cycle_callback_stop_ctl, &loop_ctl_2));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p1_id, &output, &emitted));
     TEST_ASSERT_EQUAL(1, loop_ctl_2.counter);
-    TEST_ASSERT_EQUAL(1, output);
-    TEST_ASSERT_EQUAL(1, emitted);
+    TEST_ASSERT_EQUAL(true, output);
+    TEST_ASSERT_EQUAL(true, emitted);
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p2_id, &output, &emitted));
-    TEST_ASSERT_EQUAL(0, output);
-    TEST_ASSERT_EQUAL(0, emitted);
+    TEST_ASSERT_EQUAL(false, output);
+    TEST_ASSERT_EQUAL(false, emitted);
 }
 
 TEST_GROUP_RUNNER(cycle_running) {
@@ -368,12 +368,12 @@ TEST(schema_exporting, export_import)
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr0_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps, 2, out_dps, 1, "fn1", &fn_id));
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr0_id));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp0p0_id, 1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp1p0_id, 1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr0_id, 0, NULL, NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp0p0_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp1p0_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr0_id, false, NULL, NULL));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr0_id, dp0p1_id, &output, &emitted));
-    TEST_ASSERT_EQUAL(1, output);
-    TEST_ASSERT_EQUAL(1, emitted);
+    TEST_ASSERT_EQUAL(true, output);
+    TEST_ASSERT_EQUAL(true, emitted);
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_gr_export_bin(gr0_id, export_outbuf, 1));
     TEST_ASSERT_EQUAL(SPFG_ERROR_INVALID_GR_ID, spfg_gr_export_bin(-1, export_outbuf, sizeof(export_outbuf)));

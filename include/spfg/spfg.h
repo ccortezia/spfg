@@ -1,5 +1,8 @@
 #ifndef __SPFG_H__
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,21 +54,20 @@ extern "C" {
 // Type definitions
 // ----------------------------------------------------------------------------
 
-typedef unsigned int length_t;
-typedef signed char spfg_err_t;
-typedef unsigned char spfg_gr_id_t;
-typedef unsigned int spfg_dp_id_t;
-typedef unsigned int spfg_fn_id_t;
-typedef unsigned int spfg_ts_t;
-typedef unsigned short spfg_phase_t;
+typedef int8_t spfg_err_t;
+typedef uint8_t spfg_gr_id_t;
+typedef uint16_t spfg_dp_id_t;
+typedef uint16_t spfg_fn_id_t;
+typedef uint32_t spfg_ts_t;
+typedef uint16_t spfg_phase_t;
 
-typedef int spfg_int_t;
+typedef int32_t spfg_int_t;
 typedef double spfg_real_t;
-typedef char spfg_boolean_t;
+typedef bool spfg_boolean_t;
 
 typedef struct word_s {
     char *str;
-    length_t len;
+    uint16_t len;
 } spfg_word_t;
 
 typedef enum spfg_dp_type_e {
@@ -110,8 +112,9 @@ spfg_err_t spfg_gr_remove(spfg_gr_id_t id);
 spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
 spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id);
 spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id, spfg_fn_type_t type, spfg_phase_t phase,
-                          spfg_dp_id_t *in_dp_ids, length_t in_dp_ids_len, spfg_dp_id_t *out_dp_ids,
-                          length_t out_dp_ids_len, const char *name, spfg_fn_id_t *fn_id);
+                          spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
+                          spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
+                          const char *name, spfg_fn_id_t *fn_id);
 spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id);
 
 // -------------------------------------------------------------------------------------------------
@@ -130,8 +133,8 @@ spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean
 // Import / Export API
 // -------------------------------------------------------------------------------------------------
 
-spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, length_t outbuf_len);
-spfg_err_t spfg_gr_import_bin(void *data, length_t data_len, spfg_gr_id_t *gr_id, const char *name);
+spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, uint32_t outbuf_len);
+spfg_err_t spfg_gr_import_bin(void *data, uint32_t data_len, spfg_gr_id_t *gr_id, const char *name);
 
 // -------------------------------------------------------------------------------------------------
 // Inspection API
