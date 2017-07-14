@@ -58,8 +58,8 @@ typedef int8_t spfg_err_t;
 typedef uint8_t spfg_gr_id_t;
 typedef uint16_t spfg_dp_id_t;
 typedef uint16_t spfg_fn_id_t;
-typedef uint32_t spfg_ts_t;
 typedef uint16_t spfg_phase_t;
+typedef uint32_t spfg_ts_t;
 
 typedef int32_t spfg_int_t;
 typedef double spfg_real_t;
@@ -84,16 +84,23 @@ typedef enum spfg_fn_type_e {
 
 typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata);
 
+typedef spfg_gr_id_t spfg_gr_cnt_t;
+typedef spfg_dp_id_t spfg_gr_dp_cnt_t;
+typedef spfg_fn_id_t spfg_gr_fn_cnt_t;
+typedef spfg_phase_t spfg_gr_phase_cnt_t;
+typedef uint8_t spfg_fn_dp_in_cnt_t;
+typedef uint8_t spfg_fn_dp_out_cnt_t;
+
 typedef struct spfg_info_s {
-    unsigned int version_major;
-    unsigned int version_minor;
-    unsigned int version_patch;
-    unsigned int max_grid_cnt;
-    unsigned int max_fn_in_dps;
-    unsigned int max_fn_out_dps;
-    unsigned int max_grid_fns;
-    unsigned int max_grid_dps;
-    unsigned int max_phases;
+    uint16_t version_major;
+    uint16_t version_minor;
+    uint16_t version_patch;
+    spfg_fn_dp_in_cnt_t max_fn_in_dps;
+    spfg_fn_dp_out_cnt_t max_fn_out_dps;
+    spfg_gr_cnt_t max_grid_cnt;
+    spfg_gr_dp_cnt_t max_grid_fns;
+    spfg_gr_fn_cnt_t max_grid_dps;
+    spfg_gr_phase_cnt_t max_phases;
 } spfg_info_t;
 
 // -------------------------------------------------------------------------------------------------
