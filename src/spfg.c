@@ -851,7 +851,7 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
 // Public Grid Evaluation API
 // -------------------------------------------------------------------------------------------------
 
-extern spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, int value)
+extern spfg_err_t spfg_dp_set_int(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_int_t value)
 {
     return SPFG_ERROR_UNIMPLEMENTED;
 }
