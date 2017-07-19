@@ -55,10 +55,10 @@ extern "C" {
 // ----------------------------------------------------------------------------
 
 typedef int8_t spfg_err_t;
-typedef uint8_t spfg_gr_id_t;
-typedef uint16_t spfg_dp_id_t;
-typedef uint16_t spfg_fn_id_t;
-typedef uint16_t spfg_phase_t;
+typedef uint32_t spfg_gr_id_t;
+typedef uint32_t spfg_dp_id_t;
+typedef uint32_t spfg_fn_id_t;
+typedef uint32_t spfg_phase_t;
 typedef uint32_t spfg_ts_t;
 
 typedef int32_t spfg_int_t;
