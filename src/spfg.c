@@ -674,6 +674,35 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
     return SPFG_ERROR_NO;
 }
 
+spfg_err_t spfg_gr_get_ids(spfg_gr_id_t *output, spfg_gr_cnt_t maxlen, spfg_gr_cnt_t *count)
+{
+    if (!output) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (!count) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    *count = 0;
+
+    for (uint32_t idx = 0; idx < SPFG_MAX_GRID_CNT; idx++) {
+
+        if (!global_grs[idx].name.chars[0]) {
+            break;
+        }
+
+        if (*count + 1 > maxlen) {
+            return SPFG_ERROR_BUFFER_OVERFLOW;
+        }
+
+        output[*count] = global_grs[idx].id;
+        *count += 1;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
 extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
 {
     spfg_err_t err = SPFG_ERROR_NO;

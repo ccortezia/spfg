@@ -82,12 +82,33 @@ TEST(grid_creation, remove_grid)
 }
 
 
+TEST(grid_creation, get_grid_ids)
+{
+    spfg_gr_id_t gr_id_1;
+    spfg_gr_id_t gr_id_2;
+    spfg_gr_cnt_t count = 0;
+    spfg_gr_id_t out_ids[100];
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id_1, "gr1"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_get_ids(out_ids, 100, &count));
+    TEST_ASSERT_EQUAL(1, count);
+    TEST_ASSERT_EQUAL(out_ids[0], gr_id_1);
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id_2, "gr2"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_get_ids(out_ids, 100, &count));
+    TEST_ASSERT_EQUAL(2, count);
+    TEST_ASSERT_EQUAL(gr_id_1, out_ids[0]);
+    TEST_ASSERT_EQUAL(gr_id_2, out_ids[1]);
+}
+
+
 TEST_GROUP_RUNNER(grid_creation) {
     RUN_TEST_CASE(grid_creation, create_grid_should_not_err);
     RUN_TEST_CASE(grid_creation, create_grid_with_empty_name_should_err);
     RUN_TEST_CASE(grid_creation, create_grid_with_null_param_should_err);
     RUN_TEST_CASE(grid_creation, create_grid_beyond_max_should_err);
     RUN_TEST_CASE(grid_creation, remove_grid);
+    RUN_TEST_CASE(grid_creation, get_grid_ids);
 }
 
 // ------------------------------------------------------------------------------------------------

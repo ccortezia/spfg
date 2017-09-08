@@ -116,6 +116,7 @@ spfg_err_t spfg_finish();
 
 spfg_err_t spfg_gr_create(spfg_gr_id_t *, const char * /* name */);
 spfg_err_t spfg_gr_remove(spfg_gr_id_t);
+spfg_err_t spfg_gr_get_ids(spfg_gr_id_t *, spfg_gr_cnt_t /* maxlen */, spfg_gr_cnt_t * /* count */);
 spfg_err_t spfg_dp_create(spfg_gr_id_t, spfg_dp_type_t, const char * /* name */, spfg_dp_id_t *);
 spfg_err_t spfg_dp_remove(spfg_gr_id_t, spfg_dp_id_t);
 spfg_err_t spfg_fn_create(spfg_gr_id_t, spfg_fn_type_t, spfg_phase_t,
