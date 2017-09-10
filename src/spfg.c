@@ -120,6 +120,10 @@ static spfg_err_t find_global_gr(spfg_gr_id_t gr_id, unsigned int *idx)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
+    if (gr_id == 0) {
+        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
+    }
+
     for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
         if (global_grs[i].id == gr_id) {
             *idx = i;
