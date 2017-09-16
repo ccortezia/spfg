@@ -71,6 +71,7 @@ typedef struct spfg_grx {
     spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
 } spfg_grx_t;
 
+
 typedef struct spfg_gr_exph {
 } spfg_gr_exph_t;
 
@@ -1069,3 +1070,190 @@ spfg_err_t spfg_info(spfg_info_t *info)
 
     return SPFG_ERROR_NO;
 }
+
+// -------------------------------------------------------------------------------------------------
+// JSON Import/Export API
+// -------------------------------------------------------------------------------------------------
+
+#include "azjson/azjson.h"
+
+azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
+    switch (token->type) {
+        case TOKEN_VI: return azjson_strtol(token->chars, &((spfg_dp_value_t *)target)->integer);
+        case TOKEN_VR: return azjson_strtod(token->chars, &((spfg_dp_value_t *)target)->real);
+        case TOKEN_VT: (((spfg_dp_value_t *)target)->boolean) = true; break;
+        case TOKEN_VF: (((spfg_dp_value_t *)target)->boolean) = false; break;
+        default: return AZJSON_ERROR_FAIL;
+    }
+    return AZJSON_ERROR_NO;
+}
+
+
+static azjson_spec_t int_spec[] = {
+    {
+        .vtype = JSON_INTEGER,
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_fns_fn_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, id),
+    },
+    {
+        .key = "type",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, type),
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_fn_t, name),
+        .vsize = sizeof(((spfg_fn_t *)0)->name)
+    },
+    {
+        .key = "phase",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, phase),
+    },
+    {
+        .key = "in_dp_ids",
+        .vtype = JSON_ARRAY,
+        .vspec = int_spec,
+        .voffset = offsetof(spfg_fn_t, in_dp_ids),
+        .noffset = offsetof(spfg_fn_t, in_dp_ids_len),
+        .maxitems = sizeof(((spfg_fn_t *)0)->in_dp_ids) / sizeof(spfg_dp_id_t)
+    },
+    {
+        .key = "out_dp_ids",
+        .vtype = JSON_ARRAY,
+        .vspec = int_spec,
+        .voffset = offsetof(spfg_fn_t, out_dp_ids),
+        .noffset = offsetof(spfg_fn_t, out_dp_ids_len),
+        .maxitems = sizeof(((spfg_fn_t *)0)->out_dp_ids) / sizeof(spfg_dp_id_t)
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_fns_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_fns_fn_spec,
+        .vsize = sizeof(spfg_fn_t),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_dps_dp_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, id),
+    },
+    {
+        .key = "type",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, type),
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_dp_t, name),
+        .vsize = sizeof(((spfg_dp_t *)0)->name)
+    },
+    {
+        .key = "emitted",
+        .vtype = JSON_BOOL,
+        .voffset = offsetof(spfg_dp_t, emitted),
+    },
+    {
+        .key = "value",
+        .vtype = JSON_BOOL,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {
+        .key = "value",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {
+        .key = "value",
+        .vtype = JSON_REAL,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_dps_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_dps_dp_spec,
+        .vsize = sizeof(spfg_dp_t),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_ctl_spec[] = {
+    {
+        .key = "curr_phase",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_ctl_t, curr_phase)
+    },
+    {
+        .key = "curr_fn_idx",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_ctl_t, curr_fn_idx)
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_t, id)
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_gr_t, name),
+        .vsize = sizeof(((spfg_gr_t *)0)->name)
+    },
+    {
+        .key = "fns",
+        .vtype = JSON_ARRAY,
+        .vspec = gr_fns_spec,
+        .voffset = offsetof(spfg_gr_t, fns),
+        .noffset = offsetof(spfg_gr_t, fns_cnt),
+        .maxitems = sizeof(((spfg_gr_t *)0)->fns) / sizeof(spfg_fn_t)
+    },
+    {
+        .key = "dps",
+        .vtype = JSON_ARRAY,
+        .vspec = gr_dps_spec,
+        .voffset = offsetof(spfg_gr_t, dps),
+        .noffset = offsetof(spfg_gr_t, dps_cnt),
+        .maxitems = sizeof(((spfg_gr_t *)0)->dps) / sizeof(spfg_dp_t)
+    },
+    {
+        .key = "ctl",
+        .vtype = JSON_OBJECT,
+        .vspec = gr_ctl_spec,
+        .voffset = offsetof(spfg_gr_t, ctl),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t root_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_spec,
+    },
+    {.boundary = true}
+};
+
