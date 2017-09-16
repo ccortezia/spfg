@@ -14,7 +14,6 @@
 // Private Type Definitions
 // -------------------------------------------------------------------------------------------------
 
-typedef unsigned short spfg_step_t;
 
 typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
