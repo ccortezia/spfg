@@ -175,6 +175,36 @@ describe("SPFG cycle", function() {
   });
 });
 
+describe("SPFG grid import", function(){
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  it("should handle the json for a simple grid", function(){
+    var snapshot = {id: 1, name: 'gr0', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    expect(SPFG.importGridSnapshot.bind(SPFG.importGridSnapshot, snapshot)).not.toThrow();
+  });
+
+  it("should return the id of the imported grid", function(){
+    var snapshot = {id: 144, name: 'gr0', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    var gridId = SPFG.importGridSnapshot(snapshot);
+    expect(gridId).toEqual(144);
+  });
+});
+
+describe("SPFG grid export", function(){
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  it("should return the expected grid snapshot data", function(){
+    var original = {id: 144, name: 'gr144', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    var gridId = SPFG.importGridSnapshot(original);
+    var exported = SPFG.exportGridSnapshot(gridId);
+    expect(exported).toEqual(original);
+  });
+});
+
 // -------------------------------------
 // Test Helper functions
 // -------------------------------------
