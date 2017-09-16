@@ -21,22 +21,23 @@ extern "C" {
 
 #define SPFG_LOOP_CONTROL_STOP              1
 #define SPFG_ERROR_NO                       0
-#define SPFG_ERROR_BAD_PARAM_NULL_POINTER  -1
-#define SPFG_ERROR_BAD_PARAM_INVALID_VALUE -2
-#define SPFG_ERROR_ALREADY_INITIALIZED     -3
-#define SPFG_ERROR_NOT_INITIALIZED         -4
-#define SPFG_ERROR_OUT_OF_SLOTS            -5
-#define SPFG_ERROR_BAD_BLOCK_NAME          -6
-#define SPFG_ERROR_NOT_FOUND               -7
-#define SPFG_ERROR_INVALID_GR_ID           -8
-#define SPFG_ERROR_INVALID_DP_ID           -9
-#define SPFG_ERROR_INVALID_FN_ID           -10
-#define SPFG_ERROR_CYCLE_FAILURE           -11
-#define SPFG_ERROR_UNIMPLEMENTED           -12
-#define SPFG_ERROR_REINDEX_FN              -13
-#define SPFG_ERROR_VALIDATE_FN             -14
-#define SPFG_ERROR_BUFFER_OVERFLOW         -15
-#define SPFG_ERROR_FN_INTEGRITY            -16
+#define SPFG_ERROR_FAIL                    -1
+#define SPFG_ERROR_BAD_PARAM_NULL_POINTER  -2
+#define SPFG_ERROR_BAD_PARAM_INVALID_VALUE -3
+#define SPFG_ERROR_ALREADY_INITIALIZED     -4
+#define SPFG_ERROR_NOT_INITIALIZED         -5
+#define SPFG_ERROR_OUT_OF_SLOTS            -6
+#define SPFG_ERROR_BAD_BLOCK_NAME          -7
+#define SPFG_ERROR_NOT_FOUND               -8
+#define SPFG_ERROR_INVALID_GR_ID           -9
+#define SPFG_ERROR_INVALID_DP_ID           -10
+#define SPFG_ERROR_INVALID_FN_ID           -11
+#define SPFG_ERROR_CYCLE_FAILURE           -12
+#define SPFG_ERROR_UNIMPLEMENTED           -13
+#define SPFG_ERROR_REINDEX_FN              -14
+#define SPFG_ERROR_VALIDATE_FN             -15
+#define SPFG_ERROR_BUFFER_OVERFLOW         -16
+#define SPFG_ERROR_FN_INTEGRITY            -17
 
 // ----------------------------------------------------------------------------
 // Storage sizes
