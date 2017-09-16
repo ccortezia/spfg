@@ -14,7 +14,6 @@
 // Private Type Definitions
 // -------------------------------------------------------------------------------------------------
 
-
 typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
 } spfg_block_name_t;
