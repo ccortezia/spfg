@@ -143,6 +143,8 @@ spfg_err_t spfg_dp_get_bool(spfg_gr_id_t, spfg_dp_id_t, spfg_boolean_t * /* valu
 
 spfg_err_t spfg_gr_export_bin(spfg_gr_id_t, void *, uint32_t);
 spfg_err_t spfg_gr_import_bin(void *, uint32_t, spfg_gr_id_t *, const char * /* name */);
+spfg_err_t spfg_gr_import_json(char *, uint32_t, spfg_gr_id_t *);
+spfg_err_t spfg_gr_export_json(spfg_gr_id_t, char *, uint32_t /* maxlen */, uint32_t * /* outlen */);
 
 // -------------------------------------------------------------------------------------------------
 // Inspection API
