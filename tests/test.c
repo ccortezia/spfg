@@ -367,7 +367,7 @@ TEST_TEAR_DOWN(schema_exporting) {
 
 char export_outbuf[1024 * 20];
 
-TEST(schema_exporting, export_import)
+TEST(schema_exporting, export_bin)
 {
     spfg_gr_id_t gr0_id;
     spfg_gr_id_t gr1_id;
@@ -412,8 +412,77 @@ TEST(schema_exporting, export_import)
     TEST_ASSERT_NOT_EQUAL(gr0_id, gr1_id);
 }
 
+TEST(schema_exporting, import_json)
+{
+    uint32_t outlen;
+    char original_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_phase\": 0, \"curr_fn_idx\": 1}}";
+    char exported_json[1024];
+
+    // Import reference JSON string to compare with generated output.
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_import_json(original_json, sizeof(original_json), NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_json(1, exported_json, sizeof(exported_json), &outlen));
+    TEST_ASSERT_EQUAL_STRING(original_json, exported_json);
+
+    // Reimport generated output JSON string to compare with reference.
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_import_json(exported_json, sizeof(exported_json), NULL));
+    memset(exported_json, 0, sizeof(exported_json));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_json(1, exported_json, sizeof(exported_json), &outlen));
+    TEST_ASSERT_EQUAL_STRING(original_json, exported_json);
+}
+
+TEST(schema_exporting, export_json)
+{
+    spfg_gr_id_t gr0_id;
+    spfg_gr_id_t gr1_id;
+    spfg_gr_id_t gr2_id;
+    spfg_fn_id_t fn_id;
+    spfg_dp_id_t dp0p0_id;
+    spfg_dp_id_t dp1p0_id;
+    spfg_dp_id_t dp0p1_id;
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr0_id, "gr0"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
+
+    spfg_dp_id_t in_dps[] = {dp0p0_id, dp1p0_id};
+    spfg_dp_id_t out_dps[] = {dp0p1_id};
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(gr0_id, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps, 2, out_dps, 1, "fn1", &fn_id));
+
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_reset_cycle(gr0_id));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr0_id, dp0p0_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr0_id, false, NULL, NULL));
+
+    uint32_t outlen;
+    char exported_json[1024];
+    char expected_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_phase\": 0, \"curr_fn_idx\": 1}}";
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_json(gr0_id, exported_json, sizeof(exported_json), &outlen));
+    TEST_ASSERT_EQUAL(393, outlen);
+    TEST_ASSERT_EQUAL_STRING(expected_json, exported_json);
+}
+
+TEST(schema_exporting, resume_evaluation_from_json)
+{
+    spfg_gr_id_t gr_id = 1;
+    spfg_dp_id_t dp1p1_id = 4;
+    spfg_dp_id_t dp0p2_id = 5;
+    spfg_boolean_t output = false;
+    spfg_boolean_t emitted = false;
+
+    char json_snapshot[] = "{\"id\": 1, \"name\": \"valid name\", \"fns\": [{\"id\": 1, \"name\": \"fn0p0\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 3], \"out_dp_ids\": [2]}, {\"id\": 2, \"name\": \"fn0p1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [2, 4], \"out_dp_ids\": [5]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp0p1\", \"type\": 3, \"value\": true, \"emitted\": true}, {\"id\": 3, \"name\": \"dp1p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 4, \"name\": \"dp1p1\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 5, \"name\": \"dp0p2\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_phase\": 0, \"curr_fn_idx\": 1}}";
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_import_json(json_snapshot, sizeof(json_snapshot), NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p1_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_run_cycle(gr_id, gr_id, NULL, NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(gr_id, dp0p2_id, &output, &emitted));
+    TEST_ASSERT_EQUAL(true, output);
+    TEST_ASSERT_EQUAL(true, emitted);
+}
+
 TEST_GROUP_RUNNER(schema_exporting) {
-    RUN_TEST_CASE(schema_exporting, export_import);
+    RUN_TEST_CASE(schema_exporting, export_bin);
+    RUN_TEST_CASE(schema_exporting, import_json);
+    RUN_TEST_CASE(schema_exporting, export_json);
+    RUN_TEST_CASE(schema_exporting, resume_evaluation_from_json);
 }
 
 // ------------------------------------------------------------------------------------------------

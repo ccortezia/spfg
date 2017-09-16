@@ -3,23 +3,24 @@ SPFG = (function SPFG() {
 
     // Maps native error return codes.
     var errors = {
-        SPFG_ERROR_NO:  0,
-        SPFG_ERROR_BAD_PARAM_NULL_POINTER: -1,
-        SPFG_ERROR_BAD_PARAM_INVALID_VALUE: -2,
-        SPFG_ERROR_ALREADY_INITIALIZED: -3,
-        SPFG_ERROR_NOT_INITIALIZED: -4,
-        SPFG_ERROR_OUT_OF_SLOTS: -5,
-        SPFG_ERROR_BAD_BLOCK_NAME: -6,
-        SPFG_ERROR_NOT_FOUND: -7,
-        SPFG_ERROR_INVALID_GR_ID: -8,
-        SPFG_ERROR_INVALID_DP_ID: -9,
-        SPFG_ERROR_INVALID_FN_ID: -10,
-        SPFG_ERROR_CYCLE_FAILURE: -11,
-        SPFG_ERROR_UNIMPLEMENTED: -12,
-        SPFG_ERROR_REINDEX_FN: -13,
-        SPFG_ERROR_VALIDATE_FN: -14,
-        SPFG_ERROR_BUFFER_OVERFLOW: -15,
-        SPFG_ERROR_FN_INTEGRITY: -16
+        SPFG_ERROR_NO:                       0,
+        SPFG_ERROR_FAIL:                    -1,
+        SPFG_ERROR_BAD_PARAM_NULL_POINTER:  -2,
+        SPFG_ERROR_BAD_PARAM_INVALID_VALUE: -3,
+        SPFG_ERROR_ALREADY_INITIALIZED:     -4,
+        SPFG_ERROR_NOT_INITIALIZED:         -5,
+        SPFG_ERROR_OUT_OF_SLOTS:            -6,
+        SPFG_ERROR_BAD_BLOCK_NAME:          -7,
+        SPFG_ERROR_NOT_FOUND:               -8,
+        SPFG_ERROR_INVALID_GR_ID:           -9,
+        SPFG_ERROR_INVALID_DP_ID:           -10,
+        SPFG_ERROR_INVALID_FN_ID:           -11,
+        SPFG_ERROR_CYCLE_FAILURE:           -12,
+        SPFG_ERROR_UNIMPLEMENTED:           -13,
+        SPFG_ERROR_REINDEX_FN:              -14,
+        SPFG_ERROR_VALIDATE_FN:             -15,
+        SPFG_ERROR_BUFFER_OVERFLOW:         -16,
+        SPFG_ERROR_FN_INTEGRITY:            -17,
     };
 
     // Maps native control return codes.
@@ -59,6 +60,10 @@ SPFG = (function SPFG() {
         // Evaluation functions
         resetCycle: spfgResetCycle,
         runCycle: spfgRunCycle,
+
+        // Import / Export functions
+        importGridSnapshot: spfgImportGridSnapshot,
+        exportGridSnapshot: spfgExportGridSnapshot,
 
         // Exported symbols
         codes: {
@@ -108,9 +113,9 @@ SPFG = (function SPFG() {
 
         var module = getModule();
         var idOutPtr = module._malloc(4);
-        var charsLength = name.length * 4 + 1;
+        var charsLength = module.lengthBytesUTF8(name) + 1;
         var nameInPtr = module._malloc(charsLength);
-        module.stringToUTF8(name, nameInPtr, charsLength - 1);
+        module.stringToUTF8(name, nameInPtr, charsLength);
         var err = module._spfg_gr_create(idOutPtr, nameInPtr);
 
         cleanErr(err, function(){
@@ -156,9 +161,9 @@ SPFG = (function SPFG() {
 
         var module = getModule();
         var idOutPtr = module._malloc(4);
-        var charsLength = name.length * 4 + 1;
+        var charsLength = module.lengthBytesUTF8(name) + 1;
         var nameInPtr = module._malloc(charsLength);
-        module.stringToUTF8(name, nameInPtr, charsLength - 1);
+        module.stringToUTF8(name, nameInPtr, charsLength);
         var err = module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr);
 
         cleanErr(err, function(){
@@ -212,9 +217,9 @@ SPFG = (function SPFG() {
         var module = getModule();
         var idOutPtr = module._malloc(4);
 
-        var charsLength = name.length * 4 + 1;
+        var charsLength = module.lengthBytesUTF8(name) + 1;
         var nameInPtr = module._malloc(charsLength);
-        module.stringToUTF8(name, nameInPtr, charsLength - 1);
+        module.stringToUTF8(name, nameInPtr, charsLength);
 
         var inDpIdsArray = new Uint32Array(inDpIds);
         var inDpIdsInPtr = module._malloc(inDpIds.length * 4);
@@ -282,6 +287,55 @@ SPFG = (function SPFG() {
         callback = (callback && thisCtx) ? callback.bind(thisCtx) : callback;
         var cbInPtr = (callback || 0) && module.Runtime.addFunction(callback);
         cleanErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
+    }
+
+    function spfgImportGridSnapshot(gridSnapshot) {
+
+        if (!gridSnapshot) {
+            throw Error('needs a non-empty object');
+        }
+
+        var module = getModule();
+        var idOutPtr = module._malloc(4);
+        var jsonData = JSON.stringify(gridSnapshot);
+        var charsLength = module.lengthBytesUTF8(jsonData) + 1;
+        var jsonInPtr = module._malloc(charsLength);
+        module.stringToUTF8(jsonData, jsonInPtr, charsLength);
+        module.setValue(idOutPtr, 0, 'i32');
+
+        var err = module._spfg_gr_import_json(jsonInPtr, charsLength, idOutPtr);
+
+        cleanErr(err, function(){
+            module._free(idOutPtr);
+            module._free(jsonInPtr);
+        });
+
+        module._free(jsonInPtr);
+        var id = module.getValue(idOutPtr, 'i32');
+        markAllocation(id, null, null, idOutPtr);
+        return id;
+    }
+
+    function spfgExportGridSnapshot(gridId) {
+        var module = getModule();
+        var maxlen = 4096;
+        var jsonOutPtr = module._malloc(maxlen);
+        var outlenOutPtr = module._malloc(4);
+        module.setValue(outlenOutPtr, 0, 'i32');
+
+        var err = module._spfg_gr_export_json(gridId, jsonOutPtr, maxlen, outlenOutPtr);
+
+        cleanErr(err, function(){
+            module._free(jsonOutPtr);
+            module._free(outlenOutPtr);
+        });
+
+        var jsonData = module.UTF8ToString(jsonOutPtr);
+        var gridSnapshot = JSON.parse(jsonData);
+
+        module._free(jsonOutPtr);
+        module._free(outlenOutPtr);
+        return gridSnapshot;
     }
 
     // --------------------------------------------------------------

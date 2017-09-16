@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include "spfg/spfg.h"
 
@@ -14,22 +15,22 @@
 // Private Type Definitions
 // -------------------------------------------------------------------------------------------------
 
-typedef unsigned short spfg_step_t;
-
 typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
 } spfg_block_name_t;
+
+typedef union {
+    spfg_real_t real;
+    spfg_int_t integer;
+    spfg_boolean_t boolean;
+} spfg_dp_value_t;
 
 typedef struct spfg_dp {
     spfg_dp_id_t id;
     spfg_dp_type_t type;
     spfg_block_name_t name;
     spfg_boolean_t emitted;
-    union value_u {
-        spfg_real_t real;
-        spfg_int_t integer;
-        spfg_boolean_t boolean;
-    } value;
+    spfg_dp_value_t value;
 } spfg_dp_t;
 
 typedef struct spfg_fn {
@@ -38,10 +39,27 @@ typedef struct spfg_fn {
     spfg_block_name_t name;
     spfg_phase_t phase;
     spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
-    uint8_t in_dp_ids_len;
+    spfg_fn_dp_in_cnt_t in_dp_ids_len;
     spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
-    uint8_t out_dp_ids_len;
+    spfg_fn_dp_out_cnt_t out_dp_ids_len;
 } spfg_fn_t;
+
+
+typedef struct spfg_gr_ctl {
+    spfg_phase_t curr_phase;
+    spfg_gr_fn_cnt_t curr_fn_idx;
+}  spfg_gr_ctl_t;
+
+typedef struct spfg_gr {
+    spfg_gr_id_t id;
+    spfg_block_name_t name;
+    spfg_dp_t dps[SPFG_MAX_GRID_DPS];
+    spfg_gr_dp_cnt_t dps_cnt;
+    spfg_fn_t fns[SPFG_MAX_GRID_FNS];
+    spfg_gr_fn_cnt_t fns_cnt;
+    spfg_gr_ctl_t ctl;
+} spfg_gr_t;
+
 
 typedef struct spfg_fnx {
     spfg_fn_t *fn;
@@ -49,23 +67,11 @@ typedef struct spfg_fnx {
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
 } spfg_fnx_t;
 
-typedef struct spfg_gr_ctl {
-    spfg_phase_t curr_phase;
-    spfg_step_t curr_fnx_idx;
-}  spfg_gr_ctl_t;
-
-typedef struct spfg_gr {
-    spfg_gr_id_t id;
-    spfg_block_name_t name;
-    spfg_dp_t dps[SPFG_MAX_GRID_DPS];
-    spfg_fn_t fns[SPFG_MAX_GRID_FNS];
-    spfg_gr_ctl_t ctl;
-} spfg_gr_t;
-
 typedef struct spfg_grx {
     spfg_gr_t *gr;
     spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
 } spfg_grx_t;
+
 
 typedef struct spfg_gr_exph {
 } spfg_gr_exph_t;
@@ -549,11 +555,11 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
     for (;;) {
 
         // Stop condition: array boundary protection.
-        if (grx->gr->ctl.curr_fnx_idx >= SPFG_MAX_GRID_FNS) {
+        if (grx->gr->ctl.curr_fn_idx >= SPFG_MAX_GRID_FNS) {
             break;
         }
 
-        fnx = &grx->fnx[grx->gr->ctl.curr_fnx_idx];
+        fnx = &grx->fnx[grx->gr->ctl.curr_fn_idx];
 
         // Stop condition: no more pending functions to evaluate.
         if (!fnx->fn) {
@@ -588,7 +594,7 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
             return SPFG_ERROR_CYCLE_FAILURE;
         }
 
-        grx->gr->ctl.curr_fnx_idx += 1;
+        grx->gr->ctl.curr_fn_idx += 1;
     }
 
     return SPFG_ERROR_NO;
@@ -957,7 +963,7 @@ extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 
     spfg_grx_t *grx = &global_grxs[gr_idx];
     grx->gr->ctl.curr_phase = 0;
-    grx->gr->ctl.curr_fnx_idx = 0;
+    grx->gr->ctl.curr_fn_idx = 0;
     return SPFG_ERROR_NO;
 }
 
@@ -1062,6 +1068,398 @@ spfg_err_t spfg_info(spfg_info_t *info)
     info->max_grid_fns = SPFG_MAX_GRID_FNS;
     info->max_grid_dps = SPFG_MAX_GRID_DPS;
     info->max_phases = SPFG_MAX_PHASES;
+
+    return SPFG_ERROR_NO;
+}
+
+// -------------------------------------------------------------------------------------------------
+// JSON Import/Export API
+// -------------------------------------------------------------------------------------------------
+
+#include "azjson/azjson.h"
+
+azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
+    switch (token->type) {
+        case TOKEN_VI: return azjson_strtol(token->chars, &((spfg_dp_value_t *)target)->integer);
+        case TOKEN_VR: return azjson_strtod(token->chars, &((spfg_dp_value_t *)target)->real);
+        case TOKEN_VT: (((spfg_dp_value_t *)target)->boolean) = true; break;
+        case TOKEN_VF: (((spfg_dp_value_t *)target)->boolean) = false; break;
+        default: return AZJSON_ERROR_FAIL;
+    }
+    return AZJSON_ERROR_NO;
+}
+
+
+static azjson_spec_t int_spec[] = {
+    {
+        .vtype = JSON_INTEGER,
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_fns_fn_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, id),
+    },
+    {
+        .key = "type",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, type),
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_fn_t, name),
+        .vsize = sizeof(((spfg_fn_t *)0)->name)
+    },
+    {
+        .key = "phase",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_fn_t, phase),
+    },
+    {
+        .key = "in_dp_ids",
+        .vtype = JSON_ARRAY,
+        .vspec = int_spec,
+        .voffset = offsetof(spfg_fn_t, in_dp_ids),
+        .noffset = offsetof(spfg_fn_t, in_dp_ids_len),
+        .maxitems = sizeof(((spfg_fn_t *)0)->in_dp_ids) / sizeof(spfg_dp_id_t)
+    },
+    {
+        .key = "out_dp_ids",
+        .vtype = JSON_ARRAY,
+        .vspec = int_spec,
+        .voffset = offsetof(spfg_fn_t, out_dp_ids),
+        .noffset = offsetof(spfg_fn_t, out_dp_ids_len),
+        .maxitems = sizeof(((spfg_fn_t *)0)->out_dp_ids) / sizeof(spfg_dp_id_t)
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_fns_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_fns_fn_spec,
+        .vsize = sizeof(spfg_fn_t),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_dps_dp_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, id),
+    },
+    {
+        .key = "type",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, type),
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_dp_t, name),
+        .vsize = sizeof(((spfg_dp_t *)0)->name)
+    },
+    {
+        .key = "emitted",
+        .vtype = JSON_BOOL,
+        .voffset = offsetof(spfg_dp_t, emitted),
+    },
+    {
+        .key = "value",
+        .vtype = JSON_BOOL,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {
+        .key = "value",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {
+        .key = "value",
+        .vtype = JSON_REAL,
+        .voffset = offsetof(spfg_dp_t, value),
+        .cp = spfg_dp_value_cp
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_dps_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_dps_dp_spec,
+        .vsize = sizeof(spfg_dp_t),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_ctl_spec[] = {
+    {
+        .key = "curr_phase",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_ctl_t, curr_phase)
+    },
+    {
+        .key = "curr_fn_idx",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_ctl_t, curr_fn_idx)
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t gr_spec[] = {
+    {
+        .key = "id",
+        .vtype = JSON_INTEGER,
+        .voffset = offsetof(spfg_gr_t, id)
+    },
+    {
+        .key = "name",
+        .vtype = JSON_STRING,
+        .voffset = offsetof(spfg_gr_t, name),
+        .vsize = sizeof(((spfg_gr_t *)0)->name)
+    },
+    {
+        .key = "fns",
+        .vtype = JSON_ARRAY,
+        .vspec = gr_fns_spec,
+        .voffset = offsetof(spfg_gr_t, fns),
+        .noffset = offsetof(spfg_gr_t, fns_cnt),
+        .maxitems = sizeof(((spfg_gr_t *)0)->fns) / sizeof(spfg_fn_t)
+    },
+    {
+        .key = "dps",
+        .vtype = JSON_ARRAY,
+        .vspec = gr_dps_spec,
+        .voffset = offsetof(spfg_gr_t, dps),
+        .noffset = offsetof(spfg_gr_t, dps_cnt),
+        .maxitems = sizeof(((spfg_gr_t *)0)->dps) / sizeof(spfg_dp_t)
+    },
+    {
+        .key = "ctl",
+        .vtype = JSON_OBJECT,
+        .vspec = gr_ctl_spec,
+        .voffset = offsetof(spfg_gr_t, ctl),
+    },
+    {.boundary = true}
+};
+
+static azjson_spec_t root_spec[] = {
+    {
+        .vtype = JSON_OBJECT,
+        .vspec = gr_spec,
+    },
+    {.boundary = true}
+};
+
+static spfg_gr_t json_gr;
+
+spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_gr_id) {
+
+    spfg_err_t err;
+    spfg_gr_t *gr;
+
+    if (azjson_import(json_str, len, root_spec, &json_gr) != AZJSON_ERROR_NO) {
+        return SPFG_ERROR_FAIL;
+    }
+
+    if ((err = resolve_global_gr(json_gr.id, &gr)) != SPFG_ERROR_NO) {
+
+        // Existing gr not found, attempt to create one from imported data.
+        if (err == SPFG_ERROR_NOT_FOUND) {
+
+            spfg_gr_id_t gr_id;
+
+            if ((err = spfg_gr_create(&gr_id, json_gr.name.chars)) != SPFG_ERROR_NO) {
+                return err;
+            }
+
+            (void) resolve_global_gr(gr_id, &gr);
+
+            gr->id = json_gr.id;
+        }
+
+        // Unexpected error detected during gr resolution, bail out.
+        else {
+            return err;
+        }
+    }
+
+    // Existin gr found, cleanup target memory.
+    else {
+        memset(gr, 0, sizeof(spfg_gr_t));
+        memcpy(&gr->name, &json_gr.name, sizeof(json_gr.name));
+        gr->id = json_gr.id;
+    }
+
+    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
+    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
+    memcpy(&gr->fns, &json_gr.fns, sizeof(json_gr.fns));
+    memcpy(&gr->ctl, &json_gr.ctl, sizeof(spfg_gr_ctl_t));
+
+    spfg_gr_cnt_t gr_idx;
+
+    if ((err = find_global_gr(gr->id, &gr_idx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    spfg_grx_t *grx = &global_grxs[gr_idx];
+    memset(grx, 0, sizeof(spfg_grx_t));
+    grx->gr = gr;  // TODO: refactor into gr_reindex function
+
+    spfg_fnx_t *fnx = &grx->fnx[gr->ctl.curr_fn_idx];
+    memset(fnx, 0, sizeof(spfg_fnx_t));
+
+    if ((err = resolve_gr_fn(gr, gr->fns[gr->ctl.curr_fn_idx].id, &fnx->fn)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_FAIL;
+    }
+
+    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_REINDEX_FN;
+    }
+
+    if (out_gr_id) {
+        *out_gr_id = gr->id;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
+
+static spfg_err_t sappend(char *output, size_t output_len, uint32_t *vcnt, uint32_t *rcnt, const char *fmt, ...)
+{
+    int result;
+    va_list ap;
+    va_start(ap, fmt);
+
+    result = vsnprintf(&output[*rcnt], output_len - *rcnt, fmt, ap);
+
+    if (result < 0) {
+        // TODO: properly handle error
+        return SPFG_ERROR_FAIL;
+    }
+
+    *vcnt += result;
+    *rcnt = *vcnt > output_len - 1 ? output_len - 1 : *vcnt;
+
+    va_end (ap);
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t spfg_gr_export_json(spfg_gr_id_t gr_id, char *output, uint32_t output_len, uint32_t *slen)
+{
+    spfg_gr_t *gr;
+    spfg_err_t err;
+    uint32_t rcnt = 0;
+    uint32_t vcnt = 0;
+
+    if (!output) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    memset(output, 0, output_len);
+
+    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    sappend(output, output_len, &vcnt, &rcnt, "{");
+    sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->id);
+    sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->name.chars);
+
+    sappend(output, output_len, &vcnt, &rcnt, "\"fns\": [");
+    for (uint32_t idx = 0; idx < SPFG_MAX_GRID_FNS; idx++) {
+        if (!gr->fns[idx].name.chars[0]) {
+            continue;
+        }
+        sappend(output, output_len, &vcnt, &rcnt, "{");
+        sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->fns[idx].id);
+        sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->fns[idx].name.chars);
+        sappend(output, output_len, &vcnt, &rcnt, "\"type\": %d, ", gr->fns[idx].type);
+        sappend(output, output_len, &vcnt, &rcnt, "\"phase\": %d, ", gr->fns[idx].phase);
+        sappend(output, output_len, &vcnt, &rcnt, "\"in_dp_ids\": [");
+
+        for (uint32_t _idx = 0; _idx < gr->fns[idx].in_dp_ids_len; _idx++) {
+            sappend(output, output_len, &vcnt, &rcnt, "%d", gr->fns[idx].in_dp_ids[_idx]);
+            if (_idx + 1 < gr->fns[idx].in_dp_ids_len) {
+                sappend(output, output_len, &vcnt, &rcnt, ", ");
+            }
+        }
+        sappend(output, output_len, &vcnt, &rcnt, "], ");
+
+        sappend(output, output_len, &vcnt, &rcnt, "\"out_dp_ids\": [");
+        for (uint32_t _idx = 0; _idx < gr->fns[idx].out_dp_ids_len; _idx++) {
+            sappend(output, output_len, &vcnt, &rcnt, "%d", gr->fns[idx].out_dp_ids[_idx]);
+            if (_idx + 1 < gr->fns[idx].out_dp_ids_len) {
+                sappend(output, output_len, &vcnt, &rcnt, ", ");
+            }
+        }
+        sappend(output, output_len, &vcnt, &rcnt, "]");
+
+        sappend(output, output_len, &vcnt, &rcnt, "}");
+        if (idx < SPFG_MAX_GRID_FNS && gr->fns[idx + 1].name.chars[0]) {
+            sappend(output, output_len, &vcnt, &rcnt, ", ");
+        }
+    }
+
+    sappend(output, output_len, &vcnt, &rcnt, "], ");
+    sappend(output, output_len, &vcnt, &rcnt, "\"dps\": [");
+
+    for (uint32_t idx = 0; idx < SPFG_MAX_GRID_DPS; idx++) {
+        if (!gr->dps[idx].name.chars[0]) {
+            continue;
+        }
+
+        sappend(output, output_len, &vcnt, &rcnt, "{");
+        sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->dps[idx].id);
+        sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->dps[idx].name.chars);
+        sappend(output, output_len, &vcnt, &rcnt, "\"type\": %d, ", gr->dps[idx].type);
+
+        switch (gr->dps[idx].type) {
+            case SPFG_DP_INT: {
+                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %d, ", gr->dps[idx].value.integer);
+                break;
+            }
+            case SPFG_DP_REAL: {
+                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %.5G, ", gr->dps[idx].value.real);
+                break;
+            }
+            case SPFG_DP_BOOL: {
+                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %s, ", gr->dps[idx].value.boolean ? "true" : "false");
+                break;
+            }
+            default: {
+                return SPFG_ERROR_FAIL;
+            }
+        }
+
+        sappend(output, output_len, &vcnt, &rcnt, "\"emitted\": %s", gr->dps[idx].emitted ? "true" : "false");
+        sappend(output, output_len, &vcnt, &rcnt, "}");
+
+        if (idx < SPFG_MAX_GRID_DPS && gr->dps[idx + 1].name.chars[0]) {
+            sappend(output, output_len, &vcnt, &rcnt, ", ");
+        }
+    }
+
+    sappend(output, output_len, &vcnt, &rcnt, "], ");
+
+    sappend(output, output_len, &vcnt, &rcnt, "\"ctl\": {");
+    sappend(output, output_len, &vcnt, &rcnt, "\"curr_phase\": %d, ", gr->ctl.curr_phase);
+    sappend(output, output_len, &vcnt, &rcnt, "\"curr_fn_idx\": %d", gr->ctl.curr_fn_idx);
+    sappend(output, output_len, &vcnt, &rcnt, "}");
+
+    sappend(output, output_len, &vcnt, &rcnt, "}");
+
+    if (slen) {
+        *slen = rcnt;
+    }
 
     return SPFG_ERROR_NO;
 }
