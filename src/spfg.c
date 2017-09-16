@@ -18,16 +18,18 @@ typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
 } spfg_block_name_t;
 
+typedef union {
+    spfg_real_t real;
+    spfg_int_t integer;
+    spfg_boolean_t boolean;
+} spfg_dp_value_t;
+
 typedef struct spfg_dp {
     spfg_dp_id_t id;
     spfg_dp_type_t type;
     spfg_block_name_t name;
     spfg_boolean_t emitted;
-    union value_u {
-        spfg_real_t real;
-        spfg_int_t integer;
-        spfg_boolean_t boolean;
-    } value;
+    spfg_dp_value_t value;
 } spfg_dp_t;
 
 typedef struct spfg_fn {
