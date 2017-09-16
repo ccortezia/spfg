@@ -46,7 +46,7 @@ typedef struct spfg_fn {
 
 typedef struct spfg_gr_ctl {
     spfg_phase_t curr_phase;
-    spfg_step_t curr_fnx_idx;
+    spfg_gr_fn_cnt_t curr_fn_idx;
 }  spfg_gr_ctl_t;
 
 typedef struct spfg_gr {
@@ -551,11 +551,11 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
     for (;;) {
 
         // Stop condition: array boundary protection.
-        if (grx->gr->ctl.curr_fnx_idx >= SPFG_MAX_GRID_FNS) {
+        if (grx->gr->ctl.curr_fn_idx >= SPFG_MAX_GRID_FNS) {
             break;
         }
 
-        fnx = &grx->fnx[grx->gr->ctl.curr_fnx_idx];
+        fnx = &grx->fnx[grx->gr->ctl.curr_fn_idx];
 
         // Stop condition: no more pending functions to evaluate.
         if (!fnx->fn) {
@@ -590,7 +590,7 @@ static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycl
             return SPFG_ERROR_CYCLE_FAILURE;
         }
 
-        grx->gr->ctl.curr_fnx_idx += 1;
+        grx->gr->ctl.curr_fn_idx += 1;
     }
 
     return SPFG_ERROR_NO;
@@ -959,7 +959,7 @@ extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 
     spfg_grx_t *grx = &global_grxs[gr_idx];
     grx->gr->ctl.curr_phase = 0;
-    grx->gr->ctl.curr_fnx_idx = 0;
+    grx->gr->ctl.curr_fn_idx = 0;
     return SPFG_ERROR_NO;
 }
 
