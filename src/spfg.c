@@ -38,9 +38,9 @@ typedef struct spfg_fn {
     spfg_block_name_t name;
     spfg_phase_t phase;
     spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
-    uint8_t in_dp_ids_len;
+    spfg_fn_dp_in_cnt_t in_dp_ids_len;
     spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
-    uint8_t out_dp_ids_len;
+    spfg_fn_dp_out_cnt_t out_dp_ids_len;
 } spfg_fn_t;
 
 
@@ -53,7 +53,9 @@ typedef struct spfg_gr {
     spfg_gr_id_t id;
     spfg_block_name_t name;
     spfg_dp_t dps[SPFG_MAX_GRID_DPS];
+    spfg_gr_dp_cnt_t dps_cnt;
     spfg_fn_t fns[SPFG_MAX_GRID_FNS];
+    spfg_gr_fn_cnt_t fns_cnt;
     spfg_gr_ctl_t ctl;
 } spfg_gr_t;
 
