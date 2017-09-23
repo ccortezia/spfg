@@ -3,8 +3,8 @@
 #include "spfg/spfg.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
-#include "spfg_composition.h"
-#include "spfg_evaluation.h"
+#include "spfg_build.h"
+#include "spfg_eval.h"
 
 // -------------------------------------------------------------------------------------------------
 // Private Library Data

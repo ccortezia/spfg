@@ -5,7 +5,7 @@
 #include "spfg/spfg.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
-#include "spfg_composition.h"
+#include "spfg_build.h"
 
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
