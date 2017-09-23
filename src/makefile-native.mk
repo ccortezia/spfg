@@ -23,6 +23,10 @@ $(STATIC_LIB): $(OBJECTS)
 $(SHARED_LIB): $(OBJECTS)
 	$(CC) ${LDFLAGS} -o $@ $^
 
+# Prevent symbols from these files from being
+# exposed by the resulting linked shared library.
+$(PRIVATE:%.c=%.o): $(PRIVATE)
+	$(CC) $(CFLAGS) -fvisibility=hidden -c $^
 
 .PHONY: native_clean
 native_clean:
