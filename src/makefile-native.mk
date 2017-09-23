@@ -15,6 +15,7 @@ ifeq ($(BUILD_SHARED),y)
 	EXTRA_LDFLAGS += -shared
 endif
 
+all: $(SHARED_LIB) $(STATIC_LIB)
 
 $(STATIC_LIB): $(OBJECTS)
 	$(AR) ${ARFLAGS} $@ $^
