@@ -101,6 +101,19 @@ spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
+spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
+{
+    spfg_err_t err;
+
+    for (int i = 0; dp_ids[i] && i < length; i++) {
+        if ((err = resolve_gr_dp(gr, dp_ids[i], &dps[i])) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_INVALID_DP_ID;
+        }
+    }
+
+    return SPFG_ERROR_NO;
+}
+
 spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
 {
     if (!idx) {
