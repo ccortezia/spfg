@@ -1,67 +1,16 @@
 NAME = spfg
-JS_LIB = lib$(NAME).js
-BC_LIB = lib$(NAME).bc
-SHARED_LIB = lib$(NAME).so
-STATIC_LIB = lib$(NAME).a
-COVERAGE = $(NAME).info
 
-ifeq ($(BUILD_SHARED),y)
-	EXTRA_CFLAGS += -fPIC
-	EXTRA_LDFLAGS += -shared
-endif
+CC := $(CROSS_COMPILE)gcc
+AR := $(CROSS_COMPILE)ar
 
-TMP_MAIN = _main.c
-TMP_PREJS = _prejs.js
-TMP_POSTJS = _postjs.js
-
-CC = $(CROSS_COMPILE)gcc
-AR = $(CROSS_COMPILE)ar
-WFLAGS = --pre-js ${TMP_PREJS} --post-js ${TMP_POSTJS} -s RESERVED_FUNCTION_POINTERS=10 -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_dp_remove', '_spfg_gr_create', '_spfg_gr_remove', '_spfg_fn_create', '_spfg_fn_remove', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_bin', '_spfg_gr_export_json', '_spfg_gr_import_json']"
-CFLAGS = -I${ROOT_PATH}/include -I${ROOT_PATH}/lib/azjson/include -Wall -g3 -O0 -std=gnu99 $(EXTRA_CFLAGS)
-LDFLAGS = $(EXTRA_LDFLAGS)
-ARFLAGS = rcs
-
-SOURCES = spfg.c ${ROOT_PATH}/lib/azjson/src/azjson.c
-OBJECTS = $(SOURCES:%.c=%.o)
-GCNOS = $(SOURCES:%.c=%.gcno)
-GCDAS = $(SOURCES:%.c=%.gcda)
-GCOVS = $(shell find . -name *.gcov)
-WASMS = *.wasm
-WASTS = *.wast
-BCS = *.bc
-JSS = *.js
+SOURCES = $(wildcard *.c) ${ROOT_PATH}/lib/azjson/src/azjson.c
 
 all: $(SHARED_LIB) $(STATIC_LIB)
 
-$(JS_LIB): $(SOURCES)
-	echo 'var ModuleSPFG = function(Module) {Module = Module || {}; var Module = Module;' > ${TMP_PREJS}
-	echo ';return Module;};' > ${TMP_POSTJS}
-	echo '#include "spfg/spfg.h"' > ${TMP_MAIN}
-	echo 'int main(void){spfg_init(); spfg_finish(); spfg_dp_create(0, 0, 0, 0); spfg_dp_remove(0, 0); spfg_gr_create(0, 0); spfg_gr_remove(0); spfg_fn_create(0, 0, 0, 0, 0, 0, 0, 0, 0); spfg_fn_remove(0, 0); spfg_run_cycle(0, 0, 0, 0); spfg_reset_cycle(0); spfg_gr_export_bin(0, 0, 0); spfg_gr_import_json(0, 0, 0); spfg_gr_export_json(0, 0, 0, 0);}' >> ${TMP_MAIN}
-	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^ ${TMP_MAIN}
-	rm -f ${TMP_MAIN}
-	rm -f ${TMP_PREJS} ${TMP_POSTJS}
-
-$(BC_LIB): $(SOURCES)
-	echo 'var ModuleSPFG = function(Module) {Module = Module || {}; var Module = Module;' > ${TMP_PREJS}
-	echo ';return Module;};' > ${TMP_POSTJS}
-	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^
-	rm -f ${TMP_PREJS} ${TMP_POSTJS}
-
-$(STATIC_LIB): $(OBJECTS)
-	$(AR) ${ARFLAGS} $@ $^
-
-$(SHARED_LIB): $(OBJECTS)
-	$(CC) ${LDFLAGS} -o $@ $^
-
-$(OBJECTS): $(SOURCES)
-
-$(COVERAGE): $(GCNOS) $(GCDAS)
-	(lcov -t "Coverage on ${SHARED_LIB}" -o ${COVERAGE} -c -d .)
-	(gcov *.c)
+include makefile-native.mk
+include makefile-wasm.mk
+include makefile-cov.mk
 
 
 .PHONY: clean
-
-clean:
-	$(RM) $(TMP_MAIN) $(GCNOS) $(GCDAS) $(GCOVS) $(COVERAGE) $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB) $(JSS) $(BCS) $(WASMS) $(WASTS)
+clean: native_clean cov_clean wasm_clean
