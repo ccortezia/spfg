@@ -1,5 +1,5 @@
-#ifndef __SPFG_BUILDER_H__
-#define __SPFG_BUILDER_H__
+#ifndef __SPFG_COMPOSITION_H__
+#define __SPFG_COMPOSITION_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +30,4 @@ spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
 }
 #endif
 
-#endif // __SPFG_BUILDER_H__
+#endif // __SPFG_COMPOSITION_H__

@@ -3,7 +3,7 @@
 #include "spfg/spfg.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
-#include "spfg_builder.h"
+#include "spfg_composition.h"
 #include "spfg_evaluation.h"
 
 // -------------------------------------------------------------------------------------------------
