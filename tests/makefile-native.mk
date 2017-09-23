@@ -1,0 +1,16 @@
+NATIVE_EXE = $(NAME)
+
+CFLAGS ?= -I${ROOT_PATH}/src -I${ROOT_PATH}/${STAGE_INC} -I${ROOT_PATH}/${STAGE_INC}/unity -g3 -O0 -std=c99
+LDFLAGS ?= -g3 -L${ROOT_PATH}/${STAGE_LIB}
+LDLIBS ?= -lspfg
+
+CFLAGS += $(EXTRA_CFLAGS)
+LDFLAGS += $(EXTRA_LDFLAGS)
+
+OBJECTS = $(SOURCES:%.c=%.o)
+
+$(NATIVE_EXE): $(OBJECTS)
+
+.PHONY: native_clean
+native_clean:
+	$(RM) $(OBJECTS) $(TARGET)
