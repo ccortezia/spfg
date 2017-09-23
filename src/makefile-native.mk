@@ -1,7 +1,7 @@
 SHARED_LIB = lib$(NAME).so
 STATIC_LIB = lib$(NAME).a
 
-CFLAGS ?= -I${ROOT_PATH}/include -I${ROOT_PATH}/lib/azjson/include -Wall -g3 -O0 -std=gnu99
+CFLAGS ?= -I${ROOT_PATH}/include -I${ROOT_PATH}/src -I${ROOT_PATH}/lib/azjson/include -Wall -g3 -O0 -std=gnu99
 ARFLAGS ?= rcs
 LDFLAGS ?=
 

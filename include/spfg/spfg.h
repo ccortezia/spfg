@@ -1,4 +1,5 @@
 #ifndef __SPFG_H__
+#define __SPFG_H__
 
 #include <stdint.h>
 #include <stdbool.h>
