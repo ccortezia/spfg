@@ -2,7 +2,7 @@ COVERAGE = $(NAME).info
 
 GCNOS = $(SOURCES:%.c=%.gcno)
 GCDAS = $(SOURCES:%.c=%.gcda)
-GCOVS = $(shell find . -name '*.gcov')
+GCOVS = $(wildcard *.gcov)
 
 $(COVERAGE): $(GCNOS) $(GCDAS)
 	(lcov -t "Coverage on ${TARGET}" -o ${COVERAGE} -c -d . --no-external)
