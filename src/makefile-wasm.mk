@@ -11,6 +11,7 @@ WASMS = *.wasm
 WASTS = *.wast
 BCS = *.bc
 JSS = *.js
+ARTIFACTS += $(TMP_MAIN) $(JSS) $(BCS) $(WASMS) $(WASTS)
 
 $(JS_LIB): $(SOURCES)
 	echo 'var ModuleSPFG = function(Module) {Module = Module || {}; var Module = Module;' > ${TMP_PREJS}
@@ -26,8 +27,3 @@ $(BC_LIB): $(SOURCES)
 	echo ';return Module;};' > ${TMP_POSTJS}
 	$(CC) ${CFLAGS} ${WFLAGS} -o $@ $^
 	rm -f ${TMP_PREJS} ${TMP_POSTJS}
-
-
-.PHONY: wasm_clean
-wasm_clean:
-	$(RM) $(TMP_MAIN) $(JSS) $(BCS) $(WASMS) $(WASTS)

@@ -9,6 +9,7 @@ CFLAGS += $(EXTRA_CFLAGS)
 ARFLAGS += $(EXTRA_ARFLAGS)
 LDFLAGS += $(EXTRA_LDFLAGS)
 OBJECTS = $(SOURCES:%.c=%.o)
+ARTIFACTS += $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB)
 
 ifeq ($(BUILD_SHARED),y)
 	EXTRA_CFLAGS += -fPIC
@@ -27,7 +28,3 @@ $(SHARED_LIB): $(OBJECTS)
 # exposed by the resulting linked shared library.
 $(PRIVATE:%.c=%.o): $(PRIVATE)
 	$(CC) $(CFLAGS) -fvisibility=hidden -c $^
-
-.PHONY: native_clean
-native_clean:
-	$(RM) $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB)
