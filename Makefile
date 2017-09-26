@@ -20,7 +20,7 @@ export STAGE_INC ?= $(STAGE)/include
 # ----
 
 LIBRARIES ?=
-EXECUTABLES ?= $(STAGE_BIN)/test
+EXECUTABLES ?= $(STAGE_BIN)/$(TEST_EXE)
 HEADERS ?= $(STAGE_INC)/spfg
 
 # ----

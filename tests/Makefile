@@ -1,4 +1,4 @@
-NAME = test
+NAME = test_spfg
 
 CC = $(CROSS_COMPILE)gcc
 LINK = $(CROSS_COMPILE)gcc
