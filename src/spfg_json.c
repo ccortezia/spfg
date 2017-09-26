@@ -197,6 +197,8 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
     spfg_err_t err;
     spfg_gr_t *gr;
 
+    memset(&json_gr, 0, sizeof(spfg_gr_t));
+
     if (azjson_import(json_str, len, root_spec, &json_gr) != AZJSON_ERROR_NO) {
         return SPFG_ERROR_FAIL;
     }
