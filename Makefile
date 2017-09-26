@@ -25,8 +25,7 @@ HEADERS ?= $(STAGE_INC)/spfg
 
 # ----
 
-all: $(EXECUTABLES)
-
+all:
 include makefile-arm.mk
 include makefile-arduino.mk
 include makefile-native.mk
@@ -34,6 +33,7 @@ include makefile-wasm.mk
 include makefile-test.mk
 include makefile-cov.mk
 include makefile-contrib.mk
+all: $(EXECUTABLES)
 
 htmldoc:
 	(doxygen)
@@ -45,8 +45,7 @@ htmldoc:
 devel:
 	(BUILDCOV=y make)
 	(make test)
-	(make -C src clean)
-	(make -C tests clean)
+	(make sclean)
 
 ci:
 	(make clean)
