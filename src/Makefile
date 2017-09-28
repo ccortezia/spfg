@@ -4,10 +4,14 @@ CC := $(CROSS_COMPILE)gcc
 AR := $(CROSS_COMPILE)ar
 
 SOURCES = $(wildcard *.c) ${ROOT_PATH}/lib/azjson/src/azjson.c
+PRIVATE = spfg_utils.c spfg_eval.c spfg_build.c
+ARTIFACTS =
 
-include makefile-native.mk
-include makefile-wasm.mk
-include makefile-cov.mk
+include makefile.d/binaries.mk
+include makefile.d/coverage.mk
+include makefile.d/arch-wasm.mk
 
 .PHONY: clean
-clean: native_clean cov_clean wasm_clean
+
+clean:
+	$(RM) $(ARTIFACTS)

@@ -1,604 +1,19 @@
 #include <string.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include "spfg/spfg.h"
-
-// -------------------------------------------------------------------------------------------------
-// Local macros
-// -------------------------------------------------------------------------------------------------
-
-#define SPFG_GR_ID0 1
-#define GEN_SPFG_DP_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + idx + 1)
-#define GEN_SPFG_FN_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + idx + 1)
-
-// -------------------------------------------------------------------------------------------------
-// Private Type Definitions
-// -------------------------------------------------------------------------------------------------
-
-typedef struct spfg_block_name {
-    char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
-} spfg_block_name_t;
-
-typedef union {
-    spfg_real_t real;
-    spfg_int_t integer;
-    spfg_boolean_t boolean;
-} spfg_dp_value_t;
-
-typedef struct spfg_dp {
-    spfg_dp_id_t id;
-    spfg_dp_type_t type;
-    spfg_block_name_t name;
-    spfg_boolean_t emitted;
-    spfg_dp_value_t value;
-} spfg_dp_t;
-
-typedef struct spfg_fn {
-    spfg_fn_id_t id;
-    spfg_fn_type_t type;
-    spfg_block_name_t name;
-    spfg_phase_t phase;
-    spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
-    spfg_fn_dp_in_cnt_t in_dp_ids_len;
-    spfg_dp_id_t out_dp_ids[SPFG_MAX_FN_OUT_DPS];
-    spfg_fn_dp_out_cnt_t out_dp_ids_len;
-} spfg_fn_t;
-
-
-typedef struct spfg_gr_ctl {
-    spfg_phase_t curr_phase;
-    spfg_gr_fn_cnt_t curr_fn_idx;
-}  spfg_gr_ctl_t;
-
-typedef struct spfg_gr {
-    spfg_gr_id_t id;
-    spfg_block_name_t name;
-    spfg_dp_t dps[SPFG_MAX_GRID_DPS];
-    spfg_gr_dp_cnt_t dps_cnt;
-    spfg_fn_t fns[SPFG_MAX_GRID_FNS];
-    spfg_gr_fn_cnt_t fns_cnt;
-    spfg_gr_ctl_t ctl;
-} spfg_gr_t;
-
-
-typedef struct spfg_fnx {
-    spfg_fn_t *fn;
-    spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
-    spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
-} spfg_fnx_t;
-
-typedef struct spfg_grx {
-    spfg_gr_t *gr;
-    spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
-} spfg_grx_t;
-
-
-typedef struct spfg_gr_exph {
-} spfg_gr_exph_t;
-
-typedef struct spfg_gr_exp {
-    spfg_gr_exph_t header;
-    spfg_gr_t data;
-} spfg_gr_exp_t;
-
+#include "spfg_types.h"
+#include "spfg_utils.h"
+#include "spfg_build.h"
+#include "spfg_eval.h"
 
 // -------------------------------------------------------------------------------------------------
 // Private Library Data
 // -------------------------------------------------------------------------------------------------
 
-static spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
-static spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
+spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
+spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
 static char initialized;
-
-
-// -------------------------------------------------------------------------------------------------
-// Private utilities
-// -------------------------------------------------------------------------------------------------
-
-static spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name)
-{
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!ascii) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!*ascii) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    if (strnlen(ascii, sizeof(name->chars)) >= sizeof(name->chars)) {
-        return SPFG_ERROR_BUFFER_OVERFLOW;
-    }
-
-    memset(name->chars, 0, sizeof(name->chars));
-    strcpy(name->chars, ascii);
-    name->chars[sizeof(name->chars) - 1] = 0;
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t find_global_gr(spfg_gr_id_t gr_id, unsigned int *idx)
-{
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (gr_id == 0) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
-        if (global_grs[i].id == gr_id) {
-            *idx = i;
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t resolve_global_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
-{
-    spfg_err_t err;
-    unsigned int idx;
-
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if ((err = find_global_gr(gr_id, &idx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to resolve gr from id: err=[%d]\n", err);
-        return SPFG_ERROR_NOT_FOUND;
-    }
-
-    *gr = &global_grs[idx];
-    return SPFG_ERROR_NO;
-}
-
-
-static spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
-{
-    if (!dp) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
-        if (gr->dps[i].id == dp_id) {
-            *dp = &gr->dps[i];
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
-{
-    if (!fn) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
-        if (gr->fns[i].id == fn_id) {
-            *fn = &gr->fns[i];
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
-{
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
-
-        if (!global_grs[i].name.chars[0]) {
-            *idx = i;
-
-            if (gr) {
-                *gr = &global_grs[i];
-            }
-
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx, spfg_dp_t **dp)
-{
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
-
-        if (!gr->dps[i].name.chars[0]) {
-            *idx = i;
-
-            if (dp) {
-                *dp = &gr->dps[i];
-            }
-
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx, spfg_fn_t **fn)
-{
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
-
-        if (!gr->fns[i].name.chars[0]) {
-            *idx = i;
-
-            if (fn) {
-                *fn = &gr->fns[i];
-            }
-
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
-{
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
-
-        if (!fnx->in_dps[i]->name.chars[0]) {
-            continue;
-        }
-
-        if (fnx->in_dps[i]->emitted) {
-            if (idx) {
-                *idx = i;
-            }
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
-
-static spfg_err_t clear_changed_input_for_fnx(spfg_fnx_t *fnx)
-{
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
-        fnx->in_dps[i]->emitted = 0;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-// -------------------------------------------------------------------------------------------------
-// Private Grid Composition API
-// -------------------------------------------------------------------------------------------------
-
-static spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    // TODO: dp type validation
-
-    if ((err = spfg_block_name_create(name, &gr->dps[dp_idx].name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set datapoint name: err=[%d]\n", err);
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    gr->dps[dp_idx].id = GEN_SPFG_DP_ID(gr->id, dp_idx);
-    gr->dps[dp_idx].type = dp_type;
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
-{
-    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
-
-    spfg_err_t err;
-
-    memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
-
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i])) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-    }
-
-    memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
-
-    for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i])) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
-{
-    spfg_err_t err;
-
-    for (int i = 0; dp_ids[i] && i < length; i++) {
-        if ((err = resolve_gr_dp(gr, dp_ids[i], &dps[i])) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                        spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-                                        spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
-                                        const char *fn_name) {
-
-    uint8_t cnt = 0;
-
-    if (in_dps_len < in_dp_types_len) {
-        fprintf(stderr, "%d missing input datapoints for function '%s' expecting %d input datapoints\n", in_dp_types_len - in_dps_len, fn_name, in_dp_types_len);
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    for (cnt = 0; cnt < in_dps_len && cnt < SPFG_MAX_FN_IN_DPS; cnt++) {
-
-        if (cnt >= in_dp_types_len) {
-            fprintf(stderr, "unexpected input datapoint '%s' (position %d) for function '%s' expecting only %d input datapoints\n", in_dps[cnt]->name.chars, cnt, fn_name, in_dp_types_len);
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-
-        if (in_dps[cnt]->type != in_dp_types[cnt]) {
-            fprintf(stderr, "input datapoint '%s' type %d is incompatible with expected input type %d (position %d) for function '%s'\n", in_dps[cnt]->name.chars, in_dps[cnt]->type, in_dp_types[cnt], cnt, fn_name);
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-    }
-
-    if (out_dps_len < out_dp_types_len) {
-        fprintf(stderr, "%d missing output datapoints for function '%s' expecting %d output datapoints\n", out_dp_types_len - out_dps_len, fn_name, out_dp_types_len);
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    for (cnt = 0; cnt < out_dps_len && cnt < SPFG_MAX_FN_OUT_DPS; cnt++) {
-
-        if (cnt >= out_dp_types_len) {
-            fprintf(stderr, "unexpected output datapoint '%s' (position %d) for function '%s' expecting only %d output datapoints\n", out_dps[cnt]->name.chars, cnt, fn_name, out_dp_types_len);
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-
-        if (out_dps[cnt]->type != out_dp_types[cnt]) {
-            fprintf(stderr, "output datapoint '%s' type %d is incompatible with expected output type %d (position %d) for function '%s'\n", out_dps[cnt]->name.chars, out_dps[cnt]->type, out_dp_types[cnt], cnt, fn_name);
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
-                                   spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                   spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                   const char *fn_name) {
-
-    switch (type) {
-
-        case SPFG_FN_INVERT_BOOL_RET_BOOL:
-        {
-            return SPFG_ERROR_UNIMPLEMENTED;
-        }
-
-        case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
-        {
-            spfg_dp_type_t in_dp_types[] = {SPFG_DP_BOOL, SPFG_DP_BOOL};
-            spfg_dp_type_t out_dp_types[] = {SPFG_DP_BOOL};
-            return validate_fn_signature(
-                in_dps, in_dps_len,
-                out_dps, out_dps_len,
-                in_dp_types, 2,
-                out_dp_types, 1,
-                fn_name);
-        }
-
-        default:
-        {
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-    }
-}
-
-static spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
-                                    spfg_fn_type_t type,
-                                    spfg_phase_t phase,
-                                    spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
-                                    spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
-                                    const char *name)
-{
-    spfg_err_t err;
-    spfg_fn_t *fn = &gr->fns[fn_idx];
-
-    if ((err = spfg_block_name_create(name, &fn->name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set function name: err=[%d]\n", err);
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    fn->type = type;
-    fn->phase = phase;
-    fn->id = GEN_SPFG_FN_ID(gr->id, fn_idx);
-    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
-    fn->in_dp_ids_len = in_dp_ids_len;
-    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
-    fn->out_dp_ids_len = out_dp_ids_len;
-
-    return SPFG_ERROR_NO;
-}
-
-
-// -------------------------------------------------------------------------------------------------
-// Private Grid Evaluation API
-// -------------------------------------------------------------------------------------------------
-
-static spfg_err_t impl_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
-{
-    dp->emitted = dp->value.boolean != value;
-    dp->value.boolean = value;
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t impl_fn_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
-{
-    *result = p0 && p1;
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t eval_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
-{
-    spfg_boolean_t out;
-    spfg_err_t err;
-
-    if ((err = impl_fn_and_bool_bool_ret_bool(
-        fnx->in_dps[0]->value.boolean,
-        fnx->in_dps[1]->value.boolean,
-        &out)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    if ((err = impl_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
-
-    switch (fnx->fn->type) {
-
-        case SPFG_FN_INVERT_BOOL_RET_BOOL:
-        {
-            return SPFG_ERROR_UNIMPLEMENTED;
-        }
-
-        case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
-        {
-            return eval_fn_and_bool_bool_ret_bool(fnx, ts);
-        }
-
-        default:
-        {
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-    }
-}
-
-static spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if ((err = find_changed_input_for_fnx(fnx, NULL)) != SPFG_ERROR_NO) {
-        if (err == SPFG_ERROR_NOT_FOUND) {
-            return SPFG_ERROR_NO;
-        }
-        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
-    }
-
-    if ((err = eval_fnx(fnx, ts)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
-    }
-
-    if ((err = clear_changed_input_for_fnx(fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-static spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-    spfg_fnx_t *fnx;
-
-    for (;;) {
-
-        // Stop condition: array boundary protection.
-        if (grx->gr->ctl.curr_fn_idx >= SPFG_MAX_GRID_FNS) {
-            break;
-        }
-
-        fnx = &grx->fnx[grx->gr->ctl.curr_fn_idx];
-
-        // Stop condition: no more pending functions to evaluate.
-        if (!fnx->fn) {
-            break;
-        }
-
-        // Stop condition: no more pending functions to evaluate.
-        if (!fnx->fn->name.chars[0]) {
-            break;
-        }
-
-        if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
-            grx->gr->ctl.curr_phase += 1;
-        }
-
-        // Stop condition: control callback.
-        if (cb) {
-            err = cb(grx->gr->id, fnx->fn->id, grx->gr->ctl.curr_phase, udata);
-
-            if (err == SPFG_LOOP_CONTROL_STOP) {
-                break;
-            }
-
-            if (err != SPFG_ERROR_NO) {
-                fprintf(stderr, "failed to run cb on grid %d: err=[%d]\n", grx->gr->id, err);
-                return SPFG_ERROR_CYCLE_FAILURE;
-            }
-        }
-
-        if ((err = spfg_run_fnx(grx, fnx, ts)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-            return SPFG_ERROR_CYCLE_FAILURE;
-        }
-
-        grx->gr->ctl.curr_fn_idx += 1;
-    }
-
-    return SPFG_ERROR_NO;
-}
 
 // -------------------------------------------------------------------------------------------------
 // Initialization API
@@ -653,11 +68,11 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
     spfg_gr_t *gr;
     unsigned int gr_idx;
 
-    if ((err = find_free_global_gr(&gr_idx, &gr)) != SPFG_ERROR_NO) {
+    if ((err = find_free_gr(&gr_idx, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_block_name_create(name, &gr->name)) != SPFG_ERROR_NO) {
+    if ((err = create_name(name, &gr->name)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
@@ -675,7 +90,7 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
     spfg_err_t err;
     spfg_gr_t *gr;
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -727,7 +142,7 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
 
     spfg_gr_t *gr;
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -738,7 +153,7 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_dp_gr_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+    if ((err = gr_dp_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
         return err;
     }
 
@@ -754,7 +169,7 @@ extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
     spfg_gr_t *gr;
     spfg_dp_t *dp;
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -809,7 +224,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
 
     unsigned int gr_idx;
 
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -820,15 +235,15 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
 
-    if ((err = spfg_resolve_dp_ids(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = resolve_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = spfg_resolve_dp_ids(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = resolve_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = spfg_fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
+    if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_VALIDATE_FN;
     }
 
@@ -841,7 +256,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_fn_gr_create(gr, fn_idx, type, phase,
+    if ((err = gr_fn_create(gr, fn_idx, type, phase,
                                in_dp_ids, in_dp_ids_len,
                                out_dp_ids, out_dp_ids_len,
                                name)) != SPFG_ERROR_NO) {
@@ -854,7 +269,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
 
-    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+    if ((err = grx_fnx_reindex(grx, fnx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
         return SPFG_ERROR_REINDEX_FN;
     }
@@ -872,7 +287,7 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
 
     // TODO: study if reindex is necessary
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -907,7 +322,7 @@ extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
     spfg_dp_t *dp;
     spfg_gr_t *gr;
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -915,7 +330,7 @@ extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    return impl_dp_set_bool(dp, value);
+    return dp_bool_set(dp, value);
 }
 
 extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
@@ -928,7 +343,7 @@ extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -957,7 +372,7 @@ extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
     unsigned int gr_idx;
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -973,11 +388,11 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
     unsigned int gr_idx;
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if ((err = find_global_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
+    if ((err = find_gr(gr_id, &gr_idx)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, cb, udata);
+    return grx_eval(&global_grxs[gr_idx], ts, cb, udata);
 }
 
 
@@ -999,7 +414,7 @@ spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, uint32_t outbuf_
 
     spfg_gr_t *gr;
 
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -1036,7 +451,7 @@ spfg_err_t spfg_gr_import_bin(void *data, uint32_t data_len, spfg_gr_id_t *gr_id
 
     spfg_gr_t *gr;
 
-    (void) resolve_global_gr(*gr_id, &gr);
+    (void) resolve_gr(*gr_id, &gr);
 
     spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)data;
 
@@ -1068,398 +483,6 @@ spfg_err_t spfg_info(spfg_info_t *info)
     info->max_grid_fns = SPFG_MAX_GRID_FNS;
     info->max_grid_dps = SPFG_MAX_GRID_DPS;
     info->max_phases = SPFG_MAX_PHASES;
-
-    return SPFG_ERROR_NO;
-}
-
-// -------------------------------------------------------------------------------------------------
-// JSON Import/Export API
-// -------------------------------------------------------------------------------------------------
-
-#include "azjson/azjson.h"
-
-azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
-    switch (token->type) {
-        case TOKEN_VI: return azjson_strtol(token->chars, &((spfg_dp_value_t *)target)->integer);
-        case TOKEN_VR: return azjson_strtod(token->chars, &((spfg_dp_value_t *)target)->real);
-        case TOKEN_VT: (((spfg_dp_value_t *)target)->boolean) = true; break;
-        case TOKEN_VF: (((spfg_dp_value_t *)target)->boolean) = false; break;
-        default: return AZJSON_ERROR_FAIL;
-    }
-    return AZJSON_ERROR_NO;
-}
-
-
-static azjson_spec_t int_spec[] = {
-    {
-        .vtype = JSON_INTEGER,
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_fns_fn_spec[] = {
-    {
-        .key = "id",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_fn_t, id),
-    },
-    {
-        .key = "type",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_fn_t, type),
-    },
-    {
-        .key = "name",
-        .vtype = JSON_STRING,
-        .voffset = offsetof(spfg_fn_t, name),
-        .vsize = sizeof(((spfg_fn_t *)0)->name)
-    },
-    {
-        .key = "phase",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_fn_t, phase),
-    },
-    {
-        .key = "in_dp_ids",
-        .vtype = JSON_ARRAY,
-        .vspec = int_spec,
-        .voffset = offsetof(spfg_fn_t, in_dp_ids),
-        .noffset = offsetof(spfg_fn_t, in_dp_ids_len),
-        .maxitems = sizeof(((spfg_fn_t *)0)->in_dp_ids) / sizeof(spfg_dp_id_t)
-    },
-    {
-        .key = "out_dp_ids",
-        .vtype = JSON_ARRAY,
-        .vspec = int_spec,
-        .voffset = offsetof(spfg_fn_t, out_dp_ids),
-        .noffset = offsetof(spfg_fn_t, out_dp_ids_len),
-        .maxitems = sizeof(((spfg_fn_t *)0)->out_dp_ids) / sizeof(spfg_dp_id_t)
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_fns_spec[] = {
-    {
-        .vtype = JSON_OBJECT,
-        .vspec = gr_fns_fn_spec,
-        .vsize = sizeof(spfg_fn_t),
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_dps_dp_spec[] = {
-    {
-        .key = "id",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_dp_t, id),
-    },
-    {
-        .key = "type",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_dp_t, type),
-    },
-    {
-        .key = "name",
-        .vtype = JSON_STRING,
-        .voffset = offsetof(spfg_dp_t, name),
-        .vsize = sizeof(((spfg_dp_t *)0)->name)
-    },
-    {
-        .key = "emitted",
-        .vtype = JSON_BOOL,
-        .voffset = offsetof(spfg_dp_t, emitted),
-    },
-    {
-        .key = "value",
-        .vtype = JSON_BOOL,
-        .voffset = offsetof(spfg_dp_t, value),
-        .cp = spfg_dp_value_cp
-    },
-    {
-        .key = "value",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_dp_t, value),
-        .cp = spfg_dp_value_cp
-    },
-    {
-        .key = "value",
-        .vtype = JSON_REAL,
-        .voffset = offsetof(spfg_dp_t, value),
-        .cp = spfg_dp_value_cp
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_dps_spec[] = {
-    {
-        .vtype = JSON_OBJECT,
-        .vspec = gr_dps_dp_spec,
-        .vsize = sizeof(spfg_dp_t),
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_ctl_spec[] = {
-    {
-        .key = "curr_phase",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_gr_ctl_t, curr_phase)
-    },
-    {
-        .key = "curr_fn_idx",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_gr_ctl_t, curr_fn_idx)
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t gr_spec[] = {
-    {
-        .key = "id",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_gr_t, id)
-    },
-    {
-        .key = "name",
-        .vtype = JSON_STRING,
-        .voffset = offsetof(spfg_gr_t, name),
-        .vsize = sizeof(((spfg_gr_t *)0)->name)
-    },
-    {
-        .key = "fns",
-        .vtype = JSON_ARRAY,
-        .vspec = gr_fns_spec,
-        .voffset = offsetof(spfg_gr_t, fns),
-        .noffset = offsetof(spfg_gr_t, fns_cnt),
-        .maxitems = sizeof(((spfg_gr_t *)0)->fns) / sizeof(spfg_fn_t)
-    },
-    {
-        .key = "dps",
-        .vtype = JSON_ARRAY,
-        .vspec = gr_dps_spec,
-        .voffset = offsetof(spfg_gr_t, dps),
-        .noffset = offsetof(spfg_gr_t, dps_cnt),
-        .maxitems = sizeof(((spfg_gr_t *)0)->dps) / sizeof(spfg_dp_t)
-    },
-    {
-        .key = "ctl",
-        .vtype = JSON_OBJECT,
-        .vspec = gr_ctl_spec,
-        .voffset = offsetof(spfg_gr_t, ctl),
-    },
-    {.boundary = true}
-};
-
-static azjson_spec_t root_spec[] = {
-    {
-        .vtype = JSON_OBJECT,
-        .vspec = gr_spec,
-    },
-    {.boundary = true}
-};
-
-static spfg_gr_t json_gr;
-
-spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_gr_id) {
-
-    spfg_err_t err;
-    spfg_gr_t *gr;
-
-    if (azjson_import(json_str, len, root_spec, &json_gr) != AZJSON_ERROR_NO) {
-        return SPFG_ERROR_FAIL;
-    }
-
-    if ((err = resolve_global_gr(json_gr.id, &gr)) != SPFG_ERROR_NO) {
-
-        // Existing gr not found, attempt to create one from imported data.
-        if (err == SPFG_ERROR_NOT_FOUND) {
-
-            spfg_gr_id_t gr_id;
-
-            if ((err = spfg_gr_create(&gr_id, json_gr.name.chars)) != SPFG_ERROR_NO) {
-                return err;
-            }
-
-            (void) resolve_global_gr(gr_id, &gr);
-
-            gr->id = json_gr.id;
-        }
-
-        // Unexpected error detected during gr resolution, bail out.
-        else {
-            return err;
-        }
-    }
-
-    // Existin gr found, cleanup target memory.
-    else {
-        memset(gr, 0, sizeof(spfg_gr_t));
-        memcpy(&gr->name, &json_gr.name, sizeof(json_gr.name));
-        gr->id = json_gr.id;
-    }
-
-    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
-    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
-    memcpy(&gr->fns, &json_gr.fns, sizeof(json_gr.fns));
-    memcpy(&gr->ctl, &json_gr.ctl, sizeof(spfg_gr_ctl_t));
-
-    spfg_gr_cnt_t gr_idx;
-
-    if ((err = find_global_gr(gr->id, &gr_idx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    spfg_grx_t *grx = &global_grxs[gr_idx];
-    memset(grx, 0, sizeof(spfg_grx_t));
-    grx->gr = gr;  // TODO: refactor into gr_reindex function
-
-    spfg_fnx_t *fnx = &grx->fnx[gr->ctl.curr_fn_idx];
-    memset(fnx, 0, sizeof(spfg_fnx_t));
-
-    if ((err = resolve_gr_fn(gr, gr->fns[gr->ctl.curr_fn_idx].id, &fnx->fn)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_FAIL;
-    }
-
-    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_REINDEX_FN;
-    }
-
-    if (out_gr_id) {
-        *out_gr_id = gr->id;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-
-
-static spfg_err_t sappend(char *output, size_t output_len, uint32_t *vcnt, uint32_t *rcnt, const char *fmt, ...)
-{
-    int result;
-    va_list ap;
-    va_start(ap, fmt);
-
-    result = vsnprintf(&output[*rcnt], output_len - *rcnt, fmt, ap);
-
-    if (result < 0) {
-        // TODO: properly handle error
-        return SPFG_ERROR_FAIL;
-    }
-
-    *vcnt += result;
-    *rcnt = *vcnt > output_len - 1 ? output_len - 1 : *vcnt;
-
-    va_end (ap);
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t spfg_gr_export_json(spfg_gr_id_t gr_id, char *output, uint32_t output_len, uint32_t *slen)
-{
-    spfg_gr_t *gr;
-    spfg_err_t err;
-    uint32_t rcnt = 0;
-    uint32_t vcnt = 0;
-
-    if (!output) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    memset(output, 0, output_len);
-
-    if ((err = resolve_global_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    sappend(output, output_len, &vcnt, &rcnt, "{");
-    sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->id);
-    sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->name.chars);
-
-    sappend(output, output_len, &vcnt, &rcnt, "\"fns\": [");
-    for (uint32_t idx = 0; idx < SPFG_MAX_GRID_FNS; idx++) {
-        if (!gr->fns[idx].name.chars[0]) {
-            continue;
-        }
-        sappend(output, output_len, &vcnt, &rcnt, "{");
-        sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->fns[idx].id);
-        sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->fns[idx].name.chars);
-        sappend(output, output_len, &vcnt, &rcnt, "\"type\": %d, ", gr->fns[idx].type);
-        sappend(output, output_len, &vcnt, &rcnt, "\"phase\": %d, ", gr->fns[idx].phase);
-        sappend(output, output_len, &vcnt, &rcnt, "\"in_dp_ids\": [");
-
-        for (uint32_t _idx = 0; _idx < gr->fns[idx].in_dp_ids_len; _idx++) {
-            sappend(output, output_len, &vcnt, &rcnt, "%d", gr->fns[idx].in_dp_ids[_idx]);
-            if (_idx + 1 < gr->fns[idx].in_dp_ids_len) {
-                sappend(output, output_len, &vcnt, &rcnt, ", ");
-            }
-        }
-        sappend(output, output_len, &vcnt, &rcnt, "], ");
-
-        sappend(output, output_len, &vcnt, &rcnt, "\"out_dp_ids\": [");
-        for (uint32_t _idx = 0; _idx < gr->fns[idx].out_dp_ids_len; _idx++) {
-            sappend(output, output_len, &vcnt, &rcnt, "%d", gr->fns[idx].out_dp_ids[_idx]);
-            if (_idx + 1 < gr->fns[idx].out_dp_ids_len) {
-                sappend(output, output_len, &vcnt, &rcnt, ", ");
-            }
-        }
-        sappend(output, output_len, &vcnt, &rcnt, "]");
-
-        sappend(output, output_len, &vcnt, &rcnt, "}");
-        if (idx < SPFG_MAX_GRID_FNS && gr->fns[idx + 1].name.chars[0]) {
-            sappend(output, output_len, &vcnt, &rcnt, ", ");
-        }
-    }
-
-    sappend(output, output_len, &vcnt, &rcnt, "], ");
-    sappend(output, output_len, &vcnt, &rcnt, "\"dps\": [");
-
-    for (uint32_t idx = 0; idx < SPFG_MAX_GRID_DPS; idx++) {
-        if (!gr->dps[idx].name.chars[0]) {
-            continue;
-        }
-
-        sappend(output, output_len, &vcnt, &rcnt, "{");
-        sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->dps[idx].id);
-        sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->dps[idx].name.chars);
-        sappend(output, output_len, &vcnt, &rcnt, "\"type\": %d, ", gr->dps[idx].type);
-
-        switch (gr->dps[idx].type) {
-            case SPFG_DP_INT: {
-                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %d, ", gr->dps[idx].value.integer);
-                break;
-            }
-            case SPFG_DP_REAL: {
-                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %.5G, ", gr->dps[idx].value.real);
-                break;
-            }
-            case SPFG_DP_BOOL: {
-                sappend(output, output_len, &vcnt, &rcnt, "\"value\": %s, ", gr->dps[idx].value.boolean ? "true" : "false");
-                break;
-            }
-            default: {
-                return SPFG_ERROR_FAIL;
-            }
-        }
-
-        sappend(output, output_len, &vcnt, &rcnt, "\"emitted\": %s", gr->dps[idx].emitted ? "true" : "false");
-        sappend(output, output_len, &vcnt, &rcnt, "}");
-
-        if (idx < SPFG_MAX_GRID_DPS && gr->dps[idx + 1].name.chars[0]) {
-            sappend(output, output_len, &vcnt, &rcnt, ", ");
-        }
-    }
-
-    sappend(output, output_len, &vcnt, &rcnt, "], ");
-
-    sappend(output, output_len, &vcnt, &rcnt, "\"ctl\": {");
-    sappend(output, output_len, &vcnt, &rcnt, "\"curr_phase\": %d, ", gr->ctl.curr_phase);
-    sappend(output, output_len, &vcnt, &rcnt, "\"curr_fn_idx\": %d", gr->ctl.curr_fn_idx);
-    sappend(output, output_len, &vcnt, &rcnt, "}");
-
-    sappend(output, output_len, &vcnt, &rcnt, "}");
-
-    if (slen) {
-        *slen = rcnt;
-    }
 
     return SPFG_ERROR_NO;
 }

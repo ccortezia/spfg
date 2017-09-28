@@ -4,7 +4,7 @@ htmlcov
 htmldoc
 src/*.html
 src/*.js
-tests/test
+tests/test_spfg
 tests/*.html
 tests/*.js
 *.o

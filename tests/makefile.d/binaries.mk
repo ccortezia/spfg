@@ -8,9 +8,6 @@ CFLAGS += $(EXTRA_CFLAGS)
 LDFLAGS += $(EXTRA_LDFLAGS)
 
 OBJECTS = $(SOURCES:%.c=%.o)
+ARTIFACTS += $(OBJECTS) $(NATIVE_EXE)
 
 $(NATIVE_EXE): $(OBJECTS)
-
-.PHONY: native_clean
-native_clean:
-	$(RM) $(OBJECTS) $(TARGET)
