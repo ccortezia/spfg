@@ -1,6 +1,7 @@
 #ifndef __SPFG_EVALUATION_H__
 #define __SPFG_EVALUATION_H__
 
+#include "spfg/spfg.h"
 #include "spfg_types.h"
 
 #ifdef __cplusplus

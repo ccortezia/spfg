@@ -1,6 +1,9 @@
 #ifndef __SPFG_JSON_H__
 #define __SPFG_JSON_H__
 
+#include "spfg/spfg.h"
+#include "spfg_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
