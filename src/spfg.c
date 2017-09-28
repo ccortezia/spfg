@@ -153,7 +153,7 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_dp_gr_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
+    if ((err = gr_dp_create(gr, dp_idx, dp_type, name)) != SPFG_ERROR_NO) {
         return err;
     }
 
@@ -243,7 +243,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = spfg_fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
+    if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_VALIDATE_FN;
     }
 
@@ -256,7 +256,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if ((err = spfg_fn_gr_create(gr, fn_idx, type, phase,
+    if ((err = gr_fn_create(gr, fn_idx, type, phase,
                                in_dp_ids, in_dp_ids_len,
                                out_dp_ids, out_dp_ids_len,
                                name)) != SPFG_ERROR_NO) {
@@ -269,7 +269,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
     spfg_fnx_t *fnx = &grx->fnx[fn_idx];
     fnx->fn = fn;
 
-    if ((err = spfg_fn_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+    if ((err = grx_fnx_reindex(grx, fnx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
         return SPFG_ERROR_REINDEX_FN;
     }

@@ -4,7 +4,7 @@
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
-spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
+spfg_err_t gr_dp_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
@@ -29,7 +29,7 @@ spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t 
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
+spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
 {
     // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
 
@@ -54,7 +54,7 @@ spfg_err_t spfg_fn_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], uint8_t in_dps_len,
+spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
                                         spfg_dp_t *out_dps[], uint8_t out_dps_len,
                                         spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
                                         spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
@@ -101,7 +101,7 @@ spfg_err_t validate_fn_signature(spfg_dp_t *in_dps[], uint8_t in_dps_len,
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
+spfg_err_t fn_validate(spfg_fn_type_t type,
                                    spfg_dp_t *in_dps[], uint8_t in_dps_len,
                                    spfg_dp_t *out_dps[], uint8_t out_dps_len,
                                    const char *fn_name) {
@@ -117,7 +117,7 @@ spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
         {
             spfg_dp_type_t in_dp_types[] = {SPFG_DP_BOOL, SPFG_DP_BOOL};
             spfg_dp_type_t out_dp_types[] = {SPFG_DP_BOOL};
-            return validate_fn_signature(
+            return fn_signature_validate(
                 in_dps, in_dps_len,
                 out_dps, out_dps_len,
                 in_dp_types, 2,
@@ -132,12 +132,11 @@ spfg_err_t spfg_fn_validate(spfg_fn_type_t type,
     }
 }
 
-spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
-                                    spfg_fn_type_t type,
-                                    spfg_phase_t phase,
-                                    spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
-                                    spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
-                                    const char *name)
+spfg_err_t gr_fn_create(spfg_gr_t *gr,
+                        int fn_idx, spfg_fn_type_t type, spfg_phase_t phase,
+                        spfg_dp_id_t *in_dp_ids, uint8_t in_dp_ids_len,
+                        spfg_dp_id_t *out_dp_ids, uint8_t out_dp_ids_len,
+                        const char *name)
 {
     spfg_err_t err;
     spfg_fn_t *fn = &gr->fns[fn_idx];
