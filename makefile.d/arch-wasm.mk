@@ -2,14 +2,14 @@
 ifeq ($(ARCH),wasm)
 	EXTRA_CFLAGS += -s WASM=1
 	LIBRARIES += $(STAGE_LIB)/libspfg.wasm
-	EXECUTABLES = $(STAGE_BIN)/test.html
+	EXECUTABLES = $(STAGE_BIN)/test_spfg.html
 endif
 
-$(STAGE_BIN)/test.html: unity $(HEADERS) $(LIBRARIES)
-	(make -C tests test.html)
-	(cp tests/test.js ${STAGE_BIN})
-	(cp tests/test.wasm ${STAGE_BIN})
-	(cp tests/test.html ${STAGE_BIN})
+$(STAGE_BIN)/test_spfg.html: unity $(HEADERS) $(LIBRARIES)
+	(make -C tests test_spfg.html)
+	(cp tests/test_spfg.js ${STAGE_BIN})
+	(cp tests/test_spfg.wasm ${STAGE_BIN})
+	(cp tests/test_spfg.html ${STAGE_BIN})
 
 $(STAGE_LIB)/libspfg.wasm: $(STAGE_LIB)/libspfg.wast
 	(cp src/libspfg.wasm ${STAGE_LIB})

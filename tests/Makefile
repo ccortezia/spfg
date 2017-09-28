@@ -11,9 +11,9 @@ ARTIFACTS =
 
 all:
 
-include makefile-native.mk
-include makefile-wasm.mk
-include makefile-cov.mk
+include makefile.d/binaries.mk
+include makefile.d/coverage.mk
+include makefile.d/arch-wasm.mk
 
 .PHONY: clean
 clean:

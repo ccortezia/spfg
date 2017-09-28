@@ -26,13 +26,13 @@ HEADERS ?= $(STAGE_INC)/spfg
 # ----
 
 all:
-include makefile-arm.mk
-include makefile-arduino.mk
-include makefile-native.mk
-include makefile-wasm.mk
-include makefile-test.mk
-include makefile-cov.mk
-include makefile-contrib.mk
+include makefile.d/arch-arm.mk
+include makefile.d/arch-arduino.mk
+include makefile.d/arch-wasm.mk
+include makefile.d/binaries.mk
+include makefile.d/test.mk
+include makefile.d/coverage.mk
+include makefile.d/contrib.mk
 all: $(EXECUTABLES)
 
 htmldoc:
