@@ -3,39 +3,39 @@
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
-spfg_err_t impl_dp_set_bool(spfg_dp_t *dp, spfg_boolean_t value)
+spfg_err_t dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
 {
     dp->emitted = dp->value.boolean != value;
     dp->value.boolean = value;
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t impl_fn_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
+spfg_err_t fn_and_bool_bool_ret_bool_exec(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
 {
     *result = p0 && p1;
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t eval_fn_and_bool_bool_ret_bool(spfg_fnx_t *fnx, spfg_ts_t ts)
+spfg_err_t fn_and_bool_bool_ret_bool_eval(spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_boolean_t out;
     spfg_err_t err;
 
-    if ((err = impl_fn_and_bool_bool_ret_bool(
+    if ((err = fn_and_bool_bool_ret_bool_exec(
         fnx->in_dps[0]->value.boolean,
         fnx->in_dps[1]->value.boolean,
         &out)) != SPFG_ERROR_NO) {
         return err;
     }
 
-    if ((err = impl_dp_set_bool(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
+    if ((err = dp_bool_set(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
         return err;
     }
 
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
+spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts) {
 
     switch (fnx->fn->type) {
 
@@ -46,7 +46,7 @@ spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
 
         case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
         {
-            return eval_fn_and_bool_bool_ret_bool(fnx, ts);
+            return fn_and_bool_bool_ret_bool_eval(fnx, ts);
         }
 
         default:
@@ -56,7 +56,7 @@ spfg_err_t eval_fnx(spfg_fnx_t *fnx, spfg_ts_t ts) {
     }
 }
 
-spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
+spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
@@ -68,7 +68,7 @@ spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
-    if ((err = eval_fnx(fnx, ts)) != SPFG_ERROR_NO) {
+    if ((err = fnx_eval(fnx, ts)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
@@ -81,7 +81,7 @@ spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+spfg_err_t grx_eval(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     spfg_err_t err = SPFG_ERROR_NO;
     spfg_fnx_t *fnx;
@@ -123,7 +123,7 @@ spfg_err_t spfg_resume_cycle_grx(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t 
             }
         }
 
-        if ((err = spfg_run_fnx(grx, fnx, ts)) != SPFG_ERROR_NO) {
+        if ((err = grx_fnx_run(grx, fnx, ts)) != SPFG_ERROR_NO) {
             fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
             return SPFG_ERROR_CYCLE_FAILURE;
         }

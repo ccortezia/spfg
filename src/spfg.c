@@ -330,7 +330,7 @@ extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    return impl_dp_set_bool(dp, value);
+    return dp_bool_set(dp, value);
 }
 
 extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
@@ -392,7 +392,7 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    return spfg_resume_cycle_grx(&global_grxs[gr_idx], ts, cb, udata);
+    return grx_eval(&global_grxs[gr_idx], ts, cb, udata);
 }
 
 
