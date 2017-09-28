@@ -18,7 +18,7 @@ spfg_err_t spfg_dp_gr_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t 
 
     // TODO: dp type validation
 
-    if ((err = spfg_block_name_create(name, &gr->dps[dp_idx].name)) != SPFG_ERROR_NO) {
+    if ((err = create_name(name, &gr->dps[dp_idx].name)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to set datapoint name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
@@ -142,7 +142,7 @@ spfg_err_t spfg_fn_gr_create(spfg_gr_t *gr, int fn_idx,
     spfg_err_t err;
     spfg_fn_t *fn = &gr->fns[fn_idx];
 
-    if ((err = spfg_block_name_create(name, &fn->name)) != SPFG_ERROR_NO) {
+    if ((err = create_name(name, &fn->name)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to set function name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }

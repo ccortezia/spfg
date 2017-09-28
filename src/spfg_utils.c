@@ -6,7 +6,7 @@
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
-spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name)
+spfg_err_t create_name(const char *ascii, spfg_block_name_t *name)
 {
     if (!name) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -30,7 +30,7 @@ spfg_err_t spfg_block_name_create(const char *ascii, spfg_block_name_t *name)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t find_global_gr(spfg_gr_id_t gr_id, unsigned int *idx)
+spfg_err_t find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
 {
     if (!idx) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -50,7 +50,7 @@ spfg_err_t find_global_gr(spfg_gr_id_t gr_id, unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t resolve_global_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
+spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
 {
     spfg_err_t err;
     unsigned int idx;
@@ -59,7 +59,7 @@ spfg_err_t resolve_global_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    if ((err = find_global_gr(gr_id, &idx)) != SPFG_ERROR_NO) {
+    if ((err = find_gr(gr_id, &idx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to resolve gr from id: err=[%d]\n", err);
         return SPFG_ERROR_NOT_FOUND;
     }
@@ -101,7 +101,7 @@ spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
+spfg_err_t resolve_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
     spfg_err_t err;
 
@@ -114,7 +114,7 @@ spfg_err_t spfg_resolve_dp_ids(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *d
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
+spfg_err_t find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 {
     if (!idx) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -136,7 +136,7 @@ spfg_err_t find_free_global_gr(unsigned int *idx, spfg_gr_t **gr)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx, spfg_dp_t **dp)
+spfg_err_t find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -162,7 +162,7 @@ spfg_err_t find_free_gr_dp(spfg_gr_t *gr, unsigned int *idx, spfg_dp_t **dp)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx, spfg_fn_t **fn)
+spfg_err_t find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -188,7 +188,7 @@ spfg_err_t find_free_gr_fn(spfg_gr_t *gr, unsigned int *idx, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
+spfg_err_t find_changed_in_dp_for_fnx(spfg_fnx_t *fnx, uint32_t *idx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
 
@@ -207,7 +207,7 @@ spfg_err_t find_changed_input_for_fnx(spfg_fnx_t *fnx, unsigned int *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t clear_changed_input_for_fnx(spfg_fnx_t *fnx)
+spfg_err_t clear_changed_fnx_inputs(spfg_fnx_t *fnx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
         fnx->in_dps[i]->emitted = 0;

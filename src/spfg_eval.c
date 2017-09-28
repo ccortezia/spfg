@@ -60,7 +60,7 @@ spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if ((err = find_changed_input_for_fnx(fnx, NULL)) != SPFG_ERROR_NO) {
+    if ((err = find_changed_in_dp_for_fnx(fnx, NULL)) != SPFG_ERROR_NO) {
         if (err == SPFG_ERROR_NOT_FOUND) {
             return SPFG_ERROR_NO;
         }
@@ -73,7 +73,7 @@ spfg_err_t spfg_run_fnx(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
         return SPFG_ERROR_CYCLE_FAILURE;
     }
 
-    if ((err = clear_changed_input_for_fnx(fnx)) != SPFG_ERROR_NO) {
+    if ((err = clear_changed_fnx_inputs(fnx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_CYCLE_FAILURE;
     }
