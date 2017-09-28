@@ -36,7 +36,7 @@ describe("SPFG grid", function() {
   });
 
   it("removal should work with valid id", function() {
-    var id = SPFG.createGrid.bind(SPFG.createGrid, 'gr0');
+    var id = SPFG.createGrid('gr0');
     expect(SPFG.removeGrid.bind(SPFG.removeGrid, id)).not.toThrow();
   });
 });
