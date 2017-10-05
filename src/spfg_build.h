@@ -29,6 +29,8 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
     const char *fn_name);
 
 spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx);
+spfg_err_t spfg_gr_idx_clear(spfg_gr_t *gr);
+spfg_err_t spfg_grx_reindex(spfg_grx_t *grx);
 
 #ifdef __cplusplus
 }

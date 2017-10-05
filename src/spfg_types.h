@@ -60,6 +60,7 @@ typedef struct spfg_fnx {
 typedef struct spfg_grx {
     spfg_gr_t *gr;
     spfg_fnx_t fnx[SPFG_MAX_GRID_FNS];
+    bool is_valid;
 } spfg_grx_t;
 
 

@@ -73,12 +73,13 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
     }
 
     if ((err = create_name(name, &gr->name)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to set grid name: err=[%d]\n", err);
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
     global_grxs[gr_idx].gr = gr;
     gr->id = gr_idx + SPFG_GR_ID0;
+
+    (void) spfg_gr_idx_clear(gr);
 
     *gr_id = gr->id;
 
@@ -95,6 +96,8 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
     }
 
     memset(gr, 0, sizeof(spfg_gr_t));
+
+    (void) spfg_gr_idx_clear(gr);
 
     return SPFG_ERROR_NO;
 }
@@ -157,6 +160,8 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return err;
     }
 
+    (void) spfg_gr_idx_clear(gr);
+
     *dp_id = dp->id;
 
     return SPFG_ERROR_NO;
@@ -194,6 +199,8 @@ extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
     }
 
     memset(dp, 0, sizeof(spfg_dp_t));
+
+    (void) spfg_gr_idx_clear(gr);
 
     return SPFG_ERROR_NO;
 }
@@ -247,7 +254,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_VALIDATE_FN;
     }
 
-    // Evolve grid schema (generic memory construction).
+    // Evolve grid schema.
 
     unsigned int fn_idx;
     spfg_fn_t *fn;
@@ -263,16 +270,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return err;
     }
 
-    // Review function indexing (specific to local memory construction).
-
-    spfg_grx_t *grx = &global_grxs[gr_idx];
-    spfg_fnx_t *fnx = &grx->fnx[fn_idx];
-    fnx->fn = fn;
-
-    if ((err = grx_fnx_reindex(grx, fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
-        return SPFG_ERROR_REINDEX_FN;
-    }
+    (void) spfg_gr_idx_clear(gr);
 
     *fn_id = fn->id;
 
@@ -285,8 +283,6 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
     spfg_gr_t *gr;
     spfg_fn_t *fn;
 
-    // TODO: study if reindex is necessary
-
     if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
@@ -296,6 +292,8 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
     }
 
     memset(fn, 0, sizeof(spfg_fn_t));
+
+    (void) spfg_gr_idx_clear(gr);
 
     return SPFG_ERROR_NO;
 }
@@ -392,7 +390,15 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    return grx_eval(&global_grxs[gr_idx], ts, cb, udata);
+    spfg_grx_t *grx = &global_grxs[gr_idx];
+
+    if (!grx->is_valid) {
+        if ((err = spfg_grx_reindex(grx)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_REINDEX;
+        }
+    }
+
+    return grx_eval(grx, ts, cb, udata);
 }
 
 

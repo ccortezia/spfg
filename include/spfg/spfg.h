@@ -36,7 +36,7 @@ extern "C" {
 #define SPFG_ERROR_EVAL_FN_FAILURE         -12
 #define SPFG_ERROR_EVAL_CB_FAILURE         -13
 #define SPFG_ERROR_UNIMPLEMENTED           -14
-#define SPFG_ERROR_REINDEX_FN              -15
+#define SPFG_ERROR_REINDEX              -15
 #define SPFG_ERROR_VALIDATE_FN             -16
 #define SPFG_ERROR_BUFFER_OVERFLOW         -17
 #define SPFG_ERROR_FN_INTEGRITY            -18

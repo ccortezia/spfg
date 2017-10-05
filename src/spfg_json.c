@@ -254,9 +254,8 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
         return SPFG_ERROR_FAIL;
     }
 
-    if ((err = grx_fnx_reindex(grx, fnx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_REINDEX_FN;
-    }
+    // Clear index for target grid.
+    (void) spfg_gr_idx_clear(gr);
 
     if (out_gr_id) {
         *out_gr_id = gr->id;

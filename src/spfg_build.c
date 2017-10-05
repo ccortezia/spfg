@@ -4,6 +4,9 @@
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
+extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
+extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
+
 spfg_err_t gr_dp_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_type, const char *name)
 {
     spfg_err_t err = SPFG_ERROR_NO;
@@ -153,6 +156,41 @@ spfg_err_t gr_fn_create(spfg_gr_t *gr,
     fn->in_dp_ids_len = in_dp_ids_len;
     memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
     fn->out_dp_ids_len = out_dp_ids_len;
+
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t spfg_gr_idx_clear(spfg_gr_t *gr)
+{
+    uint32_t gr_idx;
+
+    (void) find_gr(gr->id, &gr_idx);
+
+    memset(&global_grxs[gr_idx].fnx, 0, sizeof(global_grxs[gr_idx].fnx));
+
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t spfg_grx_reindex(spfg_grx_t *grx)
+{
+    spfg_err_t err;
+
+    for (uint32_t i = 0; i < SPFG_MAX_GRID_FNS; i++) {
+
+        if (!grx->gr->fns[i].name.chars[0]) {
+            continue;
+        }
+
+        spfg_fnx_t *fnx = &grx->fnx[i];
+        fnx->fn = &grx->gr->fns[i];
+
+        if ((err = grx_fnx_reindex(grx, fnx)) != SPFG_ERROR_NO) {
+            fprintf(stderr, "failed to reindex function: err=[%d]\n", err);
+            return SPFG_ERROR_FAIL;
+        }
+    }
+
+    grx->is_valid = true;
 
     return SPFG_ERROR_NO;
 }
