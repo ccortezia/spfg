@@ -32,36 +32,11 @@ spfg_err_t gr_dp_create(spfg_gr_t *gr, unsigned int dp_idx, spfg_dp_type_t dp_ty
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
-{
-    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
-
-    spfg_err_t err;
-
-    memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
-
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i])) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-    }
-
-    memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
-
-    for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
-        if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i])) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_INVALID_DP_ID;
-        }
-    }
-
-    return SPFG_ERROR_NO;
-}
-
 spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                        spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-                                        spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
-                                        const char *fn_name) {
+                                 spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                                 spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
+                                 spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
+                                 const char *fn_name) {
 
     uint8_t cnt = 0;
 
@@ -105,9 +80,9 @@ spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
 }
 
 spfg_err_t fn_validate(spfg_fn_type_t type,
-                                   spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                   spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                   const char *fn_name) {
+                       spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                       spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                       const char *fn_name) {
 
     switch (type) {
 
@@ -171,9 +146,34 @@ spfg_err_t spfg_gr_idx_clear(spfg_gr_t *gr)
     return SPFG_ERROR_NO;
 }
 
+spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
+{
+    spfg_err_t err;
+
+    memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
+
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
+        if ((err = resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i])) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_INVALID_DP_ID;
+        }
+    }
+
+    memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
+
+    for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
+        if ((err = resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i])) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_INVALID_DP_ID;
+        }
+    }
+
+    return SPFG_ERROR_NO;
+}
+
 spfg_err_t spfg_grx_reindex(spfg_grx_t *grx)
 {
     spfg_err_t err;
+
+    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
 
     for (uint32_t i = 0; i < SPFG_MAX_GRID_FNS; i++) {
 
