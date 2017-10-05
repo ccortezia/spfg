@@ -65,17 +65,17 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
             return SPFG_ERROR_NO;
         }
         fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
+        return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
     if ((err = fnx_eval(fnx, ts)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
+        return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
     if ((err = clear_changed_fnx_inputs(fnx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_CYCLE_FAILURE;
+        return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
     return SPFG_ERROR_NO;
@@ -118,14 +118,13 @@ spfg_err_t grx_eval(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *uda
             }
 
             if (err != SPFG_ERROR_NO) {
-                fprintf(stderr, "failed to run cb on grid %d: err=[%d]\n", grx->gr->id, err);
-                return SPFG_ERROR_CYCLE_FAILURE;
+                return SPFG_ERROR_EVAL_CB_FAILURE;
             }
         }
 
         if ((err = grx_fnx_run(grx, fnx, ts)) != SPFG_ERROR_NO) {
             fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-            return SPFG_ERROR_CYCLE_FAILURE;
+            return SPFG_ERROR_EVAL_FN_FAILURE;
         }
 
         grx->gr->ctl.curr_fn_idx += 1;
