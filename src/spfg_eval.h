@@ -15,7 +15,9 @@ spfg_err_t fn_and_bool_bool_ret_bool_eval(spfg_fnx_t *fnx, spfg_ts_t ts);
 
 spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts);
 spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts);
-spfg_err_t grx_eval(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata);
+
+spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx);
+spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata);
 
 #ifdef __cplusplus
 }

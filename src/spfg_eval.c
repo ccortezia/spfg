@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "spfg/spfg.h"
+#include "spfg_build.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
@@ -81,9 +82,25 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t grx_eval(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+
+spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
+{
+    grx->gr->ctl.curr_phase = 0;
+    grx->gr->ctl.curr_fn_idx = 0;
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     spfg_err_t err = SPFG_ERROR_NO;
+
+    if (!grx->is_valid) {
+        if ((err = spfg_grx_reindex(grx)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_REINDEX;
+        }
+    }
+
     spfg_fnx_t *fnx;
 
     for (;;) {
