@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "spfg/spfg.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
@@ -169,12 +170,35 @@ spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx)
     return SPFG_ERROR_NO;
 }
 
+
+int fnx_cmp(const void *p1, const void *p2)
+{
+    spfg_fn_t *fn1 = ((spfg_fnx_t *)p1)->fn;
+    spfg_fn_t *fn2 = ((spfg_fnx_t *)p2)->fn;
+
+    if (!fn1) {
+        return +1;
+    }
+
+    if (!fn2) {
+        return -1;
+    }
+
+    int phase_cmp = fn1->phase - fn2->phase;
+
+    if (phase_cmp == 0) {
+        return fn1->id - fn2->id;
+    }
+
+    return phase_cmp;
+}
+
 spfg_err_t spfg_grx_reindex(spfg_grx_t *grx)
 {
     spfg_err_t err;
 
-    // TODO: ensure grx->fnx is still sorted by fnx->fn->phase + fnx->fn->id.
-
+    // Capture scheme information into an array optimized for evaluation.
+    // The resulting array may be sparse, thus not safe for naive sequential evaluation.
     for (uint32_t i = 0; i < SPFG_MAX_GRID_FNS; i++) {
 
         if (!grx->gr->fns[i].name.chars[0]) {
@@ -189,6 +213,11 @@ spfg_err_t spfg_grx_reindex(spfg_grx_t *grx)
             return SPFG_ERROR_FAIL;
         }
     }
+
+    // Sorts the captured information so it becomes safe for naive sequential evaluation.
+    // The resulting sorted array is not sparse, and the first zeroed element works as a sentinel
+    // and can be used to determine there are no more function to evaluate point-forward.
+    qsort(grx->fnx, SPFG_MAX_GRID_FNS, sizeof(spfg_fnx_t), fnx_cmp);
 
     grx->is_valid = true;
 
