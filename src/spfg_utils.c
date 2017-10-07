@@ -60,7 +60,6 @@ spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
     }
 
     if ((err = find_gr(gr_id, &idx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to resolve gr from id: err=[%d]\n", err);
         return SPFG_ERROR_NOT_FOUND;
     }
 
@@ -68,6 +67,18 @@ spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
     return SPFG_ERROR_NO;
 }
 
+spfg_err_t resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
+{
+    unsigned int gr_idx;
+
+    if (find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_NOT_FOUND;
+    }
+
+    *grx = &global_grxs[gr_idx];
+
+    return SPFG_ERROR_NO;
+}
 
 spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {

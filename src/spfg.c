@@ -271,13 +271,11 @@ extern spfg_err_t spfg_dp_set_word(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
 
 extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 {
-    unsigned int gr_idx;
+    spfg_grx_t *grx;
 
-    if (find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
+    if (resolve_grx(gr_id, &grx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
-
-    spfg_grx_t *grx = &global_grxs[gr_idx];
 
     return _spfg_reset_cycle(grx);
 }
