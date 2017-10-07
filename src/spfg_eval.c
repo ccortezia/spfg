@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include "spfg/spfg.h"
-#include "spfg_build.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
+#include "spfg_index.h"
+
 
 spfg_err_t dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
 {
@@ -93,15 +94,14 @@ spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
 
 spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
-    spfg_err_t err = SPFG_ERROR_NO;
+    spfg_err_t err;
+    spfg_fnx_t *fnx;
 
     if (!grx->is_valid) {
-        if ((err = spfg_grx_reindex(grx)) != SPFG_ERROR_NO) {
+        if ((err = _spfg_grx_index_rebuild(grx)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_REINDEX;
         }
     }
-
-    spfg_fnx_t *fnx;
 
     for (;;) {
 

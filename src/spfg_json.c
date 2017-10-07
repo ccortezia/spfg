@@ -5,7 +5,7 @@
 #include "spfg/spfg.h"
 #include "spfg_types.h"
 #include "spfg_utils.h"
-#include "spfg_build.h"
+#include "spfg_index.h"
 
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
@@ -255,7 +255,7 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
     }
 
     // Clear index for target grid.
-    (void) spfg_gr_idx_clear(gr);
+    (void) _spfg_gr_index_clear(gr);
 
     if (out_gr_id) {
         *out_gr_id = gr->id;

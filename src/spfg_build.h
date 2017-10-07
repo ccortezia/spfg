@@ -13,28 +13,24 @@ spfg_err_t _spfg_gr_remove(spfg_gr_t *gr);
 spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
 spfg_err_t _spfg_dp_remove(spfg_gr_t *gr, spfg_dp_t *dp);
 spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
-    spfg_fn_type_t type,
-    spfg_phase_t phase,
-    spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
-    spfg_dp_id_t out_dp_ids[], uint8_t out_dp_ids_len,
-    const char *name,
-    spfg_fn_id_t *fn_id);
+                           spfg_fn_type_t type,
+                           spfg_phase_t phase,
+                           spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
+                           spfg_dp_id_t out_dp_ids[], uint8_t out_dp_ids_len,
+                           const char *name,
+                           spfg_fn_id_t *fn_id);
 spfg_err_t _spfg_fn_remove(spfg_gr_t *gr, spfg_fn_t *fn);
 
 spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-    spfg_dp_t *out_dps[], uint8_t out_dps_len,
-    spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-    spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
-    const char *fn_name);
+                                 spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                                 spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
+                                 spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
+                                 const char *fn_name);
 
 spfg_err_t fn_validate(spfg_fn_type_t type,
-    spfg_dp_t *in_dps[], uint8_t in_dps_len,
-    spfg_dp_t *out_dps[], uint8_t out_dps_len,
-    const char *fn_name);
-
-spfg_err_t grx_fnx_reindex(spfg_grx_t *grx, spfg_fnx_t *fnx);
-spfg_err_t spfg_gr_idx_clear(spfg_gr_t *gr);
-spfg_err_t spfg_grx_reindex(spfg_grx_t *grx);
+                       spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                       spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                       const char *fn_name);
 
 #ifdef __cplusplus
 }
