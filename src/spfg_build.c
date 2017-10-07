@@ -203,9 +203,9 @@ spfg_err_t _spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
 
 spfg_err_t _spfg_gr_remove(spfg_gr_t *gr)
 {
-    memset(gr, 0, sizeof(spfg_gr_t));
-
     (void) spfg_gr_idx_clear(gr);
+
+    memset(gr, 0, sizeof(spfg_gr_t));
 
     return SPFG_ERROR_NO;
 }
