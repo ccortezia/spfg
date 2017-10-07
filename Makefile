@@ -49,7 +49,7 @@ devel:
 
 ci:
 	(make clean)
-	(BUILDCOV=y make && make test && make htmlcov)
+	(BUILDCOV=y make && make test && make binding_py && make htmlcov)
 	(make htmldoc)
 
 dirs:

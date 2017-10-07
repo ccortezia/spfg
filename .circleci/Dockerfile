@@ -19,6 +19,8 @@ RUN apt-get -qq update \
     git cmake=3.5.* wget python=2.7.* openjdk-8-jre-headless nodejs=4.* \
     # js build requirements
     firefox xvfb npm \
+    # python build requirements
+    python3-setuptools python3-dev \
     # coverage and other CI tooling
     curl graphviz doxygen lcov=1.* \
 && rm -rf /var/lib/apt/lists/* \
@@ -56,3 +58,6 @@ RUN printf '\n#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#inc
 
 # Install global npm modules
 RUN npm install -g elm@0.18.0 elm-test
+
+WORKDIR /opt/proj
+

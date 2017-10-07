@@ -1,7 +1,7 @@
 defaults: &defaults
   working_directory: /opt/proj
   docker:
-    - image: ccortezia/spfg_build:0.2
+    - image: ccortezia/spfg_build:0.3
 
 submodules: &submodules
   name: Initializing submodules
