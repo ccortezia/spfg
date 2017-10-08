@@ -112,7 +112,7 @@ spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t resolve_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
+spfg_err_t resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
     spfg_err_t err;
 
@@ -199,7 +199,7 @@ spfg_err_t find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_changed_in_dp_for_fnx(spfg_fnx_t *fnx, uint32_t *idx)
+spfg_err_t find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
 

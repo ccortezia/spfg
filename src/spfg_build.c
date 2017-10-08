@@ -175,11 +175,11 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
     spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
 
-    if ((err = resolve_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
     return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = resolve_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = resolve_gr_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
     return SPFG_ERROR_INVALID_DP_ID;
     }
 
