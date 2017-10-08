@@ -30,7 +30,7 @@ spfg_err_t create_name(const char *ascii, spfg_block_name_t *name)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
+spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
 {
     if (!idx) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -50,11 +50,11 @@ spfg_err_t find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
+spfg_err_t _spfg_resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
 {
     unsigned int idx;
 
-    if (find_gr(gr_id, &idx) != SPFG_ERROR_NO) {
+    if (_spfg_find_gr(gr_id, &idx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_NOT_FOUND;
     }
 
@@ -63,11 +63,11 @@ spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
+spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
 {
     unsigned int gr_idx;
 
-    if (find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
+    if (_spfg_find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_NOT_FOUND;
     }
 
@@ -76,7 +76,7 @@ spfg_err_t resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
+spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {
     if (!dp) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -92,7 +92,7 @@ spfg_err_t resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
+spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
 {
     if (!fn) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -108,12 +108,12 @@ spfg_err_t resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
+spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
     spfg_err_t err;
 
     for (int i = 0; dp_ids[i] && i < length; i++) {
-        if ((err = resolve_gr_dp(gr, dp_ids[i], &dps[i])) != SPFG_ERROR_NO) {
+        if ((err = _spfg_resolve_gr_dp(gr, dp_ids[i], &dps[i])) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
     }
@@ -121,7 +121,7 @@ spfg_err_t resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[],
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t find_free_gr(uint32_t *idx, spfg_gr_t **gr)
+spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 {
     if (!idx) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -143,7 +143,7 @@ spfg_err_t find_free_gr(uint32_t *idx, spfg_gr_t **gr)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
+spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -169,7 +169,7 @@ spfg_err_t find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
+spfg_err_t _spfg_find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
 {
     if (!gr) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -195,7 +195,7 @@ spfg_err_t find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
     return SPFG_ERROR_NOT_FOUND;
 }
 
-spfg_err_t find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
+spfg_err_t _spfg_find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
 
@@ -212,13 +212,4 @@ spfg_err_t find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
     }
 
     return SPFG_ERROR_NOT_FOUND;
-}
-
-spfg_err_t clear_changed_fnx_inputs(spfg_fnx_t *fnx)
-{
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
-        fnx->in_dps[i]->emitted = 0;
-    }
-
-    return SPFG_ERROR_NO;
 }

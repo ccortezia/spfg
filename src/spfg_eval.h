@@ -16,6 +16,7 @@ spfg_err_t fn_and_bool_bool_ret_bool_exec(spfg_boolean_t p0, spfg_boolean_t p1, 
 spfg_err_t fn_and_bool_bool_ret_bool_eval(spfg_fnx_t *fnx, spfg_ts_t ts);
 spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts);
 spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts);
+spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx);
 
 #ifdef __cplusplus
 }

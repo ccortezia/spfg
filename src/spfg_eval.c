@@ -58,11 +58,21 @@ spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts) {
     }
 }
 
+spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx)
+{
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
+        fnx->in_dps[i]->emitted = 0;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
 spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 {
     spfg_err_t err = SPFG_ERROR_NO;
 
-    if ((err = find_changed_fnx_in_dp(fnx, NULL)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_find_changed_fnx_in_dp(fnx, NULL)) != SPFG_ERROR_NO) {
         if (err == SPFG_ERROR_NOT_FOUND) {
             return SPFG_ERROR_NO;
         }
@@ -75,14 +85,13 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
         return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
-    if ((err = clear_changed_fnx_inputs(fnx)) != SPFG_ERROR_NO) {
+    if ((err = fnx_changed_dps_clear(fnx)) != SPFG_ERROR_NO) {
         fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
     return SPFG_ERROR_NO;
 }
-
 
 spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
 {

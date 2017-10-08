@@ -13,7 +13,7 @@ spfg_err_t _spfg_gr_index_clear(spfg_gr_t *gr)
 {
     spfg_grx_t *grx;
 
-    (void) resolve_grx(gr->id, &grx);
+    (void) _spfg_resolve_grx(gr->id, &grx);
 
     memset(&grx->fnx, 0, sizeof(grx->fnx));
 
@@ -58,7 +58,7 @@ spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx)
         memset(fnx->in_dps, 0, SPFG_MAX_FN_IN_DPS * sizeof(spfg_dp_t *));
 
         for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->fn->in_dp_ids[i]; i++) {
-            if (resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i]) != SPFG_ERROR_NO) {
+            if (_spfg_resolve_gr_dp(grx->gr, fnx->fn->in_dp_ids[i], &fnx->in_dps[i]) != SPFG_ERROR_NO) {
                 return SPFG_ERROR_INVALID_DP_ID;
             }
         }
@@ -66,7 +66,7 @@ spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx)
         memset(fnx->out_dps, 0, SPFG_MAX_FN_OUT_DPS * sizeof(spfg_dp_t *));
 
         for (int i = 0; i < SPFG_MAX_FN_OUT_DPS && fnx->fn->out_dp_ids[i]; i++) {
-            if (resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i]) != SPFG_ERROR_NO) {
+            if (_spfg_resolve_gr_dp(grx->gr, fnx->fn->out_dp_ids[i], &fnx->out_dps[i]) != SPFG_ERROR_NO) {
                 return SPFG_ERROR_INVALID_DP_ID;
             }
         }

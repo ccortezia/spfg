@@ -203,7 +203,7 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
         return SPFG_ERROR_FAIL;
     }
 
-    if ((err = resolve_gr(json_gr.id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_resolve_gr(json_gr.id, &gr)) != SPFG_ERROR_NO) {
 
         // Existing gr not found, attempt to create one from imported data.
         if (err == SPFG_ERROR_NOT_FOUND) {
@@ -214,7 +214,7 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
                 return err;
             }
 
-            (void) resolve_gr(gr_id, &gr);
+            (void) _spfg_resolve_gr(gr_id, &gr);
 
             gr->id = json_gr.id;
         }
@@ -282,7 +282,7 @@ spfg_err_t spfg_gr_export_json(spfg_gr_id_t gr_id, char *output, uint32_t output
 
     memset(output, 0, output_len);
 
-    if ((err = resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 

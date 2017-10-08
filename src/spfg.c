@@ -70,7 +70,7 @@ extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
 {
     spfg_gr_t *gr;
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -118,7 +118,7 @@ extern spfg_err_t spfg_dp_create(spfg_gr_id_t gr_id, spfg_dp_type_t dp_type, con
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -130,11 +130,11 @@ extern spfg_err_t spfg_dp_remove(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id)
     spfg_gr_t *gr;
     spfg_dp_t *dp;
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    if (resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
@@ -181,7 +181,7 @@ extern spfg_err_t spfg_fn_create(spfg_gr_id_t gr_id,
         return SPFG_ERROR_BUFFER_OVERFLOW;
     }
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -193,11 +193,11 @@ extern spfg_err_t spfg_fn_remove(spfg_gr_id_t gr_id, spfg_fn_id_t fn_id)
     spfg_gr_t *gr;
     spfg_fn_t *fn;
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    if (resolve_gr_fn(gr, fn_id, &fn) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr_fn(gr, fn_id, &fn) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_FN_ID;
     }
 
@@ -225,11 +225,11 @@ extern spfg_err_t spfg_dp_set_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
     spfg_dp_t *dp;
     spfg_gr_t *gr;
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    if (resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
@@ -245,11 +245,11 @@ extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
-    if (resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr_dp(gr, dp_id, &dp) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
@@ -273,7 +273,7 @@ extern spfg_err_t spfg_reset_cycle(spfg_gr_id_t gr_id)
 {
     spfg_grx_t *grx;
 
-    if (resolve_grx(gr_id, &grx) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_grx(gr_id, &grx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -284,7 +284,7 @@ extern spfg_err_t spfg_run_cycle(spfg_gr_id_t gr_id, spfg_ts_t ts, spfg_cycle_cb
 {
     spfg_grx_t *grx;
 
-    if (resolve_grx(gr_id, &grx) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_grx(gr_id, &grx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -308,7 +308,7 @@ extern spfg_err_t spfg_gr_export_bin(spfg_gr_id_t gr_id, void *outbuf, uint32_t 
 
     spfg_gr_t *gr;
 
-    if (resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_resolve_gr(gr_id, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_GR_ID;
     }
 
@@ -346,7 +346,7 @@ extern spfg_err_t spfg_gr_import_bin(void *data, uint32_t data_len, spfg_gr_id_t
 
     spfg_gr_t *gr;
 
-    (void) resolve_gr(*gr_id, &gr);
+    (void) _spfg_resolve_gr(*gr_id, &gr);
 
     spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)data;
 

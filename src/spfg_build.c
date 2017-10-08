@@ -95,7 +95,7 @@ spfg_err_t _spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
     spfg_gr_t *gr;
     unsigned int gr_idx;
 
-    if (find_free_gr(&gr_idx, &gr) != SPFG_ERROR_NO) {
+    if (_spfg_find_free_gr(&gr_idx, &gr) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
@@ -129,7 +129,7 @@ spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *na
     unsigned int dp_idx;
     spfg_dp_t *dp;
 
-    if (find_free_gr_dp(gr, &dp_idx, &dp) != SPFG_ERROR_NO) {
+    if (_spfg_find_free_gr_dp(gr, &dp_idx, &dp) != SPFG_ERROR_NO) {
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
@@ -175,11 +175,11 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
     spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
 
-    if ((err = resolve_gr_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_resolve_gr_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
     return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = resolve_gr_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_resolve_gr_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
     return SPFG_ERROR_INVALID_DP_ID;
     }
 
@@ -192,7 +192,7 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
     unsigned int fn_idx;
     spfg_fn_t *fn;
 
-    if ((err = find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
+    if ((err = _spfg_find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
     return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
