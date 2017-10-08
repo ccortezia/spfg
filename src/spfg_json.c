@@ -237,23 +237,6 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
     memcpy(&gr->fns, &json_gr.fns, sizeof(json_gr.fns));
     memcpy(&gr->ctl, &json_gr.ctl, sizeof(spfg_gr_ctl_t));
 
-    spfg_gr_cnt_t gr_idx;
-
-    if ((err = find_gr(gr->id, &gr_idx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    spfg_grx_t *grx = &global_grxs[gr_idx];
-    memset(grx, 0, sizeof(spfg_grx_t));
-    grx->gr = gr;  // TODO: refactor into gr_reindex function
-
-    spfg_fnx_t *fnx = &grx->fnx[gr->ctl.curr_fn_idx];
-    memset(fnx, 0, sizeof(spfg_fnx_t));
-
-    if ((err = resolve_gr_fn(gr, gr->fns[gr->ctl.curr_fn_idx].id, &fnx->fn)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_FAIL;
-    }
-
     // Clear index for target grid.
     (void) _spfg_gr_index_clear(gr);
 
