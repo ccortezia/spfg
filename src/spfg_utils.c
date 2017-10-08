@@ -52,18 +52,14 @@ spfg_err_t find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
 
 spfg_err_t resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
 {
-    spfg_err_t err;
     unsigned int idx;
 
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if ((err = find_gr(gr_id, &idx)) != SPFG_ERROR_NO) {
+    if (find_gr(gr_id, &idx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_NOT_FOUND;
     }
 
     *gr = &global_grs[idx];
+
     return SPFG_ERROR_NO;
 }
 
