@@ -210,7 +210,7 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
 
             spfg_gr_id_t gr_id;
 
-            if ((err = spfg_gr_create(&gr_id, json_gr.name.chars)) != SPFG_ERROR_NO) {
+            if ((err = spfg_gr_create(json_gr.name.chars, &gr_id)) != SPFG_ERROR_NO) {
                 return err;
             }
 

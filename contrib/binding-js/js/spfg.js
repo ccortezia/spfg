@@ -117,7 +117,7 @@ SPFG = (function SPFG() {
         var charsLength = module.lengthBytesUTF8(name) + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
-        var err = module._spfg_gr_create(idOutPtr, nameInPtr);
+        var err = module._spfg_gr_create(nameInPtr, idOutPtr);
 
         cleanErr(err, function(){
             module._free(idOutPtr);

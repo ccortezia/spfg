@@ -26,7 +26,7 @@ TEST(io_bin, test_spfg_gr_export_bin_general)
     spfg_boolean_t output;
     spfg_boolean_t emitted;
 
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr0_id, "gr0"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create("gr0", &gr0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr0_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));

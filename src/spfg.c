@@ -53,7 +53,7 @@ extern spfg_err_t spfg_finish()
 // Public Grid Composition API
 // -------------------------------------------------------------------------------------------------
 
-extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
+extern spfg_err_t spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
 {
     if (!gr_id) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
@@ -63,7 +63,7 @@ extern spfg_err_t spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
     }
 
-    return _spfg_gr_create(gr_id, name);
+    return _spfg_gr_create(name, gr_id);
 }
 
 extern spfg_err_t spfg_gr_remove(spfg_gr_id_t gr_id)
@@ -339,7 +339,7 @@ extern spfg_err_t spfg_gr_import_bin(void *data, uint32_t data_len, spfg_gr_id_t
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
-    if ((err = spfg_gr_create(gr_id, name)) != SPFG_ERROR_NO) {
+    if ((err = spfg_gr_create(name, gr_id)) != SPFG_ERROR_NO) {
         // TODO: review unbounded error situation.
         return err;
     }

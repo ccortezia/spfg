@@ -90,7 +90,7 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
 
 // ------------------------------------------------------------------------------------------------
 
-spfg_err_t _spfg_gr_create(spfg_gr_id_t *gr_id, const char *name)
+spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
 {
     spfg_gr_t *gr;
     unsigned int gr_idx;

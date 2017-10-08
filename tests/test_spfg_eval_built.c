@@ -22,7 +22,7 @@ TEST(eval_built, test_spfg_run_cycle_loose_should_eval)
     spfg_boolean_t output;
     spfg_boolean_t emitted;
 
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create("valid name", &gr_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
@@ -83,7 +83,7 @@ TEST(eval_built, test_spfg_run_cycle_control_should_eval)
     test_loop_ctl_t loop_ctl_1 = {0, -1};
     test_loop_ctl_t loop_ctl_2 = {0, 1};
 
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create(&gr_id, "valid name"));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create("valid name", &gr_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p0", &dp0p0_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp0p1", &dp0p1_id));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(gr_id, SPFG_DP_BOOL, "dp1p0", &dp1p0_id));

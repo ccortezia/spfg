@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-spfg_err_t _spfg_gr_create(spfg_gr_id_t *gr_id, const char *name);
+spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id);
 spfg_err_t _spfg_gr_remove(spfg_gr_t *gr);
 spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
 spfg_err_t _spfg_dp_remove(spfg_gr_t *gr, spfg_dp_t *dp);
