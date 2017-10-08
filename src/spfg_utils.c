@@ -6,16 +6,8 @@
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
-spfg_err_t create_name(const char *ascii, spfg_block_name_t *name)
+spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
 {
-    if (!name) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!ascii) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     if (!*ascii) {
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
