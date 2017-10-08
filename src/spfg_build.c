@@ -176,15 +176,15 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
     spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
 
     if ((err = _spfg_resolve_gr_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
-    return SPFG_ERROR_INVALID_DP_ID;
+        return SPFG_ERROR_INVALID_DP_ID;
     }
 
     if ((err = _spfg_resolve_gr_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
-    return SPFG_ERROR_INVALID_DP_ID;
+        return SPFG_ERROR_INVALID_DP_ID;
     }
 
     if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
-    return SPFG_ERROR_VALIDATE_FN;
+        return SPFG_ERROR_VALIDATE_FN;
     }
 
     // Evolve grid schema.
@@ -193,7 +193,7 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
     spfg_fn_t *fn;
 
     if ((err = _spfg_find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
-    return SPFG_ERROR_OUT_OF_SLOTS;
+        return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
     if (_spfg_block_name_set(&fn->name, name) != SPFG_ERROR_NO) {
