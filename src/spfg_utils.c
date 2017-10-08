@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "spfg/spfg.h"
 #include "spfg_types.h"
+#include "spfg_utils.h"
 
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
@@ -28,14 +29,19 @@ spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
-    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
-        if (global_grs[i].id == gr_id) {
-            *idx = i;
-            return SPFG_ERROR_NO;
-        }
+    spfg_gr_cnt_t gr_idx = gr_id - SPFG_GR_ID0;
+
+    if (gr_idx >= SPFG_MAX_GRID_CNT) {
+        return SPFG_ERROR_NOT_FOUND;
     }
 
-    return SPFG_ERROR_NOT_FOUND;
+    if (!global_grs[gr_idx].name.chars[0]) {
+        return SPFG_ERROR_NOT_FOUND;
+    }
+
+    *idx = gr_idx;
+
+    return SPFG_ERROR_NO;
 }
 
 spfg_err_t _spfg_resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
@@ -74,26 +80,36 @@ spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
 
 spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {
-    for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
-        if (gr->dps[i].id == dp_id) {
-            *dp = &gr->dps[i];
-            return SPFG_ERROR_NO;
-        }
+    spfg_gr_dp_cnt_t dp_idx = dp_id - SPFG_GR_DP_ID0(gr->id);
+
+    if (dp_idx >= SPFG_MAX_GRID_DPS) {
+        return SPFG_ERROR_NOT_FOUND;
     }
 
-    return SPFG_ERROR_NOT_FOUND;
+    if (!gr->dps[dp_idx].name.chars[0]) {
+        return SPFG_ERROR_NOT_FOUND;
+    }
+
+    *dp = &gr->dps[dp_idx];
+
+    return SPFG_ERROR_NO;
 }
 
 spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
 {
-    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
-        if (gr->fns[i].id == fn_id) {
-            *fn = &gr->fns[i];
-            return SPFG_ERROR_NO;
-        }
+    spfg_gr_fn_cnt_t fn_idx = fn_id - SPFG_GR_DP_ID0(gr->id);
+
+    if (fn_idx >= SPFG_MAX_GRID_FNS) {
+        return SPFG_ERROR_NOT_FOUND;
     }
 
-    return SPFG_ERROR_NOT_FOUND;
+    if (!gr->fns[fn_idx].name.chars[0]) {
+        return SPFG_ERROR_NOT_FOUND;
+    }
+
+    *fn = &gr->fns[fn_idx];
+
+    return SPFG_ERROR_NO;
 }
 
 spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
