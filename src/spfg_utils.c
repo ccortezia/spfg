@@ -114,7 +114,8 @@ spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn
 
 spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
-    for (int i = 0; dp_ids[i] && i < length; i++) {
+    for (spfg_gr_dp_cnt_t i = 0; dp_ids[i] && i < length; i++) {
+
         if (_spfg_resolve_gr_dp(gr, dp_ids[i], &dps[i]) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
@@ -125,7 +126,7 @@ spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *
 
 spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 {
-    for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
+    for (spfg_gr_cnt_t i = 0; i < SPFG_MAX_GRID_CNT; i++) {
 
         if (!global_grs[i].name.chars[0]) {
             *idx = i;
@@ -143,7 +144,7 @@ spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 
 spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 {
-    for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
+    for (spfg_gr_dp_cnt_t i = 0; i < SPFG_MAX_GRID_DPS; i++) {
 
         if (!gr->dps[i].name.chars[0]) {
             *idx = i;
@@ -161,7 +162,7 @@ spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 
 spfg_err_t _spfg_find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
 {
-    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
+    for (spfg_gr_fn_cnt_t i = 0; i < SPFG_MAX_GRID_FNS; i++) {
 
         if (!gr->fns[i].name.chars[0]) {
             *idx = i;
@@ -179,7 +180,7 @@ spfg_err_t _spfg_find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
 
 spfg_err_t _spfg_find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
 {
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
+    for (spfg_fn_dp_in_cnt_t i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
 
         if (!fnx->in_dps[i]->name.chars[0]) {
             continue;
