@@ -24,10 +24,6 @@ spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
 
 spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
 {
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     if (gr_id == 0) {
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
@@ -46,6 +42,10 @@ spfg_err_t _spfg_resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
 {
     unsigned int idx;
 
+    if (gr_id == 0) {
+        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
+    }
+
     if (_spfg_find_gr(gr_id, &idx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_NOT_FOUND;
     }
@@ -58,6 +58,10 @@ spfg_err_t _spfg_resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
 spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
 {
     unsigned int gr_idx;
+
+    if (gr_id == 0) {
+        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
+    }
 
     if (_spfg_find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
         return SPFG_ERROR_NOT_FOUND;
