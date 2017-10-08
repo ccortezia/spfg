@@ -139,7 +139,7 @@ spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *na
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
-    gr->dps[dp_idx].id = GEN_SPFG_DP_ID(gr->id, dp_idx);
+    gr->dps[dp_idx].id = SPFG_DP_ID(gr->id, dp_idx);
     gr->dps[dp_idx].type = dp_type;
 
     (void) _spfg_gr_index_clear(gr);
@@ -202,7 +202,7 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
 
     fn->type = type;
     fn->phase = phase;
-    fn->id = GEN_SPFG_FN_ID(gr->id, fn_idx);
+    fn->id = SPFG_FN_ID(gr->id, fn_idx);
 
     memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
     fn->in_dp_ids_len = in_dp_ids_len;

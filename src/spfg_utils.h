@@ -9,8 +9,10 @@
 // -------------------------------------------------------------------------------------------------
 
 #define SPFG_GR_ID0 1
-#define GEN_SPFG_DP_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + idx + 1)
-#define GEN_SPFG_FN_ID(gr_id, idx) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + idx + 1)
+#define SPFG_GR_DP_ID0(gr_id) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_DPS + 1)
+#define SPFG_GR_FN_ID0(gr_id) ((gr_id - SPFG_GR_ID0) * SPFG_MAX_GRID_FNS + 1)
+#define SPFG_DP_ID(gr_id, idx) (SPFG_GR_DP_ID0(gr_id) + idx)
+#define SPFG_FN_ID(gr_id, idx) (SPFG_GR_FN_ID0(gr_id) + idx)
 
 #ifdef __cplusplus
 extern "C" {
