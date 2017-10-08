@@ -74,10 +74,6 @@ spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
 
 spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {
-    if (!dp) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
         if (gr->dps[i].id == dp_id) {
             *dp = &gr->dps[i];
@@ -90,10 +86,6 @@ spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp
 
 spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
 {
-    if (!fn) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
         if (gr->fns[i].id == fn_id) {
             *fn = &gr->fns[i];
@@ -106,10 +98,8 @@ spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn
 
 spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length)
 {
-    spfg_err_t err;
-
     for (int i = 0; dp_ids[i] && i < length; i++) {
-        if ((err = _spfg_resolve_gr_dp(gr, dp_ids[i], &dps[i])) != SPFG_ERROR_NO) {
+        if (_spfg_resolve_gr_dp(gr, dp_ids[i], &dps[i]) != SPFG_ERROR_NO) {
             return SPFG_ERROR_INVALID_DP_ID;
         }
     }
@@ -119,10 +109,6 @@ spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *
 
 spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 {
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     for (int i = 0; i < SPFG_MAX_GRID_CNT; i++) {
 
         if (!global_grs[i].name.chars[0]) {
@@ -141,14 +127,6 @@ spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
 
 spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 {
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     for (int i = 0; i < SPFG_MAX_GRID_DPS; i++) {
 
         if (!gr->dps[i].name.chars[0]) {
@@ -167,14 +145,6 @@ spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 
 spfg_err_t _spfg_find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn)
 {
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (!idx) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
     for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
 
         if (!gr->fns[i].name.chars[0]) {
