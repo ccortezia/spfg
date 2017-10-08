@@ -11,11 +11,11 @@ extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
 spfg_err_t _spfg_gr_index_clear(spfg_gr_t *gr)
 {
-    uint32_t gr_idx;
+    spfg_grx_t *grx;
 
-    (void) find_gr(gr->id, &gr_idx);
+    (void) resolve_grx(gr->id, &grx);
 
-    memset(&global_grxs[gr_idx].fnx, 0, sizeof(global_grxs[gr_idx].fnx));
+    memset(&grx->fnx, 0, sizeof(grx->fnx));
 
     return SPFG_ERROR_NO;
 }
