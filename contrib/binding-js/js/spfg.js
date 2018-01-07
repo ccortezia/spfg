@@ -66,6 +66,8 @@ SPFG = (function SPFG() {
         importGridSnapshot: spfgImportGridSnapshot,
         exportGridSnapshot: spfgExportGridSnapshot,
 
+        setBoolean: spfgSetBoolean,
+
         // Exported symbols
         codes: {
             dp: datapointTypes,
@@ -337,6 +339,11 @@ SPFG = (function SPFG() {
         module._free(jsonOutPtr);
         module._free(outlenOutPtr);
         return gridSnapshot;
+    }
+
+    function spfgSetBoolean(gridId, datapointId, value) {
+        var module = getModule();
+        cleanErr(module._spfg_dp_set_bool(gridId, datapointId, value));
     }
 
     // --------------------------------------------------------------
