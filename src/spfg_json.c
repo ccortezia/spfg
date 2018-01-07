@@ -10,7 +10,7 @@
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
-azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
+static azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
     switch (token->type) {
         case TOKEN_VI: return azjson_strtol(token->chars, &((spfg_dp_value_t *)target)->integer);
         case TOKEN_VR: return azjson_strtod(token->chars, &((spfg_dp_value_t *)target)->real);
