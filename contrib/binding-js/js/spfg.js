@@ -293,6 +293,12 @@ SPFG = (function SPFG() {
         cleanErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
     }
 
+    /**
+     * Imports a grid snapshot and either creates a new grid or updates an existing one.
+     *
+     * @param Object gridSnapshot: object containing a deserialized snapshot of a grid
+     * @return number, the created or updated grid id
+     */
     function spfgImportGridSnapshot(gridSnapshot) {
 
         if (!gridSnapshot) {
@@ -320,6 +326,12 @@ SPFG = (function SPFG() {
         return id;
     }
 
+    /**
+     *  Exports an existing grid into a deserialized JSON object
+     *
+     * @param number gridId: id of the target grid
+     * @return Object, the deserialized JSON snapshot
+     */
     function spfgExportGridSnapshot(gridId) {
         var module = getModule();
         var maxlen = 4096;

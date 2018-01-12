@@ -4,6 +4,7 @@
 #include "azjson/azjson.h"
 #include "spfg/spfg.h"
 #include "spfg_types.h"
+#include "spfg_build.h"
 #include "spfg_utils.h"
 #include "spfg_index.h"
 
@@ -192,56 +193,25 @@ static azjson_spec_t root_spec[] = {
 
 static spfg_gr_t json_gr;
 
-spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_gr_id) {
-
-    spfg_err_t err;
-    spfg_gr_t *gr;
-
+spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_gr_id)
+{
     memset(&json_gr, 0, sizeof(spfg_gr_t));
 
     if (azjson_import(json_str, len, root_spec, &json_gr) != AZJSON_ERROR_NO) {
         return SPFG_ERROR_FAIL;
     }
 
-    if ((err = _spfg_resolve_gr(json_gr.id, &gr)) != SPFG_ERROR_NO) {
+    (void) spfg_gr_remove(json_gr.id);
 
-        // Existing gr not found, attempt to create one from imported data.
-        if (err == SPFG_ERROR_NOT_FOUND) {
-
-            spfg_gr_id_t gr_id;
-
-            if ((err = spfg_gr_create(json_gr.name.chars, &gr_id)) != SPFG_ERROR_NO) {
-                return err;
-            }
-
-            (void) _spfg_resolve_gr(gr_id, &gr);
-
-            gr->id = json_gr.id;
-        }
-
-        // Unexpected error detected during gr resolution, bail out.
-        else {
-            return err;
-        }
+    if (_spfg_gr_create_from(&json_gr) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_FAIL;
     }
-
-    // Existin gr found, cleanup target memory.
-    else {
-        memset(gr, 0, sizeof(spfg_gr_t));
-        memcpy(&gr->name, &json_gr.name, sizeof(json_gr.name));
-        gr->id = json_gr.id;
-    }
-
-    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
-    memcpy(&gr->dps, &json_gr.dps, sizeof(json_gr.dps));
-    memcpy(&gr->fns, &json_gr.fns, sizeof(json_gr.fns));
-    memcpy(&gr->ctl, &json_gr.ctl, sizeof(spfg_gr_ctl_t));
 
     // Clear index for target grid.
-    (void) _spfg_gr_index_clear(gr);
+    (void) _spfg_gr_index_clear(&json_gr);
 
     if (out_gr_id) {
-        *out_gr_id = gr->id;
+        *out_gr_id = json_gr.id;
     }
 
     return SPFG_ERROR_NO;
