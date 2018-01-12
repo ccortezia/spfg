@@ -116,7 +116,7 @@ SPFG = (function SPFG() {
 
         var module = getModule();
         var idOutPtr = module._malloc(4);
-        var charsLength = module.lengthBytesUTF8(name) + 1;
+        var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
         var err = module._spfg_gr_create(nameInPtr, idOutPtr);
@@ -164,7 +164,7 @@ SPFG = (function SPFG() {
 
         var module = getModule();
         var idOutPtr = module._malloc(4);
-        var charsLength = module.lengthBytesUTF8(name) + 1;
+        var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
         var err = module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr);
@@ -220,7 +220,7 @@ SPFG = (function SPFG() {
         var module = getModule();
         var idOutPtr = module._malloc(4);
 
-        var charsLength = module.lengthBytesUTF8(name) + 1;
+        var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
 
@@ -288,7 +288,7 @@ SPFG = (function SPFG() {
     function spfgRunCycle(gridId, timestamp, callback, thisCtx) {
         var module = getModule();
         callback = (callback && thisCtx) ? callback.bind(thisCtx) : callback;
-        var cbInPtr = (callback || 0) && module.Runtime.addFunction(callback);
+        var cbInPtr = (callback || 0) && module.addFunction(callback);
         cleanErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
     }
 
@@ -301,7 +301,7 @@ SPFG = (function SPFG() {
         var module = getModule();
         var idOutPtr = module._malloc(4);
         var jsonData = JSON.stringify(gridSnapshot);
-        var charsLength = module.lengthBytesUTF8(jsonData) + 1;
+        var charsLength = jsonData.length * 4 + 1;
         var jsonInPtr = module._malloc(charsLength);
         module.stringToUTF8(jsonData, jsonInPtr, charsLength);
         module.setValue(idOutPtr, 0, 'i32');
