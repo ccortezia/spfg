@@ -17,6 +17,8 @@ spfg_err_t _spfg_gr_index_clear(spfg_gr_t *gr)
 
     memset(&grx->fnx, 0, sizeof(grx->fnx));
 
+    grx->is_valid = false;
+
     return SPFG_ERROR_NO;
 }
 
