@@ -68,7 +68,7 @@ describe("SPFG datapoint", function() {
   });
 
   it("removal should work with valid id", function() {
-    var id = SPFG.createDatapoint.bind(SPFG.createDatapoint, gr0, 'booleanus', 'dp0');
+    var id = SPFG.createDatapoint(gr0, 'bool', 'dp0');
     expect(SPFG.removeDatapoint.bind(SPFG.removeFunction, gr0, id)).not.toThrow();
   });
 });
@@ -106,7 +106,7 @@ describe("SPFG function", function() {
   });
 
   it("removal should work with valid id", function() {
-    var id = SPFG.createFunction.bind(SPFG.createFunction, gr0, 'blargh(bool,real)->real', 0, [dp0, dp1], [dp2], 'fn0');
+    var id = SPFG.createFunction(gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0');
     expect(SPFG.removeFunction.bind(SPFG.removeFunction, gr0, id)).not.toThrow();
   });
 });
