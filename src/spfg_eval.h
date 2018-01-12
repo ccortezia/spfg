@@ -1,5 +1,5 @@
-#ifndef __SPFG_EVALUATION_H__
-#define __SPFG_EVALUATION_H__
+#ifndef __SPFG_EVAL_H__
+#define __SPFG_EVAL_H__
 
 #include "spfg/spfg.h"
 #include "spfg_types.h"
@@ -22,4 +22,4 @@ spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx);
 }
 #endif
 
-#endif // __SPFG_EVALUATION_H__
+#endif // __SPFG_EVAL_H__

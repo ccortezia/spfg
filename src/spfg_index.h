@@ -1,5 +1,5 @@
-#ifndef __SPFG_COMPOSITION_H__
-#define __SPFG_COMPOSITION_H__
+#ifndef __SPFG_INDEX_H__
+#define __SPFG_INDEX_H__
 
 #include "spfg/spfg.h"
 #include "spfg_types.h"
@@ -15,4 +15,4 @@ spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx);
 }
 #endif
 
-#endif // __SPFG_COMPOSITION_H__
+#endif // __SPFG_INDEX_H__
