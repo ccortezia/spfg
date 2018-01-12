@@ -28,7 +28,7 @@ TEST(eval_json, test_spfg_run_cycle_from_imported_json_should_eval)
                   "{\"id\": 3, \"name\": \"dp1p0\", \"type\": 3, \"value\": true, \"emitted\": false}, "
                   "{\"id\": 4, \"name\": \"dp1p1\", \"type\": 3, \"value\": false, \"emitted\": false}, "
                   "{\"id\": 5, \"name\": \"dp0p2\", \"type\": 3, \"value\": false, \"emitted\": false}], "
-        "\"ctl\": {\"curr_phase\": 1, \"curr_fn_idx\": 1}}";
+        "\"ctl\": {\"curr_fn_idx\": 1}}";
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_import_json(json_snapshot, sizeof(json_snapshot), NULL));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(gr_id, dp1p1_id, true));

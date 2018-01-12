@@ -36,7 +36,6 @@ typedef struct spfg_fn {
 
 
 typedef struct spfg_gr_ctl {
-    spfg_phase_t curr_phase;
     spfg_gr_fn_cnt_t curr_fn_idx;
 }  spfg_gr_ctl_t;
 

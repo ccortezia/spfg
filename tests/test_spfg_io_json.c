@@ -15,7 +15,7 @@ TEST_TEAR_DOWN(io_json) {
 TEST(io_json, test_spfg_gr_import_json_should_accept_valid_string)
 {
     uint32_t outlen;
-    char original_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_phase\": 0, \"curr_fn_idx\": 1}}";
+    char original_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_fn_idx\": 1}}";
     char exported_json[1024];
 
     // Import reference JSON string to compare with generated output.
@@ -55,9 +55,9 @@ TEST(io_json, test_spfg_gr_export_json_should_dump_built_grid)
 
     uint32_t outlen;
     char exported_json[1024];
-    char expected_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_phase\": 0, \"curr_fn_idx\": 1}}";
+    char expected_json[] = "{\"id\": 1, \"name\": \"gr0\", \"fns\": [{\"id\": 1, \"name\": \"fn1\", \"type\": 2, \"phase\": 0, \"in_dp_ids\": [1, 2], \"out_dp_ids\": [3]}], \"dps\": [{\"id\": 1, \"name\": \"dp0p0\", \"type\": 3, \"value\": true, \"emitted\": false}, {\"id\": 2, \"name\": \"dp1p0\", \"type\": 3, \"value\": false, \"emitted\": false}, {\"id\": 3, \"name\": \"dp0p1\", \"type\": 3, \"value\": false, \"emitted\": false}], \"ctl\": {\"curr_fn_idx\": 1}}";
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_export_json(gr0_id, exported_json, sizeof(exported_json), &outlen));
-    TEST_ASSERT_EQUAL(393, outlen);
+    TEST_ASSERT_EQUAL(376, outlen);
     TEST_ASSERT_EQUAL_STRING(expected_json, exported_json);
 }
 

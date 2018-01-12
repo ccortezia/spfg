@@ -228,12 +228,12 @@ describe("SPFG grid import", function(){
   beforeEach(SPFG.init);
 
   it("should handle the json for a simple grid", function(){
-    var snapshot = {id: 1, name: 'gr0', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    var snapshot = {id: 1, name: 'gr0', fns: [], dps: [], ctl: {curr_fn_idx: 0}};
     expect(SPFG.importGridSnapshot.bind(SPFG.importGridSnapshot, snapshot)).not.toThrow();
   });
 
   it("should return the id of the imported grid", function(){
-    var snapshot = {id: 2, name: 'gr0', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    var snapshot = {id: 2, name: 'gr0', fns: [], dps: [], ctl: {curr_fn_idx: 0}};
     var gridId = SPFG.importGridSnapshot(snapshot);
     expect(gridId).toEqual(2);
   });
@@ -245,7 +245,7 @@ describe("SPFG grid export", function(){
   beforeEach(SPFG.init);
 
   it("should return the expected grid snapshot data", function(){
-    var original = {id: 1, name: 'gr1', fns: [], dps: [], ctl: {curr_phase: 0, curr_fn_idx: 0}};
+    var original = {id: 1, name: 'gr1', fns: [], dps: [], ctl: {curr_fn_idx: 0}};
     var gridId = SPFG.importGridSnapshot(original);
     var exported = SPFG.exportGridSnapshot(gridId);
     expect(exported).toEqual(original);

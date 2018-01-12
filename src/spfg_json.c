@@ -134,11 +134,6 @@ static azjson_spec_t gr_dps_spec[] = {
 
 static azjson_spec_t gr_ctl_spec[] = {
     {
-        .key = "curr_phase",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_gr_ctl_t, curr_phase)
-    },
-    {
         .key = "curr_fn_idx",
         .vtype = JSON_INTEGER,
         .voffset = offsetof(spfg_gr_ctl_t, curr_fn_idx)
@@ -334,7 +329,6 @@ spfg_err_t spfg_gr_export_json(spfg_gr_id_t gr_id, char *output, uint32_t output
     sappend(output, output_len, &vcnt, &rcnt, "], ");
 
     sappend(output, output_len, &vcnt, &rcnt, "\"ctl\": {");
-    sappend(output, output_len, &vcnt, &rcnt, "\"curr_phase\": %d, ", gr->ctl.curr_phase);
     sappend(output, output_len, &vcnt, &rcnt, "\"curr_fn_idx\": %d", gr->ctl.curr_fn_idx);
     sappend(output, output_len, &vcnt, &rcnt, "}");
 

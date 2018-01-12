@@ -93,7 +93,6 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 
 spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
 {
-    grx->gr->ctl.curr_phase = 0;
     grx->gr->ctl.curr_fn_idx = 0;
     return SPFG_ERROR_NO;
 }
@@ -129,13 +128,9 @@ spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, vo
             break;
         }
 
-        if (fnx->fn->phase != grx->gr->ctl.curr_phase) {
-            grx->gr->ctl.curr_phase += 1;
-        }
-
         // Stop condition: control callback.
         if (cb) {
-            err = cb(grx->gr->id, fnx->fn->id, grx->gr->ctl.curr_phase, udata);
+            err = cb(grx->gr->id, fnx->fn->id, fnx->fn->phase, udata);
 
             if (err == SPFG_LOOP_CONTROL_STOP) {
                 break;
