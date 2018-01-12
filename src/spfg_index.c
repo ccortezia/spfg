@@ -47,7 +47,7 @@ int fnx_cmp(const void *p1, const void *p2)
 spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx)
 {
     // Capture scheme information into an array optimized for evaluation.
-    // The resulting array may be sparse, thus not safe for naive sequential evaluation.
+    // The resulting array may be sparse, thus not safe for plain sequential evaluation.
     for (uint32_t i = 0; i < SPFG_MAX_GRID_FNS; i++) {
 
         if (!grx->gr->fns[i].name.chars[0]) {
@@ -74,9 +74,9 @@ spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx)
         }
     }
 
-    // Sorts the captured information so it becomes safe for naive sequential evaluation.
+    // Sorts the captured information so it becomes safe for plain sequential evaluation.
     // The resulting sorted array is not sparse, and the first zeroed element works as a sentinel
-    // and can be used to determine there are no more function to evaluate point-forward.
+    // to determine there are no more functions to evaluate point-forward.
     qsort(grx->fnx, SPFG_MAX_GRID_FNS, sizeof(spfg_fnx_t), fnx_cmp);
 
     grx->is_valid = true;
