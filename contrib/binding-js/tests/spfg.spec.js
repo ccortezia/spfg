@@ -175,6 +175,53 @@ describe("SPFG cycle", function() {
   });
 });
 
+
+describe("SPFG evaluation", function() {
+  var gr0, dp0, dp1, dp2, dp3, dp4, fn0, fn1;
+
+  beforeEach(naiveFinish);
+  beforeEach(SPFG.init);
+
+  beforeEach(function(){
+    gr0 = SPFG.createGrid('gr0');
+    dp0 = SPFG.createDatapoint(gr0, 'bool', 'dp0');
+    dp1 = SPFG.createDatapoint(gr0, 'bool', 'dp1');
+    dp2 = SPFG.createDatapoint(gr0, 'bool', 'dp2');
+    dp3 = SPFG.createDatapoint(gr0, 'bool', 'dp3');
+    dp4 = SPFG.createDatapoint(gr0, 'bool', 'dp4');
+    fn0 = SPFG.createFunction(gr0, 'and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0');
+    fn1 = SPFG.createFunction(gr0, 'and(bool,bool)->bool', 1, [dp2, dp3], [dp4], 'fn1');
+  });
+
+  it("dp0=false dp1=false dp3=false -> dp2=false dp4=false", function() {
+    SPFG.setBoolean(gr0, dp0, false);
+    SPFG.setBoolean(gr0, dp1, false);
+    SPFG.setBoolean(gr0, dp3, false);
+    SPFG.resetCycle(gr0);
+    SPFG.runCycle(gr0, 0, 0);
+    expect(SPFG.exportGridSnapshot(gr0).dps).toEqual([
+      {id: 1, name: 'dp0', type: 3, value: false, emitted: false},
+      {id: 2, name: 'dp1', type: 3, value: false, emitted: false},
+      {id: 3, name: 'dp2', type: 3, value: false, emitted: false},
+      {id: 4, name: 'dp3', type: 3, value: false, emitted: false},
+      {id: 5, name: 'dp4', type: 3, value: false, emitted: false}]);
+  });
+
+  it("dp0=true dp1=true dp3=true -> dp2=true dp4=true", function() {
+    SPFG.setBoolean(gr0, dp0, true);
+    SPFG.setBoolean(gr0, dp1, true);
+    SPFG.setBoolean(gr0, dp3, true);
+    SPFG.resetCycle(gr0);
+    SPFG.runCycle(gr0, 0, 0);
+    expect(SPFG.exportGridSnapshot(gr0).dps).toEqual([
+      {id: 1, name: 'dp0', type: 3, value: true, emitted: false},
+      {id: 2, name: 'dp1', type: 3, value: true, emitted: false},
+      {id: 3, name: 'dp2', type: 3, value: true, emitted: false},
+      {id: 4, name: 'dp3', type: 3, value: true, emitted: false},
+      {id: 5, name: 'dp4', type: 3, value: true, emitted: true}]);
+  });
+});
+
 describe("SPFG grid import", function(){
 
   beforeEach(naiveFinish);

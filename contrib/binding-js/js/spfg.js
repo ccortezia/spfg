@@ -60,14 +60,13 @@ SPFG = (function SPFG() {
         removeFunction: spfgRemoveFunction,
 
         // Evaluation functions
+        setBoolean: spfgSetBoolean,
         resetCycle: spfgResetCycle,
         runCycle: spfgRunCycle,
 
         // Import / Export functions
         importGridSnapshot: spfgImportGridSnapshot,
         exportGridSnapshot: spfgExportGridSnapshot,
-
-        setBoolean: spfgSetBoolean,
 
         // Exported symbols
         codes: {
