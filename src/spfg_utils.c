@@ -39,7 +39,9 @@ spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
         return SPFG_ERROR_NOT_FOUND;
     }
 
-    *idx = gr_idx;
+    if (idx) {
+        *idx = gr_idx;
+    }
 
     return SPFG_ERROR_NO;
 }
