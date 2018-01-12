@@ -207,9 +207,6 @@ spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_g
         return SPFG_ERROR_FAIL;
     }
 
-    // Clear index for target grid.
-    (void) _spfg_gr_index_clear(&json_gr);
-
     if (out_gr_id) {
         *out_gr_id = json_gr.id;
     }
