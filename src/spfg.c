@@ -256,7 +256,7 @@ extern spfg_err_t spfg_dp_get_bool(spfg_gr_id_t gr_id, spfg_dp_id_t dp_id, spfg_
     *value = dp->value.boolean;
 
     if (emitted) {
-        *emitted = dp->value.boolean;
+        *emitted = dp->emitted;
     }
 
     return SPFG_ERROR_NO;
