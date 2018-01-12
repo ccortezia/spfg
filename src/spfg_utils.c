@@ -23,16 +23,35 @@ spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
+
+spfg_err_t _spfg_calc_gr_idx(spfg_gr_id_t gr_id, uint32_t *idx)
 {
+    uint32_t gr_idx;
+
     if (gr_id == 0) {
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
-    spfg_gr_cnt_t gr_idx = gr_id - SPFG_GR_ID0;
+    gr_idx = gr_id - SPFG_GR_ID0;
 
     if (gr_idx >= SPFG_MAX_GRID_CNT) {
         return SPFG_ERROR_NOT_FOUND;
+    }
+
+    if (idx) {
+        *idx = gr_idx;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
+{
+    uint32_t gr_idx;
+
+    if (_spfg_calc_gr_idx(gr_id, &gr_idx) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
     }
 
     if (!global_grs[gr_idx].name.chars[0]) {

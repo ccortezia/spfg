@@ -20,6 +20,7 @@ extern "C" {
 
 spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii);
 
+spfg_err_t _spfg_calc_gr_idx(spfg_gr_id_t gr_id, uint32_t *idx);
 spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx);
 spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr);
 spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp);
