@@ -61,7 +61,7 @@ spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts) {
 spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx)
 {
     for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
-        fnx->in_dps[i]->emitted = 0;
+        fnx->in_dps[i]->emitted = false;
     }
 
     return SPFG_ERROR_NO;
