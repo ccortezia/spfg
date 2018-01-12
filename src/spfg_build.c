@@ -114,6 +114,28 @@ spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
 }
 
 
+spfg_err_t _spfg_gr_create_from(spfg_gr_t *gr)
+{
+    uint32_t gr_idx;
+
+    if (!gr) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    if (_spfg_find_gr(gr->id, NULL) != SPFG_ERROR_NOT_FOUND) {
+        return SPFG_ERROR_ALREADY_EXISTS;
+    }
+
+    if (_spfg_calc_gr_idx(gr->id, &gr_idx) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_GR_ID;
+    }
+
+    memcpy(&global_grs[gr_idx], gr, sizeof(spfg_gr_t));
+
+    return SPFG_ERROR_NO;
+}
+
+
 spfg_err_t _spfg_gr_remove(spfg_gr_t *gr)
 {
     (void) _spfg_gr_index_clear(gr);

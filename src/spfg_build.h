@@ -1,5 +1,5 @@
-#ifndef __SPFG_COMPOSITION_H__
-#define __SPFG_COMPOSITION_H__
+#ifndef __SPFG_BUILD_H__
+#define __SPFG_BUILD_H__
 
 #include "spfg/spfg.h"
 #include "spfg_types.h"
@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id);
+spfg_err_t _spfg_gr_create_from(spfg_gr_t *gr);
 spfg_err_t _spfg_gr_remove(spfg_gr_t *gr);
 spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id);
 spfg_err_t _spfg_dp_remove(spfg_gr_t *gr, spfg_dp_t *dp);
@@ -36,4 +37,4 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
 }
 #endif
 
-#endif // __SPFG_COMPOSITION_H__
+#endif // __SPFG_BUILD_H__
