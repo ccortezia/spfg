@@ -262,8 +262,8 @@ SPFG = (function SPFG() {
      */
     function spfgRemoveFunction(gridId, functionId) {
         var module = getModule();
-        cleanErr(module._spfg_dp_remove(gridId, functionId));
-        releaseAllocations(gridId, null, functionId);
+        cleanErr(module._spfg_fn_remove(gridId, functionId));
+        releaseAllocations(gridId, functionId, null);
     }
 
     /**
