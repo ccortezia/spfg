@@ -103,8 +103,9 @@ spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
-    global_grxs[gr_idx].gr = gr;
     gr->id = gr_idx + SPFG_GR_ID0;
+
+    global_grxs[gr_idx].gr = gr;
 
     (void) _spfg_gr_index_clear(gr);
 
@@ -131,6 +132,10 @@ spfg_err_t _spfg_gr_create_from(spfg_gr_t *gr)
     }
 
     memcpy(&global_grs[gr_idx], gr, sizeof(spfg_gr_t));
+
+    global_grxs[gr_idx].gr = &global_grs[gr_idx];
+
+    (void) _spfg_gr_index_clear(gr);
 
     return SPFG_ERROR_NO;
 }
