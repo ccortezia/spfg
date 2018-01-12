@@ -76,7 +76,6 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
         if (err == SPFG_ERROR_NOT_FOUND) {
             return SPFG_ERROR_NO;
         }
-        fprintf(stderr, "failed to find fn input change for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
@@ -86,7 +85,6 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
     }
 
     if ((err = fnx_changed_dps_clear(fnx)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to clear fn input emitted flag for fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
         return SPFG_ERROR_EVAL_FN_FAILURE;
     }
 
