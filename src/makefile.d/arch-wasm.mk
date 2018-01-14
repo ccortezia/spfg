@@ -1,7 +1,7 @@
 JS_LIB = lib$(NAME).js
 BC_LIB = lib$(NAME).bc
 
-WFLAGS = --pre-js ${TMP_PREJS} --post-js ${TMP_POSTJS} -s RESERVED_FUNCTION_POINTERS=10 -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_dp_remove', '_spfg_gr_create', '_spfg_gr_remove', '_spfg_fn_create', '_spfg_fn_remove', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_bin', '_spfg_gr_export_json', '_spfg_gr_import_json', '_spfg_dp_set_bool', '_spfg_dp_get_bool']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['stringToUTF8', 'UTF8ToString', 'setValue', 'getValue', 'addFunction']"
+WFLAGS = --pre-js ${TMP_PREJS} --post-js ${TMP_POSTJS} -s RESERVED_FUNCTION_POINTERS=10 -s WASM=1 -s EXPORTED_FUNCTIONS="['_spfg_init', '_spfg_finish', '_spfg_dp_create', '_spfg_dp_remove', '_spfg_gr_create', '_spfg_gr_remove', '_spfg_fn_create', '_spfg_fn_remove', '_spfg_run_cycle', '_spfg_reset_cycle', '_spfg_gr_export_bin', '_spfg_gr_export_json', '_spfg_gr_import_json', '_spfg_dp_set_bool', '_spfg_dp_get_bool']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['stringToUTF8', 'UTF8ToString', 'setValue', 'getValue', 'addFunction', 'addOnPostRun']"
 
 TMP_MAIN = _main.c
 TMP_PREJS = _prejs.js
