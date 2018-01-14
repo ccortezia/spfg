@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+    </head>
+
+    <div id="experimental"></div>
+
+    <script src="app.js"></script>
+    <script src="libspfg.js"></script>
+    <script src="spfg.js"></script>
+
+    <script>
+        window.ModuleSPFG = ModuleSPFG();
+        window.ModuleSPFG.addOnPostRun(function(){
+
+            SPFG.init();
+
+            var gr0Id = SPFG.createGrid('grD0');
+            dp0Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp0');
+            dp1Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp1');
+            dp2Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp2');
+            fn0Id = SPFG.createFunction(gr0Id, 'and(bool,bool)->bool', 0, [dp0Id, dp1Id], [dp2Id], 'fn0');
+
+            var app = Elm.Main.fullscreen();
+
+            app.ports.ping.subscribe(function(value) {
+                SPFG.setBoolean(gr0Id, dp0Id, !!(value % 2));
+                SPFG.setBoolean(gr0Id, dp1Id, !!(value % 3));
+                SPFG.resetCycle(gr0Id);
+                SPFG.runCycle(gr0Id, 0, 0);
+                app.ports.pong.send(SPFG.exportGridSnapshot(gr0Id));
+            });
+        });
+
+    </script>
+</html>

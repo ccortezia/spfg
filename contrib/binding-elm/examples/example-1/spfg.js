@@ -1,0 +1,1 @@
+../../../binding-js/js/spfg.js
