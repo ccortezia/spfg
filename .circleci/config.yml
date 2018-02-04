@@ -1,0 +1,137 @@
+defaults: &defaults
+  working_directory: /opt/proj
+  docker:
+    - image: ccortezia/spfg_build:0.2
+
+submodules: &submodules
+  name: Initializing submodules
+  command: git submodule sync && git submodule update --init
+
+version: 2
+jobs:
+
+  # ----------------------------------------------------------------------
+  # Native targets
+  # ----------------------------------------------------------------------
+  build_x86_64_gcc:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=x86_64 CC=gcc ci
+      - run: bash <(curl -s https://codecov.io/bash)
+
+  build_x86_64_gcc_opt:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=x86_64 CC=gcc EXTRA_CFLAGS="-g0 -Os" ci
+
+  build_x86_64_clang:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=x86_64 CC=clang
+      - run: make ARCH=x86_64 CC=clang test
+
+  build_x86_64_clang_opt:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=x86_64 CC=clang EXTRA_CFLAGS="-g0 -Os"
+      - run: make ARCH=x86_64 CC=clang EXTRA_CFLAGS="-g0 -Os" test
+
+  # ----------------------------------------------------------------------
+  # ARM targets
+  # ----------------------------------------------------------------------
+  build_arm:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=arm
+
+  build_arm_opt:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=arm EXTRA_CFLAGS="-g0 -Os"
+
+  # ----------------------------------------------------------------------
+  # ATMEGA targets
+  # ----------------------------------------------------------------------
+  build_atmega328:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=atmega328
+
+  build_atmega168:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: make ARCH=atmega168
+
+  # ----------------------------------------------------------------------
+  # WASM targets
+  # ----------------------------------------------------------------------
+  build_wasm:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: source /opt/emsdk-portable/emsdk_env.sh && make ARCH=wasm CC=emcc
+
+  # ----------------------------------------------------------------------
+  # JS targets
+  # ----------------------------------------------------------------------
+  build_contrib_binding_js:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: source /opt/emsdk-portable/emsdk_env.sh && make ARCH=wasm CC=emcc
+      - run:
+          name: Running X virtual framebuffer
+          command: Xvfb :99 -screen 0 1280x1024x24
+          background: true
+      - run:
+          environment:
+            DISPLAY: :99
+          command: make binding_js
+
+  # ----------------------------------------------------------------------
+  # Elm targets
+  # ----------------------------------------------------------------------
+  build_contrib_binding_elm:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: *submodules
+      - run: source /opt/emsdk-portable/emsdk_env.sh && make ARCH=wasm CC=emcc
+      - run:
+          environment:
+            ELM_VERSION: 0.18.0
+          command: make binding_elm
+
+workflows:
+  version: 2
+  all:
+    jobs:
+      - build_x86_64_gcc
+      - build_x86_64_gcc_opt
+      - build_x86_64_clang
+      - build_x86_64_clang_opt
+      - build_arm
+      - build_arm_opt
+      - build_atmega328
+      - build_atmega168
+      - build_wasm
+      - build_contrib_binding_js
+      - build_contrib_binding_elm
