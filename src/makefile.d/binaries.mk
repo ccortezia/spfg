@@ -12,8 +12,8 @@ OBJECTS = $(SOURCES:%.c=%.o)
 ARTIFACTS += $(OBJECTS) $(SHARED_LIB) $(STATIC_LIB)
 
 ifeq ($(BUILD_SHARED),y)
-	EXTRA_CFLAGS += -fPIC
-	EXTRA_LDFLAGS += -shared
+	override EXTRA_CFLAGS += -fPIC
+	override EXTRA_LDFLAGS += -shared
 endif
 
 all: $(SHARED_LIB) $(STATIC_LIB)
