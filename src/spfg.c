@@ -6,6 +6,9 @@
 #include "spfg_build.h"
 #include "spfg_eval.h"
 
+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+
+
 // -------------------------------------------------------------------------------------------------
 // Private Library Data
 // -------------------------------------------------------------------------------------------------
@@ -21,6 +24,10 @@ static char initialized;
 
 extern spfg_err_t spfg_init()
 {
+
+    // Compile time checkings. No runtime penalty.
+    BUILD_BUG_ON(sizeof(spfg_runtime_t) < sizeof(spfg_runtime_pvt_t));
+
     if (initialized) {
         return SPFG_ERROR_ALREADY_INITIALIZED;
     }

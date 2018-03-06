@@ -107,6 +107,68 @@ typedef struct spfg_info_s {
     spfg_gr_phase_cnt_t max_phases;
 } spfg_info_t;
 
+// ----------------------------------------------------------------------------
+// Opaque runtime memory definition
+// ----------------------------------------------------------------------------
+
+#define ESTIMATED_SIZE_BLOCK_NAME \
+    SPFG_BLOCK_NAME_MAX_LENGTH
+
+#define ESTIMATED_SIZE_DP_VALUE \
+    sizeof(spfg_real_t)
+
+#define ESTIMATED_SIZE_DP \
+    ESTIMATED_SIZE_BLOCK_NAME + \
+    ESTIMATED_SIZE_DP_VALUE + \
+    sizeof(spfg_dp_id_t) + \
+    sizeof(spfg_dp_type_t) + \
+    sizeof(spfg_boolean_t) + \
+    3 // padding
+
+#define ESTIMATED_SIZE_FN \
+    ESTIMATED_SIZE_BLOCK_NAME + \
+    sizeof(spfg_fn_id_t) + \
+    sizeof(spfg_fn_type_t) + \
+    sizeof(spfg_phase_t) + \
+    ((sizeof(spfg_dp_id_t)) * (SPFG_MAX_FN_IN_DPS)) + \
+    sizeof(spfg_fn_dp_in_cnt_t) + \
+    ((sizeof(spfg_dp_id_t)) * (SPFG_MAX_FN_OUT_DPS)) + \
+    sizeof(spfg_fn_dp_out_cnt_t) + \
+    6 // padding
+
+#define ESTIMATED_SIZE_GR_CTL \
+    sizeof(spfg_gr_fn_cnt_t)
+
+#define ESTIMATED_SIZE_GR \
+    ESTIMATED_SIZE_GR_CTL + \
+    ESTIMATED_SIZE_BLOCK_NAME + \
+    ((ESTIMATED_SIZE_DP) * (SPFG_MAX_GRID_DPS)) + \
+    ((ESTIMATED_SIZE_FN) * (SPFG_MAX_GRID_FNS)) + \
+    sizeof(spfg_gr_id_t) + \
+    sizeof(spfg_gr_dp_cnt_t) + \
+    sizeof(spfg_gr_fn_cnt_t) + \
+    4 // padding
+
+#define ESTIMATED_SIZE_FNX \
+    sizeof(void *) + \
+    ((sizeof(void *)) * (SPFG_MAX_FN_IN_DPS)) + \
+    ((sizeof(void *)) * (SPFG_MAX_FN_OUT_DPS))
+
+#define ESTIMATED_SIZE_GRX \
+    ((ESTIMATED_SIZE_FNX) * (SPFG_MAX_GRID_FNS)) + \
+    sizeof(void *) + \
+    sizeof(bool) + \
+    7 // padding
+
+#define ESTIMATED_RUNTIME_MEMORY \
+    ESTIMATED_SIZE_GR + \
+    ESTIMATED_SIZE_GRX
+
+typedef struct spfg_runtime {
+    uint8_t _[ESTIMATED_RUNTIME_MEMORY];
+} spfg_runtime_t;
+
+
 // -------------------------------------------------------------------------------------------------
 // Initialization API
 // -------------------------------------------------------------------------------------------------
