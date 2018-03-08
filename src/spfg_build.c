@@ -114,6 +114,18 @@ spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
     return SPFG_ERROR_NO;
 }
 
+spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
+{
+    if (_spfg_block_name_set(&rt->gr.name, name) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    rt->gr.id = SPFG_GR_ID0;
+
+    (void) _spfg_rt_index_clear(rt);
+
+    return SPFG_ERROR_NO;
+}
 
 spfg_err_t _spfg_gr_create_from(spfg_gr_t *gr)
 {
@@ -177,11 +189,73 @@ spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *na
 }
 
 
+spfg_err_t _spfg_rt_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+{
+    unsigned int dp_idx;
+    spfg_dp_t *dp;
+
+    if (_spfg_find_free_gr_dp(&rt->gr, &dp_idx, &dp) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_OUT_OF_SLOTS;
+    }
+
+    // TODO: dp type validation
+
+    if (_spfg_block_name_set(&dp->name, name) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    dp->id = SPFG_DP_ID(rt->gr.id, dp_idx);
+    dp->type = dp_type;
+
+    (void) _spfg_rt_index_clear(rt);
+
+    if (dp_id) {
+        *dp_id = dp->id;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
 spfg_err_t _spfg_dp_remove(spfg_gr_t *gr, spfg_dp_t *dp)
 {
     memset(dp, 0, sizeof(spfg_dp_t));
 
     (void) _spfg_gr_index_clear(gr);
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_rt_dp_remove(spfg_rt_t *rt, spfg_dp_id_t dp_id)
+{
+    spfg_dp_t *dp;
+
+    if (_spfg_resolve_gr_dp(&rt->gr, dp_id, &dp) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    // Lookup fn associated to dp
+    // TODO: extract into separate function.
+    for (int i = 0; i < SPFG_MAX_GRID_FNS; i++) {
+        if (!rt->gr.fns[i].name.chars[0]) {
+            continue;
+        }
+        for (int j = 0; j < SPFG_MAX_FN_IN_DPS; j++) {
+            if (rt->gr.fns[i].in_dp_ids[j] == dp->id) {
+                return SPFG_ERROR_FN_INTEGRITY;
+            }
+        }
+        for (int j = 0; j < SPFG_MAX_FN_OUT_DPS; j++) {
+            if (rt->gr.fns[i].out_dp_ids[j] == dp->id) {
+                return SPFG_ERROR_FN_INTEGRITY;
+            }
+        }
+    }
+
+    memset(dp, 0, sizeof(spfg_dp_t));
+
+    (void) _spfg_rt_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }
@@ -245,11 +319,90 @@ spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
 }
 
 
+spfg_err_t _spfg_rt_fn_create(spfg_rt_t *rt,
+                              spfg_fn_type_t type,
+                              spfg_phase_t phase,
+                              spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
+                              spfg_dp_id_t out_dp_ids[], uint8_t out_dp_ids_len,
+                              const char *name,
+                              spfg_fn_id_t *fn_id)
+{
+    spfg_err_t err;
+
+    // Validate datapoints against target function signature.
+
+    spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
+    spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
+
+    memset(in_dps, 0, sizeof(in_dps));
+    memset(in_dps, 0, sizeof(out_dps));
+
+    if ((err = _spfg_resolve_gr_dps(&rt->gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    if ((err = _spfg_resolve_gr_dps(&rt->gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_VALIDATE_FN;
+    }
+
+    // Evolve grid schema.
+
+    unsigned int fn_idx;
+    spfg_fn_t *fn;
+
+    if ((err = _spfg_find_free_gr_fn(&rt->gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_OUT_OF_SLOTS;
+    }
+
+    if (_spfg_block_name_set(&fn->name, name) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_BAD_BLOCK_NAME;
+    }
+
+    fn->type = type;
+    fn->phase = phase;
+    fn->id = SPFG_FN_ID(rt->gr.id, fn_idx);
+
+    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
+    fn->in_dp_ids_len = in_dp_ids_len;
+
+    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
+    fn->out_dp_ids_len = out_dp_ids_len;
+
+    (void) _spfg_rt_index_clear(rt);
+
+    if (fn_id) {
+        *fn_id = fn->id;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
 spfg_err_t _spfg_fn_remove(spfg_gr_t *gr, spfg_fn_t *fn)
 {
     memset(fn, 0, sizeof(spfg_fn_t));
 
     (void) _spfg_gr_index_clear(gr);
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_rt_fn_remove(spfg_rt_t *rt, spfg_fn_id_t fn_id)
+{
+    spfg_fn_t *fn;
+
+    if (_spfg_resolve_gr_fn(&rt->gr, fn_id, &fn) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_FN_ID;
+    }
+
+    memset(fn, 0, sizeof(spfg_fn_t));
+
+    (void) _spfg_rt_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }

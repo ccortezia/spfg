@@ -18,6 +18,12 @@ spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts);
 spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts);
 spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx);
 
+spfg_err_t _spfg_rt_reset_cycle(spfg_rt_t *rt);
+spfg_err_t _spfg_rt_run_cycle(spfg_rt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata);
+spfg_err_t _spfg_rt_dp_set_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t value);
+spfg_err_t _spfg_rt_dp_get_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted);
+
+
 #ifdef __cplusplus
 }
 #endif

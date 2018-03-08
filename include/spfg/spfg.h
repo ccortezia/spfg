@@ -192,6 +192,21 @@ spfg_err_t spfg_fn_create(spfg_gr_id_t, spfg_fn_type_t, spfg_phase_t,
 spfg_err_t spfg_fn_remove(spfg_gr_id_t, spfg_fn_id_t);
 
 // -------------------------------------------------------------------------------------------------
+// Grid Composition API (refactoring)
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t spfg_rt_init(spfg_runtime_t *, const char * /* name */);
+spfg_err_t spfg_rt_finish(spfg_runtime_t *);
+spfg_err_t spfg_rt_dp_create(spfg_runtime_t *, spfg_dp_type_t, const char * /* name */, spfg_dp_id_t *);
+spfg_err_t spfg_rt_dp_remove(spfg_runtime_t *, spfg_dp_id_t);
+spfg_err_t spfg_rt_fn_create(spfg_runtime_t *, spfg_fn_type_t, spfg_phase_t,
+                             spfg_dp_id_t [] /* in_dp_ids */, uint8_t /* in_dp_ids_len */,
+                             spfg_dp_id_t [] /* out_dp_ids */, uint8_t /* out_dp_ids_len */,
+                             const char * /* name */,
+                             spfg_fn_id_t *);
+spfg_err_t spfg_rt_fn_remove(spfg_runtime_t *, spfg_fn_id_t);
+
+// -------------------------------------------------------------------------------------------------
 // Grid Evaluation API
 // -------------------------------------------------------------------------------------------------
 
@@ -204,6 +219,18 @@ spfg_err_t spfg_dp_set_bool(spfg_gr_id_t, spfg_dp_id_t, spfg_boolean_t);
 spfg_err_t spfg_dp_get_bool(spfg_gr_id_t, spfg_dp_id_t, spfg_boolean_t * /* value */, spfg_boolean_t * /* emitted */);
 
 // -------------------------------------------------------------------------------------------------
+// Grid Evaluation API (refactoring)
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t spfg_rt_reset_cycle(spfg_runtime_t *);
+spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *, spfg_ts_t, spfg_cycle_cb_t, void * /* cdata */);
+spfg_err_t spfg_rt_dp_set_int(spfg_runtime_t *, spfg_dp_id_t, spfg_int_t);
+spfg_err_t spfg_rt_dp_set_real(spfg_runtime_t *, spfg_dp_id_t, spfg_real_t);
+spfg_err_t spfg_rt_dp_set_word(spfg_runtime_t *, spfg_dp_id_t, spfg_word_t);
+spfg_err_t spfg_rt_dp_set_bool(spfg_runtime_t *, spfg_dp_id_t, spfg_boolean_t);
+spfg_err_t spfg_rt_dp_get_bool(spfg_runtime_t *, spfg_dp_id_t, spfg_boolean_t * /* value */, spfg_boolean_t * /* emitted */);
+
+// -------------------------------------------------------------------------------------------------
 // Import / Export API
 // -------------------------------------------------------------------------------------------------
 
@@ -211,6 +238,15 @@ spfg_err_t spfg_gr_export_bin(spfg_gr_id_t, void *, uint32_t);
 spfg_err_t spfg_gr_import_bin(void *, uint32_t, spfg_gr_id_t *, const char * /* name */);
 spfg_err_t spfg_gr_import_json(char *, uint32_t, spfg_gr_id_t *);
 spfg_err_t spfg_gr_export_json(spfg_gr_id_t, char *, uint32_t /* maxlen */, uint32_t * /* outlen */);
+
+// -------------------------------------------------------------------------------------------------
+// Import / Export API (refactoring)
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t spfg_rt_import_bin(spfg_runtime_t *, void *, uint32_t);
+spfg_err_t spfg_rt_export_bin(spfg_runtime_t *, void *, uint32_t);
+spfg_err_t spfg_rt_import_json(spfg_runtime_t *, char *, uint32_t);
+spfg_err_t spfg_rt_export_json(spfg_runtime_t *, char *, uint32_t /* maxlen */, uint32_t * /* outlen */);
 
 // -------------------------------------------------------------------------------------------------
 // Inspection API

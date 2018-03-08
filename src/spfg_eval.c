@@ -12,6 +12,38 @@ spfg_err_t dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
     return SPFG_ERROR_NO;
 }
 
+
+spfg_err_t _spfg_rt_dp_set_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t value)
+{
+    spfg_dp_t *dp;
+
+    if (_spfg_resolve_gr_dp(&rt->gr, dp_id, &dp) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    dp->emitted = dp->value.boolean != value;
+    dp->value.boolean = value;
+
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t _spfg_rt_dp_get_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
+{
+    spfg_dp_t *dp;
+
+    if (_spfg_resolve_gr_dp(&rt->gr, dp_id, &dp) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_DP_ID;
+    }
+
+    *value = dp->value.boolean;
+
+    if (emitted) {
+        *emitted = dp->emitted;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
 spfg_err_t fn_and_bool_bool_ret_bool_exec(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
 {
     *result = p0 && p1;
@@ -98,6 +130,14 @@ spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
 }
 
 
+spfg_err_t _spfg_rt_reset_cycle(spfg_rt_t *rt)
+{
+    rt->gr.ctl.curr_fn_idx = 0;
+
+    return SPFG_ERROR_NO;
+}
+
+
 spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     spfg_err_t err;
@@ -147,6 +187,65 @@ spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, vo
         }
 
         grx->gr->ctl.curr_fn_idx += 1;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_rt_run_cycle(spfg_rt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+{
+    spfg_err_t err;
+    spfg_fnx_t *fnx;
+
+    // Ensures index sanity.
+    if (!rt->grx.is_valid) {
+        if ((err = _spfg_rt_index_rebuild(rt)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_REINDEX;
+        }
+    }
+
+    for (;;) {
+
+        // Stop condition: array boundary protection.
+        if (rt->gr.ctl.curr_fn_idx >= SPFG_MAX_GRID_FNS) {
+            break;
+        }
+
+        fnx = &rt->grx.fnx[rt->gr.ctl.curr_fn_idx];
+
+        // Stop condition: no more pending functions to evaluate.
+        if (!fnx->fn) {
+            break;
+        }
+
+        // Stop condition: no more pending functions to evaluate.
+        if (!fnx->fn->name.chars[0]) {
+            break;
+        }
+
+        if (cb) {
+
+            // Hands control back to caller passing progress info.
+            err = cb(rt->gr.id, fnx->fn->id, fnx->fn->phase, udata);
+
+            // Stop condition: callback explicit stop.
+            if (err == SPFG_LOOP_CONTROL_STOP) {
+                break;
+            }
+
+            // Stop condition: callback failure.
+            if (err != SPFG_ERROR_NO) {
+                return SPFG_ERROR_EVAL_CB_FAILURE;
+            }
+        }
+
+        // Stop condition: evaluation failure.
+        if ((err = grx_fnx_run(&rt->grx, fnx, ts)) != SPFG_ERROR_NO) {
+            return SPFG_ERROR_EVAL_FN_FAILURE;
+        }
+
+        rt->gr.ctl.curr_fn_idx += 1;
     }
 
     return SPFG_ERROR_NO;

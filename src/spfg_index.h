@@ -11,6 +11,9 @@ extern "C" {
 spfg_err_t _spfg_gr_index_clear(spfg_gr_t *gr);
 spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx);
 
+spfg_err_t _spfg_rt_index_clear(spfg_rt_t *rt);
+spfg_err_t _spfg_rt_index_rebuild(spfg_rt_t *rt);
+
 #ifdef __cplusplus
 }
 #endif

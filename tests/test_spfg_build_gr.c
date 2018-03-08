@@ -2,6 +2,7 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+#include "spfg_types.h"
 
 TEST_GROUP(build_gr);
 
@@ -13,23 +14,10 @@ TEST_TEAR_DOWN(build_gr) {
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
 }
 
-TEST(build_gr, test_spfg_gr_create_should_not_err)
+TEST(build_gr, test_spfg_rt_init_should_not_err)
 {
-    spfg_gr_id_t gr_id;
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_gr_create("valid grid name", &gr_id));
-}
-
-TEST(build_gr, test_spfg_gr_create_with_null_param_should_err)
-{
-    spfg_gr_id_t gr_id;
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_create("", NULL));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_gr_create(NULL, &gr_id));
-}
-
-TEST(build_gr, test_spfg_gr_create_with_empty_name_should_err)
-{
-    spfg_gr_id_t gr_id;
-    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_BLOCK_NAME, spfg_gr_create("", &gr_id));
+    spfg_runtime_t runtime;
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_init(&runtime, "valid grid name"));
 }
 
 TEST(build_gr, test_spfg_gr_create_beyond_max_should_err)
@@ -70,11 +58,8 @@ TEST(build_gr, test_spfg_gr_get_ids_should_reflect_inner_state)
     TEST_ASSERT_EQUAL(gr_id_2, out_ids[1]);
 }
 
-
 TEST_GROUP_RUNNER(build_gr) {
-    RUN_TEST_CASE(build_gr, test_spfg_gr_create_should_not_err);
-    RUN_TEST_CASE(build_gr, test_spfg_gr_create_with_empty_name_should_err);
-    RUN_TEST_CASE(build_gr, test_spfg_gr_create_with_null_param_should_err);
+    RUN_TEST_CASE(build_gr, test_spfg_rt_init_should_not_err);
     RUN_TEST_CASE(build_gr, test_spfg_gr_create_beyond_max_should_err);
     RUN_TEST_CASE(build_gr, test_spfg_gr_remove_should_free_inner_slot);
     RUN_TEST_CASE(build_gr, test_spfg_gr_get_ids_should_reflect_inner_state);
