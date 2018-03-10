@@ -614,6 +614,18 @@ extern spfg_err_t spfg_rt_export_json(spfg_runtime_t *runtime, char *output, uin
 // Inspection API
 // -------------------------------------------------------------------------------------------------
 
+extern spfg_err_t spfg_runtime_size(uint32_t *size)
+{
+    if (!size) {
+        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
+    }
+
+    *size = sizeof(spfg_runtime_t);
+
+    return SPFG_ERROR_NO;
+}
+
+
 extern spfg_err_t spfg_info(spfg_info_t *info)
 {
     if (!info) {

@@ -28,6 +28,15 @@ TEST(inspect, test_spfg_info_should_return_compiled_info)
     TEST_ASSERT_EQUAL(SPFG_MAX_PHASES, info.max_phases);
 }
 
+TEST(inspect, test_spfg_runtime_size_should_return_proper_size)
+{
+    uint32_t size;
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BAD_PARAM_NULL_POINTER, spfg_runtime_size(NULL));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_runtime_size(&size));
+    TEST_ASSERT_EQUAL(sizeof(spfg_runtime_t), size);
+}
+
 TEST_GROUP_RUNNER(inspect) {
     RUN_TEST_CASE(inspect, test_spfg_info_should_return_compiled_info);
+    RUN_TEST_CASE(inspect, test_spfg_runtime_size_should_return_proper_size);
 }

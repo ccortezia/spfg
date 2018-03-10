@@ -253,7 +253,7 @@ spfg_err_t spfg_rt_export_json(spfg_runtime_t *, char *, uint32_t /* maxlen */, 
 // -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_info(spfg_info_t *);
-
+spfg_err_t spfg_runtime_size(uint32_t *size);
 
 #ifdef __cplusplus
 }
