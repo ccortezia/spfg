@@ -170,7 +170,7 @@ spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, vo
 
         // Stop condition: control callback.
         if (cb) {
-            err = cb(grx->gr->id, fnx->fn->id, fnx->fn->phase, udata);
+            err = cb(fnx->fn->id, fnx->fn->phase, udata);
 
             if (err == SPFG_LOOP_CONTROL_STOP) {
                 break;
@@ -227,7 +227,7 @@ spfg_err_t _spfg_rt_run_cycle(spfg_rt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, v
         if (cb) {
 
             // Hands control back to caller passing progress info.
-            err = cb(rt->gr.id, fnx->fn->id, fnx->fn->phase, udata);
+            err = cb(fnx->fn->id, fnx->fn->phase, udata);
 
             // Stop condition: callback explicit stop.
             if (err == SPFG_LOOP_CONTROL_STOP) {

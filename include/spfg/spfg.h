@@ -86,7 +86,7 @@ typedef enum spfg_fn_type_e {
  } spfg_fn_type_t;
 
 
-typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_gr_id_t, spfg_fn_id_t, spfg_phase_t, void * /* cdata */);
+typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_fn_id_t, spfg_phase_t, void * /* cdata */);
 
 typedef spfg_gr_id_t spfg_gr_cnt_t;
 typedef spfg_dp_id_t spfg_gr_dp_cnt_t;
