@@ -2,15 +2,11 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+
 TEST_GROUP(eval_json);
+TEST_SETUP(eval_json) {}
+TEST_TEAR_DOWN(eval_json) {}
 
-TEST_SETUP(eval_json) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(eval_json) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 TEST(eval_json, test_spfg_run_cycle_from_imported_json_should_eval)
 {

@@ -4,8 +4,6 @@
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
-extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
-extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
 spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
 {
@@ -41,60 +39,6 @@ spfg_err_t _spfg_calc_gr_idx(spfg_gr_id_t gr_id, uint32_t *idx)
     if (idx) {
         *idx = gr_idx;
     }
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_find_gr(spfg_gr_id_t gr_id, uint32_t *idx)
-{
-    uint32_t gr_idx;
-
-    if (_spfg_calc_gr_idx(gr_id, &gr_idx) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    if (!global_grs[gr_idx].name.chars[0]) {
-        return SPFG_ERROR_NOT_FOUND;
-    }
-
-    if (idx) {
-        *idx = gr_idx;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t _spfg_resolve_gr(spfg_gr_id_t gr_id, spfg_gr_t **gr)
-{
-    unsigned int idx;
-
-    if (gr_id == 0) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    if (_spfg_find_gr(gr_id, &idx) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_NOT_FOUND;
-    }
-
-    *gr = &global_grs[idx];
-
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx)
-{
-    unsigned int gr_idx;
-
-    if (gr_id == 0) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    if (_spfg_find_gr(gr_id, &gr_idx) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_NOT_FOUND;
-    }
-
-    *grx = &global_grxs[gr_idx];
 
     return SPFG_ERROR_NO;
 }
@@ -145,23 +89,6 @@ spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t _spfg_find_free_gr(uint32_t *idx, spfg_gr_t **gr)
-{
-    for (spfg_gr_cnt_t i = 0; i < SPFG_MAX_GRID_CNT; i++) {
-
-        if (!global_grs[i].name.chars[0]) {
-            *idx = i;
-
-            if (gr) {
-                *gr = &global_grs[i];
-            }
-
-            return SPFG_ERROR_NO;
-        }
-    }
-
-    return SPFG_ERROR_NOT_FOUND;
-}
 
 spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp)
 {

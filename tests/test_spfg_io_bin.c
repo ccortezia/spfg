@@ -2,15 +2,11 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+
 TEST_GROUP(io_bin);
+TEST_SETUP(io_bin) {}
+TEST_TEAR_DOWN(io_bin) {}
 
-TEST_SETUP(io_bin) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(io_bin) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 char export_outbuf[1024 * 20];
 

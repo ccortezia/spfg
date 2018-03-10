@@ -2,15 +2,11 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+
 TEST_GROUP(io_json);
+TEST_SETUP(io_json) {}
+TEST_TEAR_DOWN(io_json) {}
 
-TEST_SETUP(io_json) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(io_json) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 TEST(io_json, test_spfg_rt_import_json_should_accept_valid_string)
 {

@@ -123,71 +123,10 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t _spfg_reset_cycle(spfg_grx_t *grx)
-{
-    grx->gr->ctl.curr_fn_idx = 0;
-    return SPFG_ERROR_NO;
-}
-
 
 spfg_err_t _spfg_rt_reset_cycle(spfg_rt_t *rt)
 {
     rt->gr.ctl.curr_fn_idx = 0;
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_run_cycle(spfg_grx_t *grx, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
-{
-    spfg_err_t err;
-    spfg_fnx_t *fnx;
-
-    if (!grx->is_valid) {
-        if ((err = _spfg_grx_index_rebuild(grx)) != SPFG_ERROR_NO) {
-            return SPFG_ERROR_REINDEX;
-        }
-    }
-
-    for (;;) {
-
-        // Stop condition: array boundary protection.
-        if (grx->gr->ctl.curr_fn_idx >= SPFG_MAX_GRID_FNS) {
-            break;
-        }
-
-        fnx = &grx->fnx[grx->gr->ctl.curr_fn_idx];
-
-        // Stop condition: no more pending functions to evaluate.
-        if (!fnx->fn) {
-            break;
-        }
-
-        // Stop condition: no more pending functions to evaluate.
-        if (!fnx->fn->name.chars[0]) {
-            break;
-        }
-
-        // Stop condition: control callback.
-        if (cb) {
-            err = cb(fnx->fn->id, fnx->fn->phase, udata);
-
-            if (err == SPFG_LOOP_CONTROL_STOP) {
-                break;
-            }
-
-            if (err != SPFG_ERROR_NO) {
-                return SPFG_ERROR_EVAL_CB_FAILURE;
-            }
-        }
-
-        if ((err = grx_fnx_run(grx, fnx, ts)) != SPFG_ERROR_NO) {
-            fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-            return SPFG_ERROR_EVAL_FN_FAILURE;
-        }
-
-        grx->gr->ctl.curr_fn_idx += 1;
-    }
 
     return SPFG_ERROR_NO;
 }

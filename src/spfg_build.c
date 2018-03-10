@@ -88,31 +88,8 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
-
-spfg_err_t _spfg_gr_create(const char *name, spfg_gr_id_t *gr_id)
-{
-    spfg_gr_t *gr;
-    unsigned int gr_idx;
-
-    if (_spfg_find_free_gr(&gr_idx, &gr) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    if (_spfg_block_name_set(&gr->name, name) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    gr->id = gr_idx + SPFG_GR_ID0;
-
-    global_grxs[gr_idx].gr = gr;
-
-    (void) _spfg_gr_index_clear(gr);
-
-    *gr_id = gr->id;
-
-    return SPFG_ERROR_NO;
-}
 
 spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
 {
@@ -123,67 +100,6 @@ spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
     rt->gr.id = SPFG_GR_ID0;
 
     (void) _spfg_rt_index_clear(rt);
-
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t _spfg_gr_create_from(spfg_gr_t *gr)
-{
-    uint32_t gr_idx;
-
-    if (!gr) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
-
-    if (_spfg_find_gr(gr->id, NULL) != SPFG_ERROR_NOT_FOUND) {
-        return SPFG_ERROR_ALREADY_EXISTS;
-    }
-
-    if (_spfg_calc_gr_idx(gr->id, &gr_idx) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
-
-    memcpy(&global_grs[gr_idx], gr, sizeof(spfg_gr_t));
-
-    global_grxs[gr_idx].gr = &global_grs[gr_idx];
-
-    (void) _spfg_gr_index_clear(gr);
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_gr_remove(spfg_gr_t *gr)
-{
-    (void) _spfg_gr_index_clear(gr);
-
-    memset(gr, 0, sizeof(spfg_gr_t));
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_dp_create(spfg_gr_t *gr, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
-{
-    unsigned int dp_idx;
-    spfg_dp_t *dp;
-
-    if (_spfg_find_free_gr_dp(gr, &dp_idx, &dp) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    // TODO: dp type validation
-
-    if (_spfg_block_name_set(&gr->dps[dp_idx].name, name) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    gr->dps[dp_idx].id = SPFG_DP_ID(gr->id, dp_idx);
-    gr->dps[dp_idx].type = dp_type;
-
-    (void) _spfg_gr_index_clear(gr);
-
-    *dp_id = dp->id;
 
     return SPFG_ERROR_NO;
 }
@@ -212,16 +128,6 @@ spfg_err_t _spfg_rt_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char 
     if (dp_id) {
         *dp_id = dp->id;
     }
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_dp_remove(spfg_gr_t *gr, spfg_dp_t *dp)
-{
-    memset(dp, 0, sizeof(spfg_dp_t));
-
-    (void) _spfg_gr_index_clear(gr);
 
     return SPFG_ERROR_NO;
 }
@@ -256,64 +162,6 @@ spfg_err_t _spfg_rt_dp_remove(spfg_rt_t *rt, spfg_dp_id_t dp_id)
     memset(dp, 0, sizeof(spfg_dp_t));
 
     (void) _spfg_rt_index_clear(rt);
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_fn_create(spfg_gr_t *gr,
-                           spfg_fn_type_t type,
-                           spfg_phase_t phase,
-                           spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
-                           spfg_dp_id_t out_dp_ids[], uint8_t out_dp_ids_len,
-                           const char *name,
-                           spfg_fn_id_t *fn_id)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    // Validate datapoints against target function signature.
-
-    spfg_dp_t *in_dps[SPFG_MAX_FN_IN_DPS];
-    spfg_dp_t *out_dps[SPFG_MAX_FN_OUT_DPS];
-
-    if ((err = _spfg_resolve_gr_dps(gr, in_dp_ids, in_dps, in_dp_ids_len)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_DP_ID;
-    }
-
-    if ((err = _spfg_resolve_gr_dps(gr, out_dp_ids, out_dps, out_dp_ids_len)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_DP_ID;
-    }
-
-    if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_VALIDATE_FN;
-    }
-
-    // Evolve grid schema.
-
-    unsigned int fn_idx;
-    spfg_fn_t *fn;
-
-    if ((err = _spfg_find_free_gr_fn(gr, &fn_idx, &fn)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_OUT_OF_SLOTS;
-    }
-
-    if (_spfg_block_name_set(&fn->name, name) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_BAD_BLOCK_NAME;
-    }
-
-    fn->type = type;
-    fn->phase = phase;
-    fn->id = SPFG_FN_ID(gr->id, fn_idx);
-
-    memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
-    fn->in_dp_ids_len = in_dp_ids_len;
-
-    memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
-    fn->out_dp_ids_len = out_dp_ids_len;
-
-    (void) _spfg_gr_index_clear(gr);
-
-    *fn_id = fn->id;
 
     return SPFG_ERROR_NO;
 }
@@ -377,16 +225,6 @@ spfg_err_t _spfg_rt_fn_create(spfg_rt_t *rt,
     if (fn_id) {
         *fn_id = fn->id;
     }
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t _spfg_fn_remove(spfg_gr_t *gr, spfg_fn_t *fn)
-{
-    memset(fn, 0, sizeof(spfg_fn_t));
-
-    (void) _spfg_gr_index_clear(gr);
 
     return SPFG_ERROR_NO;
 }

@@ -4,14 +4,9 @@
 
 
 TEST_GROUP(build_fn);
+TEST_SETUP(build_fn) {}
+TEST_TEAR_DOWN(build_fn) {}
 
-TEST_SETUP(build_fn) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(build_fn) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 TEST(build_fn, test_spfg_fn_create_should_validate_input_cohesion)
 {

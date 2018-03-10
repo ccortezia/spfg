@@ -2,15 +2,11 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+
 TEST_GROUP(build_dp);
+TEST_SETUP(build_dp) {}
+TEST_TEAR_DOWN(build_dp) {}
 
-TEST_SETUP(build_dp) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(build_dp) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 TEST(build_dp, test_spfg_dp_remove_should_keep_data_integrity)
 {

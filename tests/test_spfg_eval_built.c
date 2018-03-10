@@ -2,15 +2,11 @@
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
 
+
 TEST_GROUP(eval_built);
+TEST_SETUP(eval_built) {}
+TEST_TEAR_DOWN(eval_built) {}
 
-TEST_SETUP(eval_built) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_init());
-}
-
-TEST_TEAR_DOWN(eval_built) {
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_finish());
-}
 
 TEST(eval_built, test_spfg_run_cycle_loose_should_eval)
 {
