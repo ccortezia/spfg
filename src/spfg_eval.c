@@ -13,7 +13,7 @@ spfg_err_t dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
 }
 
 
-spfg_err_t _spfg_rt_dp_set_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t value)
+spfg_err_t _spfg_dp_set_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t value)
 {
     spfg_dp_t *dp;
 
@@ -27,7 +27,7 @@ spfg_err_t _spfg_rt_dp_set_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t _spfg_rt_dp_get_bool(spfg_rt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
+spfg_err_t _spfg_dp_get_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
 {
     spfg_dp_t *dp;
 
@@ -124,7 +124,7 @@ spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
 }
 
 
-spfg_err_t _spfg_rt_reset_cycle(spfg_rt_t *rt)
+spfg_err_t _spfg_rt_reset_cycle(spfg_runtime_pvt_t *rt)
 {
     rt->gr.ctl.curr_fn_idx = 0;
 
@@ -132,14 +132,14 @@ spfg_err_t _spfg_rt_reset_cycle(spfg_rt_t *rt)
 }
 
 
-spfg_err_t _spfg_rt_run_cycle(spfg_rt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+spfg_err_t _spfg_rt_run_cycle(spfg_runtime_pvt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
 {
     spfg_err_t err;
     spfg_fnx_t *fnx;
 
     // Ensures index sanity.
     if (!rt->grx.is_valid) {
-        if ((err = _spfg_rt_index_rebuild(rt)) != SPFG_ERROR_NO) {
+        if ((err = _spfg_index_rebuild(rt)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_REINDEX;
         }
     }

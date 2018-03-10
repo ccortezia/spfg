@@ -36,16 +36,16 @@ TEST(io_json, test_spfg_rt_export_json_should_dump_built_grid)
     spfg_runtime_t runtime;
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_init(&runtime, "runtime"));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_create(&runtime, SPFG_DP_BOOL, "dp0", &dp0));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_create(&runtime, SPFG_DP_BOOL, "dp1", &dp1));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_create(&runtime, SPFG_DP_BOOL, "dp2", &dp2));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp0", &dp0));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp1", &dp1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp2", &dp2));
 
     spfg_dp_id_t in_dps[] = {dp0, dp1};
     spfg_dp_id_t out_dps[] = {dp2};
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps, 2, out_dps, 1, "fn0", &fn0));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps, 2, out_dps, 1, "fn0", &fn0));
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_reset_cycle(&runtime));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_set_bool(&runtime, dp0, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(&runtime, dp0, true));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_run_cycle(&runtime, false, NULL, NULL));
 
     uint32_t outlen;

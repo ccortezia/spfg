@@ -8,7 +8,7 @@ TEST_SETUP(eval_json) {}
 TEST_TEAR_DOWN(eval_json) {}
 
 
-TEST(eval_json, test_spfg_run_cycle_from_imported_json_should_eval)
+TEST(eval_json, test_spfg_rt_run_cycle_from_imported_json_should_eval)
 {
     spfg_dp_id_t dp1p1_id = 4;
     spfg_dp_id_t dp0p2_id = 5;
@@ -27,13 +27,13 @@ TEST(eval_json, test_spfg_run_cycle_from_imported_json_should_eval)
         "\"ctl\": {\"curr_fn_idx\": 1}}";
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_import_json(&runtime, json_snapshot, sizeof(json_snapshot)));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_set_bool(&runtime, dp1p1_id, true));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_set_bool(&runtime, dp1p1_id, true));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_run_cycle(&runtime, 0, NULL, NULL));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_dp_get_bool(&runtime, dp0p2_id, &output, &emitted));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_dp_get_bool(&runtime, dp0p2_id, &output, &emitted));
     TEST_ASSERT_EQUAL(true, output);
     TEST_ASSERT_EQUAL(true, emitted);
 }
 
 TEST_GROUP_RUNNER(eval_json) {
-    RUN_TEST_CASE(eval_json, test_spfg_run_cycle_from_imported_json_should_eval);
+    RUN_TEST_CASE(eval_json, test_spfg_rt_run_cycle_from_imported_json_should_eval);
 }

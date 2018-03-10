@@ -91,7 +91,7 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
 
 // ------------------------------------------------------------------------------------------------
 
-spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
+spfg_err_t _spfg_rt_init(spfg_runtime_pvt_t *rt, const char *name)
 {
     if (_spfg_block_name_set(&rt->gr.name, name) != SPFG_ERROR_NO) {
         return SPFG_ERROR_BAD_BLOCK_NAME;
@@ -99,13 +99,13 @@ spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
 
     rt->gr.id = SPFG_GR_ID0;
 
-    (void) _spfg_rt_index_clear(rt);
+    (void) _spfg_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }
 
 
-spfg_err_t _spfg_rt_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+spfg_err_t _spfg_dp_create(spfg_runtime_pvt_t *rt, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
 {
     unsigned int dp_idx;
     spfg_dp_t *dp;
@@ -123,7 +123,7 @@ spfg_err_t _spfg_rt_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char 
     dp->id = SPFG_DP_ID(rt->gr.id, dp_idx);
     dp->type = dp_type;
 
-    (void) _spfg_rt_index_clear(rt);
+    (void) _spfg_index_clear(rt);
 
     if (dp_id) {
         *dp_id = dp->id;
@@ -133,7 +133,7 @@ spfg_err_t _spfg_rt_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char 
 }
 
 
-spfg_err_t _spfg_rt_dp_remove(spfg_rt_t *rt, spfg_dp_id_t dp_id)
+spfg_err_t _spfg_dp_remove(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id)
 {
     spfg_dp_t *dp;
 
@@ -161,13 +161,13 @@ spfg_err_t _spfg_rt_dp_remove(spfg_rt_t *rt, spfg_dp_id_t dp_id)
 
     memset(dp, 0, sizeof(spfg_dp_t));
 
-    (void) _spfg_rt_index_clear(rt);
+    (void) _spfg_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }
 
 
-spfg_err_t _spfg_rt_fn_create(spfg_rt_t *rt,
+spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
                               spfg_fn_type_t type,
                               spfg_phase_t phase,
                               spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
@@ -220,7 +220,7 @@ spfg_err_t _spfg_rt_fn_create(spfg_rt_t *rt,
     memcpy(fn->out_dp_ids, out_dp_ids, out_dp_ids_len * sizeof(spfg_dp_id_t));
     fn->out_dp_ids_len = out_dp_ids_len;
 
-    (void) _spfg_rt_index_clear(rt);
+    (void) _spfg_index_clear(rt);
 
     if (fn_id) {
         *fn_id = fn->id;
@@ -230,7 +230,7 @@ spfg_err_t _spfg_rt_fn_create(spfg_rt_t *rt,
 }
 
 
-spfg_err_t _spfg_rt_fn_remove(spfg_rt_t *rt, spfg_fn_id_t fn_id)
+spfg_err_t _spfg_fn_remove(spfg_runtime_pvt_t *rt, spfg_fn_id_t fn_id)
 {
     spfg_fn_t *fn;
 
@@ -240,7 +240,7 @@ spfg_err_t _spfg_rt_fn_remove(spfg_rt_t *rt, spfg_fn_id_t fn_id)
 
     memset(fn, 0, sizeof(spfg_fn_t));
 
-    (void) _spfg_rt_index_clear(rt);
+    (void) _spfg_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }

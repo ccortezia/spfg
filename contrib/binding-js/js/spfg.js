@@ -154,7 +154,7 @@ SPFG = (function SPFG() {
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
-        var err = module._spfg_rt_dp_create(runtimePtr, datapointTypes[type], nameInPtr, idOutPtr);
+        var err = module._spfg_dp_create(runtimePtr, datapointTypes[type], nameInPtr, idOutPtr);
 
         cleanErr(err, function(){
             module._free(idOutPtr);
@@ -176,7 +176,7 @@ SPFG = (function SPFG() {
      */
     function spfgRemoveDP(runtimePtr, datapointId) {
         var module = getModule();
-        cleanErr(module._spfg_rt_dp_remove(runtimePtr, datapointId));
+        cleanErr(module._spfg_dp_remove(runtimePtr, datapointId));
         releaseAllocations(runtimePtr, null, datapointId);
     }
 
@@ -219,7 +219,7 @@ SPFG = (function SPFG() {
         var outDpIdsInPtr = module._malloc(outDpIds.length * 4);
         module.HEAPU32.set(outDpIdsArray, outDpIdsInPtr / 4);
 
-        var err = module._spfg_rt_fn_create(
+        var err = module._spfg_fn_create(
             runtimePtr, functionTypes[type], phase,
             inDpIdsInPtr, inDpIds.length,
             outDpIdsInPtr, outDpIds.length,
@@ -249,7 +249,7 @@ SPFG = (function SPFG() {
      */
     function spfgRemoveFN(runtimePtr, functionId) {
         var module = getModule();
-        cleanErr(module._spfg_rt_fn_remove(runtimePtr, functionId));
+        cleanErr(module._spfg_fn_remove(runtimePtr, functionId));
         releaseAllocations(runtimePtr, functionId, null);
     }
 
@@ -344,7 +344,7 @@ SPFG = (function SPFG() {
      */
     function spfgSetBoolean(runtimePtr, datapointId, value) {
         var module = getModule();
-        cleanErr(module._spfg_rt_dp_set_bool(runtimePtr, datapointId, value));
+        cleanErr(module._spfg_dp_set_bool(runtimePtr, datapointId, value));
     }
 
     /**

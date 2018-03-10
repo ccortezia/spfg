@@ -8,11 +8,11 @@
 extern "C" {
 #endif
 
-spfg_err_t _spfg_rt_import_bin(spfg_rt_t *, const void *, uint32_t);
-spfg_err_t _spfg_rt_export_bin(spfg_rt_t *rt, void *outbuf, uint32_t outbuf_len);
+spfg_err_t _spfg_rt_import_bin(spfg_runtime_pvt_t *, const void *, uint32_t);
+spfg_err_t _spfg_rt_export_bin(spfg_runtime_pvt_t *rt, void *outbuf, uint32_t outbuf_len);
 
-spfg_err_t _spfg_rt_import_json(spfg_rt_t *rt, char *json_str, uint32_t len);
-spfg_err_t _spfg_rt_export_json(spfg_rt_t *rt, char *output, uint32_t output_len, uint32_t *slen);
+spfg_err_t _spfg_rt_import_json(spfg_runtime_pvt_t *rt, char *json_str, uint32_t len);
+spfg_err_t _spfg_rt_export_json(spfg_runtime_pvt_t *rt, char *output, uint32_t output_len, uint32_t *slen);
 
 #ifdef __cplusplus
 }
