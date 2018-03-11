@@ -35,7 +35,7 @@ make ARCH=wasm CC=emcc
 To build using docker:
 
 ```shell
-docker run -ti --rm -v$(pwd):/opt/proj -w /opt/proj ccortezia/spfg_build:0.2 make
+docker run -ti --rm -v$(pwd):/opt/proj -w /opt/proj ccortezia/spfg_build:0.3 make
 ```
 
 Some convenience targets:
@@ -76,7 +76,7 @@ The code to create such `grid` and then trigger its evaluation using the core AP
 
 void spfg_example_1() {
 
-    spfg_gr_id_t gr1;
+    spfg_runtime_t runtime;
     spfg_fn_id_t fn1;
     spfg_fn_id_t fn2;
     spfg_dp_id_t dp1;
@@ -85,53 +85,57 @@ void spfg_example_1() {
     spfg_dp_id_t dp4;
     spfg_dp_id_t dp5;
 
-    // Allocates datapoint instances.
-    spfg_gr_create("gr1", &gr1);
-    spfg_dp_create(gr1, SPFG_DP_BOOL, "dp1", &dp1);
-    spfg_dp_create(gr1, SPFG_DP_BOOL, "dp2", &dp2);
-    spfg_dp_create(gr1, SPFG_DP_BOOL, "dp3", &dp3);
-    spfg_dp_create(gr1, SPFG_DP_BOOL, "dp4", &dp4);
-    spfg_dp_create(gr1, SPFG_DP_BOOL, "dp5", &dp5);
+    spfg_boolean_t dp5_output;
+    spfg_boolean_t dp5_emitted;
 
-    // Allocates function instance.
+    // Allocates datapoint instances.
+    spfg_rt_init(&runtime, "rt0");
+    spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp1", &dp1);
+    spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp2", &dp2);
+    spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp3", &dp3);
+    spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp4", &dp4);
+    spfg_dp_create(&runtime, SPFG_DP_BOOL, "dp5", &dp5);
+
+    // Allocates a function instance.
     spfg_fn_type_t fn1_type = SPFG_FN_AND_BOOL_BOOL_RET_BOOL;
     spfg_phase_t fn1_phase = 0;
     spfg_dp_id_t fn1_in_dps[] = {dp1, dp2};
     spfg_dp_id_t fn1_out_dps[] = {dp4};
-    spfg_fn_create(gr1, fn1_type, fn1_phase, fn1_in_dps, 2, fn1_out_dps, 1, "fn1", &fn1);
+    spfg_fn_create(&runtime, fn1_type, fn1_phase, fn1_in_dps, 2, fn1_out_dps, 1, "fn1", &fn1);
 
-    // Allocates function instance.
+    // Allocates a function instance.
     spfg_fn_type_t fn2_type = SPFG_FN_AND_BOOL_BOOL_RET_BOOL;
     spfg_phase_t fn2_phase = 1;
     spfg_dp_id_t fn2_in_dps[] = {dp4, dp3};
     spfg_dp_id_t fn2_out_dps[] = {dp5};
-    spfg_fn_create(gr1, fn2_type, fn2_phase, fn2_in_dps, 2, fn2_out_dps, 1, "fn2", &fn2);
+    spfg_fn_create(&runtime, fn2_type, fn2_phase, fn2_in_dps, 2, fn2_out_dps, 1, "fn2", &fn2);
 
     // Updates some arbitrary input datapoint instances.
-    spfg_dp_set_bool(gr1, dp1, true);
-    spfg_dp_set_bool(gr1, dp2, true);
-    spfg_dp_set_bool(gr1, dp3, true);
+    spfg_dp_set_bool(&runtime, dp1, true);
+    spfg_dp_set_bool(&runtime, dp2, true);
+    spfg_dp_set_bool(&runtime, dp3, true);
 
     // Triggers grid evaluation.
-    spfg_reset_cycle(gr1);
-    spfg_run_cycle(gr1, 0, NULL, NULL);
+    spfg_rt_reset_cycle(&runtime);
+    spfg_rt_run_cycle(&runtime, 0, NULL, NULL);
 
     // Verify data changes.
-    spfg_dp_get_bool(gr1, dp5, &dp5_output, &dp5_emitted);
+    spfg_dp_get_bool(&runtime, dp5, &dp5_output, &dp5_emitted);
     assert(true == dp5_output);
     assert(true == dp5_emitted);
+
+    spfg_rt_finish(&runtime);
 }
 ```
 
 ## Bindings
 
-- **Javascript**: A shin javascript wrapper is provided to interact with the native library compiled to WebAssembly.
-- **Elm**: Elm type definitions and JSON encoders/decoders are provided. Driving the wasm lib relies on Elm ports.
-- **Python**: A specific python binding hasn't yet been developed. For now, use ctypes to drive the ABI.
+- [**Javascript**](contrib/binding-js): A shin javascript wrapper is provided to interact with the native library compiled to WebAssembly.
+- [**Elm**](contrib/binding-elm): Elm type definitions and JSON encoders/decoders are provided. Driving the wasm lib relies on Elm ports.
+- [**Python**](contrib/binding-py): A specific python binding hasn't yet been developed. For now, use ctypes to drive the ABI.
 
 ## Roadmap
 
-- Add support for object reference driven API, as opposed to current object id driven.
 - Add compile flags to optimize binary footprint.
 - Support optional error stack to core library.
 - Support optional error stack to azjson.
