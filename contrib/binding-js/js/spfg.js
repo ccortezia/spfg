@@ -315,7 +315,7 @@ SPFG = (function SPFG() {
      */
     function spfgExportGridSnapshot(runtimePtr) {
         var module = getModule();
-        var maxlen = 1024 * 24;
+        var maxlen = 1024 * 500;
         var jsonOutPtr = module._malloc(maxlen);
         var outlenOutPtr = module._malloc(4);
         module.setValue(outlenOutPtr, 0, 'i32');
