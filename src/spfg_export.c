@@ -8,8 +8,40 @@
 #include "spfg_utils.h"
 #include "spfg_index.h"
 
-extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
-extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
+
+// -------------------------------------------------------------------------------------------------
+// Binary Import / Export API
+// -------------------------------------------------------------------------------------------------
+
+spfg_err_t _spfg_rt_import_bin(spfg_runtime_pvt_t *rt, void *data, uint32_t data_len)
+{
+    spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)data;
+
+    memcpy(&rt->gr.dps, &grxp->data.dps, sizeof(grxp->data.dps));
+
+    memcpy(&rt->gr.fns, &grxp->data.fns, sizeof(grxp->data.fns));
+
+    memcpy(&rt->gr.ctl, &grxp->data.ctl, sizeof(spfg_gr_ctl_t));
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _spfg_rt_export_bin(spfg_runtime_pvt_t *rt, void *outbuf, uint32_t outbuf_len)
+{
+    spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)outbuf;
+
+    memset(grxp, 0, sizeof(spfg_gr_exp_t));
+
+    memcpy(&grxp->data, &rt->gr, sizeof(spfg_gr_t));
+
+    return SPFG_ERROR_NO;
+}
+
+
+// -------------------------------------------------------------------------------------------------
+// JSON Import / Export API
+// -------------------------------------------------------------------------------------------------
 
 static azjson_err_t spfg_dp_value_cp(void *target, azjson_token_t *token) {
     switch (token->type) {
@@ -186,29 +218,21 @@ static azjson_spec_t root_spec[] = {
     {.boundary = true}
 };
 
-static spfg_gr_t json_gr;
 
-spfg_err_t spfg_gr_import_json(char *json_str, uint32_t len, spfg_gr_id_t *out_gr_id)
+spfg_err_t _spfg_rt_import_json(spfg_runtime_pvt_t *rt, char *json_str, uint32_t len)
 {
-    memset(&json_gr, 0, sizeof(spfg_gr_t));
+    memset(rt, 0, sizeof(spfg_runtime_pvt_t));
 
-    if (azjson_import(json_str, len, root_spec, &json_gr) != AZJSON_ERROR_NO) {
+    memset(&rt->gr, 0, sizeof(spfg_gr_t));
+
+    if (azjson_import(json_str, len, root_spec, &rt->gr) != AZJSON_ERROR_NO) {
         return SPFG_ERROR_FAIL;
     }
 
-    (void) spfg_gr_remove(json_gr.id);
-
-    if (_spfg_gr_create_from(&json_gr) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_FAIL;
-    }
-
-    if (out_gr_id) {
-        *out_gr_id = json_gr.id;
-    }
+    (void) _spfg_index_clear(rt);
 
     return SPFG_ERROR_NO;
 }
-
 
 
 static spfg_err_t sappend(char *output, size_t output_len, uint32_t *vcnt, uint32_t *rcnt, const char *fmt, ...)
@@ -231,22 +255,15 @@ static spfg_err_t sappend(char *output, size_t output_len, uint32_t *vcnt, uint3
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t spfg_gr_export_json(spfg_gr_id_t gr_id, char *output, uint32_t output_len, uint32_t *slen)
+
+spfg_err_t _spfg_rt_export_json(spfg_runtime_pvt_t *rt, char *output, uint32_t output_len, uint32_t *slen)
 {
-    spfg_gr_t *gr;
-    spfg_err_t err;
     uint32_t rcnt = 0;
     uint32_t vcnt = 0;
 
-    if (!output) {
-        return SPFG_ERROR_BAD_PARAM_NULL_POINTER;
-    }
+    spfg_gr_t *gr = &rt->gr;
 
     memset(output, 0, output_len);
-
-    if ((err = _spfg_resolve_gr(gr_id, &gr)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_INVALID_GR_ID;
-    }
 
     sappend(output, output_len, &vcnt, &rcnt, "{");
     sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->id);

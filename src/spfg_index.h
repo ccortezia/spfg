@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-spfg_err_t _spfg_gr_index_clear(spfg_gr_t *gr);
-spfg_err_t _spfg_grx_index_rebuild(spfg_grx_t *grx);
+spfg_err_t _spfg_index_clear(spfg_runtime_pvt_t *rt);
+spfg_err_t _spfg_index_rebuild(spfg_runtime_pvt_t *rt);
 
 #ifdef __cplusplus
 }

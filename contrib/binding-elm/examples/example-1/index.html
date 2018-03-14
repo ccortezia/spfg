@@ -14,22 +14,21 @@
         window.ModuleSPFG = ModuleSPFG();
         window.ModuleSPFG.addOnPostRun(function(){
 
-            SPFG.init();
-
-            var gr0Id = SPFG.createGrid('grD0');
-            dp0Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp0');
-            dp1Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp1');
-            dp2Id = SPFG.createDatapoint(gr0Id, 'bool', 'dp2');
-            fn0Id = SPFG.createFunction(gr0Id, 'and(bool,bool)->bool', 0, [dp0Id, dp1Id], [dp2Id], 'fn0');
+            var runtime = SPFG.create();
+            runtime.init('example-1');
+            var dp0 = runtime.createDP('bool', 'dp0');
+            var dp1 = runtime.createDP('bool', 'dp1');
+            var dp2 = runtime.createDP('bool', 'dp2');
+            var fn0 = runtime.createFN('and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0');
 
             var app = Elm.Main.fullscreen();
 
             app.ports.ping.subscribe(function(value) {
-                SPFG.setBoolean(gr0Id, dp0Id, !!(value % 2));
-                SPFG.setBoolean(gr0Id, dp1Id, !!(value % 3));
-                SPFG.resetCycle(gr0Id);
-                SPFG.runCycle(gr0Id, 0, 0);
-                app.ports.pong.send(SPFG.exportGridSnapshot(gr0Id));
+                runtime.setb(dp0, !!(value % 2));
+                runtime.setb(dp1, !!(value % 3));
+                runtime.reset();
+                runtime.run(0, 0);
+                app.ports.pong.send(runtime.export());
             });
         });
 

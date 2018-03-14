@@ -47,28 +47,7 @@ SPFG = (function SPFG() {
     var allocations = {};
 
     return {
-        // Lifecycle functions
-        init: spfgInit,
-        finish: spfgFinish,
-
-        // Composition functions
-        createGrid: spfgCreateGrid,
-        createDatapoint: spfgCreateDatapoint,
-        createFunction: spfgCreateFunction,
-        removeGrid: spfgRemoveGrid,
-        removeDatapoint: spfgRemoveDatapoint,
-        removeFunction: spfgRemoveFunction,
-
-        // Evaluation functions
-        setBoolean: spfgSetBoolean,
-        resetCycle: spfgResetCycle,
-        runCycle: spfgRunCycle,
-
-        // Import / Export functions
-        importGridSnapshot: spfgImportGridSnapshot,
-        exportGridSnapshot: spfgExportGridSnapshot,
-
-        // Exported symbols
+        create: create,
         codes: {
             dp: datapointTypes,
             fn: functionTypes,
@@ -78,81 +57,89 @@ SPFG = (function SPFG() {
         Error: CustomError
     };
 
-    // --------------------------------------------------------------
-    // Public functions
-    // --------------------------------------------------------------
-
     /**
-     * Initializes the underlying library.
+     * Allocates memory for a runtime and returns a reference.
      *
-     * @return undefined
+     * @return memory address for the created runtime object
      */
-    function spfgInit() {
+    function spfgCreateRuntime() {
+
         var module = getModule();
-        cleanErr(module._spfg_init());
+        var sizeOutPtr = module._malloc(4);
+
+        var err = module._spfg_runtime_size(sizeOutPtr);
+
+        cleanErr(err, function(){
+            module._free(sizeOutPtr);
+        });
+
+        var size = module.getValue(sizeOutPtr, 'i32');
+        var runtimePtr = module._malloc(size);
+
+        module._free(sizeOutPtr);
+        return runtimePtr;
     }
 
     /**
-     * Finalizes the underlying library.
+     * Deallocates memory for the given runtime reference.
      *
+     * @param number runtimePtr: memory address for the target runtime object
      * @return undefined
      */
-    function spfgFinish() {
+    function spfgDestroyRuntime(runtimePtr) {
         var module = getModule();
-        cleanErr(module._spfg_finish());
+        module._free(runtimePtr);
     }
 
     /**
      * Creates a grid.
      *
+     * @param number runtimePtr: memory address for the target runtime object
      * @param string name: symbolic name for the grid
-     * @return number, the created grid id
+     * @return undefined
      */
-    function spfgCreateGrid(name) {
+    function spfgInitRuntime(runtimePtr, name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
         }
 
         var module = getModule();
-        var idOutPtr = module._malloc(4);
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
-        var err = module._spfg_gr_create(nameInPtr, idOutPtr);
+
+        var err = module._spfg_rt_init(runtimePtr, nameInPtr);
 
         cleanErr(err, function(){
-            module._free(idOutPtr);
             module._free(nameInPtr);
         });
 
-        var id = module.getValue(idOutPtr, 'i32');
-        markAllocation(id, null, null, idOutPtr);
-        markAllocation(id, null, null, nameInPtr);
-        return id;
+        markAllocation(runtimePtr, null, null, nameInPtr);
+        return;
     }
 
     /**
-     * Removes a grid.
+     * Finishes the given runtime.
      *
-     * @param number gridId
+     * @param number runtimePtr: memory address for the target runtime object
      * @return undefined
      */
-    function spfgRemoveGrid(gridId) {
+    function spfgFinishRuntime(runtimePtr) {
         var module = getModule();
-        cleanErr(module._spfg_gr_remove(gridId));
-        releaseAllocations(gridId, null, null);
+        cleanErr(module._spfg_rt_finish(runtimePtr));
+        releaseAllocations(runtimePtr, null, null);
     }
 
     /**
      * Creates a grid datapoint.
      *
-     * @param number gridId: id of the target grid
+     * @param number runtimePtr: memory address for the target runtime object
      * @param string type: refer to datapointTypes for the available types
      * @param string name: symbolic name for the datapoint
      * @return number, the created datapoint id
      */
-    function spfgCreateDatapoint(gridId, type, name) {
+    function spfgCreateDP(runtimePtr, type, name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
@@ -167,7 +154,7 @@ SPFG = (function SPFG() {
         var charsLength = name.length * 4 + 1;
         var nameInPtr = module._malloc(charsLength);
         module.stringToUTF8(name, nameInPtr, charsLength);
-        var err = module._spfg_dp_create(gridId, datapointTypes[type], nameInPtr, idOutPtr);
+        var err = module._spfg_dp_create(runtimePtr, datapointTypes[type], nameInPtr, idOutPtr);
 
         cleanErr(err, function(){
             module._free(idOutPtr);
@@ -175,28 +162,28 @@ SPFG = (function SPFG() {
         });
 
         var id = module.getValue(idOutPtr, 'i32');
-        markAllocation(gridId, null, id, idOutPtr);
-        markAllocation(gridId, null, id, nameInPtr);
+        markAllocation(runtimePtr, null, id, idOutPtr);
+        markAllocation(runtimePtr, null, id, nameInPtr);
         return id;
     }
 
     /**
      * Removes a grid datapoint.
      *
-     * @param number gridId
+     * @param number runtimePtr: memory address for the target runtime object
      * @param number datapointId
      * @return undefined
      */
-    function spfgRemoveDatapoint(gridId, datapointId) {
+    function spfgRemoveDP(runtimePtr, datapointId) {
         var module = getModule();
-        cleanErr(module._spfg_dp_remove(gridId, datapointId));
-        releaseAllocations(gridId, null, datapointId);
+        cleanErr(module._spfg_dp_remove(runtimePtr, datapointId));
+        releaseAllocations(runtimePtr, null, datapointId);
     }
 
     /**
      * Creates a grid function.
      *
-     * @param number gridId: id of the target grid
+     * @param number runtimePtr: memory address for the target runtime object
      * @param string type: refer to functionType for the available types
      * @param number phase: evaluation phase to attach the function to
      * @param array[number] inDpIds: list of datapoint ids to use as input for the function
@@ -204,7 +191,7 @@ SPFG = (function SPFG() {
      * @param string name: symbolic name for the function
      * @return number, the created function id
      */
-    function spfgCreateFunction(gridId, type, phase, inDpIds, outDpIds, name) {
+    function spfgCreateFN(runtimePtr, type, phase, inDpIds, outDpIds, name) {
 
         if (!name) {
             throw Error('needs a non-empty name');
@@ -233,7 +220,7 @@ SPFG = (function SPFG() {
         module.HEAPU32.set(outDpIdsArray, outDpIdsInPtr / 4);
 
         var err = module._spfg_fn_create(
-            gridId, functionTypes[type], phase,
+            runtimePtr, functionTypes[type], phase,
             inDpIdsInPtr, inDpIds.length,
             outDpIdsInPtr, outDpIds.length,
             nameInPtr, idOutPtr);
@@ -246,99 +233,94 @@ SPFG = (function SPFG() {
         });
 
         var id = module.getValue(idOutPtr, 'i32');
-        markAllocation(gridId, id, null, idOutPtr);
-        markAllocation(gridId, id, null, nameInPtr);
-        markAllocation(gridId, id, null, inDpIdsInPtr);
-        markAllocation(gridId, id, null, outDpIdsInPtr);
+        markAllocation(runtimePtr, id, null, idOutPtr);
+        markAllocation(runtimePtr, id, null, nameInPtr);
+        markAllocation(runtimePtr, id, null, inDpIdsInPtr);
+        markAllocation(runtimePtr, id, null, outDpIdsInPtr);
         return id;
     }
 
     /**
      * Removes a grid function.
      *
-     * @param number gridId
+     * @param number runtimePtr: memory address for the target runtime object
      * @param number functionId
      * @return undefined
      */
-    function spfgRemoveFunction(gridId, functionId) {
+    function spfgRemoveFN(runtimePtr, functionId) {
         var module = getModule();
-        cleanErr(module._spfg_fn_remove(gridId, functionId));
-        releaseAllocations(gridId, functionId, null);
+        cleanErr(module._spfg_fn_remove(runtimePtr, functionId));
+        releaseAllocations(runtimePtr, functionId, null);
     }
 
     /**
      * Restart the evaluation cycle for the given grid.
      *
-     * @param number gridId: id of the target grid
+     * @param number runtimePtr: memory address for the target runtime object
      * @return undefined
      */
-    function spfgResetCycle(gridId) {
-        cleanErr(getModule()._spfg_reset_cycle(gridId));
+    function spfgResetCycle(runtimePtr) {
+        cleanErr(getModule()._spfg_rt_reset_cycle(runtimePtr));
     }
 
     /**
      * Resumes the evaluation cycle for the given grid.
      *
-     * @param number gridId: id of the target grid
+     * @param number runtimePtr: memory address for the target runtime object
      * @param number timestamp: number representing the passage of time
      * @param function callback [optional]: called upon each cycle iteration
      * @param object context [optional]: context to bind the callback upon each call
      * @return undefined
      */
-    function spfgRunCycle(gridId, timestamp, callback, thisCtx) {
+    function spfgRunCycle(runtimePtr, timestamp, callback, thisCtx) {
         var module = getModule();
         callback = (callback && thisCtx) ? callback.bind(thisCtx) : callback;
         var cbInPtr = (callback || 0) && module.addFunction(callback);
-        cleanErr(module._spfg_run_cycle(gridId, timestamp, cbInPtr, 0));
+        cleanErr(module._spfg_rt_run_cycle(runtimePtr, timestamp, cbInPtr, 0));
     }
 
     /**
      * Imports a grid snapshot and either creates a new grid or updates an existing one.
      *
+     * @param number runtimePtr: memory address for the target runtime object
      * @param Object gridSnapshot: object containing a deserialized snapshot of a grid
-     * @return number, the created or updated grid id
+     * @return undefined
      */
-    function spfgImportGridSnapshot(gridSnapshot) {
+    function spfgImportGridSnapshot(runtimePtr, gridSnapshot) {
 
         if (!gridSnapshot) {
             throw Error('needs a non-empty object');
         }
 
         var module = getModule();
-        var idOutPtr = module._malloc(4);
         var jsonData = JSON.stringify(gridSnapshot);
         var charsLength = jsonData.length * 4 + 1;
         var jsonInPtr = module._malloc(charsLength);
         module.stringToUTF8(jsonData, jsonInPtr, charsLength);
-        module.setValue(idOutPtr, 0, 'i32');
 
-        var err = module._spfg_gr_import_json(jsonInPtr, charsLength, idOutPtr);
+        var err = module._spfg_rt_import_json(runtimePtr, jsonInPtr, charsLength);
 
         cleanErr(err, function(){
-            module._free(idOutPtr);
             module._free(jsonInPtr);
         });
 
         module._free(jsonInPtr);
-        var id = module.getValue(idOutPtr, 'i32');
-        markAllocation(id, null, null, idOutPtr);
-        return id;
     }
 
     /**
      *  Exports an existing grid into a deserialized JSON object
      *
-     * @param number gridId: id of the target grid
+     * @param number runtimePtr: memory address for the target runtime object
      * @return Object, the deserialized JSON snapshot
      */
-    function spfgExportGridSnapshot(gridId) {
+    function spfgExportGridSnapshot(runtimePtr) {
         var module = getModule();
-        var maxlen = 4096;
+        var maxlen = 1024 * 500;
         var jsonOutPtr = module._malloc(maxlen);
         var outlenOutPtr = module._malloc(4);
         module.setValue(outlenOutPtr, 0, 'i32');
 
-        var err = module._spfg_gr_export_json(gridId, jsonOutPtr, maxlen, outlenOutPtr);
+        var err = module._spfg_rt_export_json(runtimePtr, jsonOutPtr, maxlen, outlenOutPtr);
 
         cleanErr(err, function(){
             module._free(jsonOutPtr);
@@ -353,14 +335,17 @@ SPFG = (function SPFG() {
         return gridSnapshot;
     }
 
-    function spfgSetBoolean(gridId, datapointId, value) {
+    /**
+     * Sets the value of a datapoint of type boolean
+     *
+     * @param {number} runtimePtr: memory address for the target runtime object
+     * @param {number} datapointId: the target datapoint id
+     * @param {undefined}
+     */
+    function spfgSetBoolean(runtimePtr, datapointId, value) {
         var module = getModule();
-        cleanErr(module._spfg_dp_set_bool(gridId, datapointId, value));
+        cleanErr(module._spfg_dp_set_bool(runtimePtr, datapointId, value));
     }
-
-    // --------------------------------------------------------------
-    // Private functions
-    // --------------------------------------------------------------
 
     /**
      * Retrieves the loaded wasm module
@@ -409,27 +394,27 @@ SPFG = (function SPFG() {
     /**
      * Creates a key for the allocation map.
      *
-     * @param number grId
+     * @param number runtimePtr
      * @param number fnId
      * @param number dpId
      * @return string, the lookup key
      */
-    function allocationKey(grId, fnId, dpId) {
-        return grId + '/' + fnId + '/' + dpId;
+    function allocationKey(runtimePtr, fnId, dpId) {
+        return runtimePtr + '/' + fnId + '/' + dpId;
     }
 
     /**
      * Takes note of the pointer for a dynamically allocated memory area, and add it to a
      * pointer bucket for later deallocation.
      *
-     * @param number grId
+     * @param number runtimePtr
      * @param number fnId
      * @param number dpId
      * @param number pointer
      * @return undefined
      */
-    function markAllocation(grId, fnId, dpId, pointer) {
-        var key = allocationKey(grId, fnId, dpId);
+    function markAllocation(runtimePtr, fnId, dpId, pointer) {
+        var key = allocationKey(runtimePtr, fnId, dpId);
         allocations[key] = allocations[key] || [];
         allocations[key].push(pointer);
     }
@@ -437,15 +422,46 @@ SPFG = (function SPFG() {
     /**
      * Deallocates memory from the pointers in a bucket.
      *
-     * @param number grId
+     * @param number runtimePtr
      * @param number fnId
      * @param number dpId
      * @return undefined
      */
-    function releaseAllocations(grId, fnId, dpId) {
+    function releaseAllocations(runtimePtr, fnId, dpId) {
         var module = getModule();
-        var key = allocationKey(grId, fnId, dpId);
-        (allocations[key] || []).forEach(module._free.bind(module));
+        var key = allocationKey(runtimePtr, fnId, dpId);
+        var ptrs = (allocations[key] || []);
+        while (ptrs.length) {
+            module._free(ptrs.pop());
+        }
+    }
+
+    function create(name) {
+
+        var ptr = spfgCreateRuntime(name);
+
+        var obj = {
+            init: spfgInitRuntime.bind(null, ptr),
+            finish: spfgFinishRuntime.bind(null, ptr),
+            destroy: spfgDestroyRuntime.bind(null, ptr),
+            createDP: spfgCreateDP.bind(null, ptr),
+            removeDP: spfgRemoveDP.bind(null, ptr),
+            createFN: spfgCreateFN.bind(null, ptr),
+            removeFN: spfgRemoveFN.bind(null, ptr),
+            setb: spfgSetBoolean.bind(null, ptr),
+            reset: spfgResetCycle.bind(null, ptr),
+            run: localSpfgRunCycle.bind(null, ptr),
+            import: spfgImportGridSnapshot.bind(null, ptr),
+            export: spfgExportGridSnapshot.bind(null, ptr),
+        };
+
+        return obj;
+
+        function localSpfgRunCycle(runtimePtr, timestamp, callback, thisCtx) {
+            return spfgRunCycle(ptr, timestamp, function(runtimePtr, fnId, phase) {
+                return (callback && callback.bind(this, obj, fnId, phase)) || 0;
+            }, thisCtx);
+        }
     }
 
 })();
