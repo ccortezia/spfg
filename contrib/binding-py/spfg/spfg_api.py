@@ -136,7 +136,7 @@ class Runtime(object):
         out_len = ctypes.c_uint32(0)
         err = lib_obj().spfg_rt_export_json(self.runtime_ref, byref(out_json), maxlen, byref(out_len))
         raise_for_spfg_err(err)
-        return json.loads(out_json.value)
+        return json.loads(out_json.value.decode('utf8'))
 
     def import_json(self, snapshot):
         """
