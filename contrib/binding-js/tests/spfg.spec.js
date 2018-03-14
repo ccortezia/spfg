@@ -142,7 +142,7 @@ describe("SPFG cycle", function() {
     var expectedPhase = 0;
     var expectedFnId = fn0;
 
-    function callback(fnId, phase) {
+    function callback(runtime, fnId, phase) {
       expect(this.xyz).toEqual(123);
       expect(fnId).toEqual(expectedFnId);
       expect(phase).toEqual(expectedPhase);
@@ -157,12 +157,12 @@ describe("SPFG cycle", function() {
   it("run with a callback returning stop should stop cycle", function() {
     var expectedPhase = 0;
 
-    function callback1(functionId, phase) {
+    function callback1(runtime, functionId, phase) {
       expect(phase).toEqual(expectedPhase);
       return SPFG.codes.ctl.SPFG_LOOP_CONTROL_STOP;
     }
 
-    function callback2(functionId, phase) {
+    function callback2(runtime, functionId, phase) {
       expect(phase).toEqual(expectedPhase);
       expectedPhase += 1;
       return SPFG.codes.ctl.SPFG_ERROR_NO;

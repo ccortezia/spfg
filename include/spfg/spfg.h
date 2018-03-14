@@ -85,9 +85,6 @@ typedef enum spfg_fn_type_e {
     SPFG_FN_AND_BOOL_BOOL_RET_BOOL = 2,
  } spfg_fn_type_t;
 
-
-typedef spfg_err_t (*spfg_cycle_cb_t)(spfg_fn_id_t, spfg_phase_t, void * /* cdata */);
-
 typedef spfg_gr_id_t spfg_gr_cnt_t;
 typedef spfg_dp_id_t spfg_gr_dp_cnt_t;
 typedef spfg_fn_id_t spfg_gr_fn_cnt_t;
@@ -168,8 +165,14 @@ typedef struct spfg_runtime {
     uint8_t _[ESTIMATED_RUNTIME_MEMORY];
 } spfg_runtime_t;
 
+
+typedef spfg_err_t (*spfg_run_cb_t)(spfg_runtime_t *,
+                                    spfg_fn_id_t,
+                                    spfg_phase_t,
+                                    void * /* udata */);
+
 // -------------------------------------------------------------------------------------------------
-// Grid Composition API (refactoring)
+// Grid Composition API
 // -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_rt_init(spfg_runtime_t *, const char * /* name */);
@@ -184,11 +187,11 @@ spfg_err_t spfg_fn_create(spfg_runtime_t *, spfg_fn_type_t, spfg_phase_t,
 spfg_err_t spfg_fn_remove(spfg_runtime_t *, spfg_fn_id_t);
 
 // -------------------------------------------------------------------------------------------------
-// Grid Evaluation API (refactoring)
+// Grid Evaluation API
 // -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_rt_reset_cycle(spfg_runtime_t *);
-spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *, spfg_ts_t, spfg_cycle_cb_t, void * /* cdata */);
+spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *, spfg_ts_t, spfg_run_cb_t, void * /* cdata */);
 spfg_err_t spfg_dp_set_int(spfg_runtime_t *, spfg_dp_id_t, spfg_int_t);
 spfg_err_t spfg_dp_set_real(spfg_runtime_t *, spfg_dp_id_t, spfg_real_t);
 spfg_err_t spfg_dp_set_word(spfg_runtime_t *, spfg_dp_id_t, spfg_word_t);
@@ -196,7 +199,7 @@ spfg_err_t spfg_dp_set_bool(spfg_runtime_t *, spfg_dp_id_t, spfg_boolean_t);
 spfg_err_t spfg_dp_get_bool(spfg_runtime_t *, spfg_dp_id_t, spfg_boolean_t * /* value */, spfg_boolean_t * /* emitted */);
 
 // -------------------------------------------------------------------------------------------------
-// Import / Export API (refactoring)
+// Import / Export API
 // -------------------------------------------------------------------------------------------------
 
 spfg_err_t spfg_rt_import_bin(spfg_runtime_t *, void *, uint32_t);

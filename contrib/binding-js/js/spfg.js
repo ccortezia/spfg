@@ -440,7 +440,7 @@ SPFG = (function SPFG() {
 
         var ptr = spfgCreateRuntime(name);
 
-        return {
+        var obj = {
             init: spfgInitRuntime.bind(null, ptr),
             finish: spfgFinishRuntime.bind(null, ptr),
             destroy: spfgDestroyRuntime.bind(null, ptr),
@@ -450,10 +450,18 @@ SPFG = (function SPFG() {
             removeFN: spfgRemoveFN.bind(null, ptr),
             setb: spfgSetBoolean.bind(null, ptr),
             reset: spfgResetCycle.bind(null, ptr),
-            run: spfgRunCycle.bind(null, ptr),
+            run: localSpfgRunCycle.bind(null, ptr),
             import: spfgImportGridSnapshot.bind(null, ptr),
             export: spfgExportGridSnapshot.bind(null, ptr),
         };
+
+        return obj;
+
+        function localSpfgRunCycle(runtimePtr, timestamp, callback, thisCtx) {
+            return spfgRunCycle(ptr, timestamp, function(runtimePtr, fnId, phase) {
+                return (callback && callback.bind(this, obj, fnId, phase)) || 0;
+            }, thisCtx);
+        }
     }
 
 })();

@@ -55,8 +55,8 @@ typedef struct test_cb_ctl {
     int stop_at;
 } test_loop_ctl_t;
 
-spfg_err_t cycle_callback_stop_ctl(spfg_fn_id_t fn_id, spfg_phase_t phase, void *cdata) {
-    test_loop_ctl_t *ctl = (test_loop_ctl_t *)cdata;
+spfg_err_t cycle_callback_stop_ctl(spfg_runtime_t *runtime, spfg_fn_id_t fn_id, spfg_phase_t phase, void *udata) {
+    test_loop_ctl_t *ctl = (test_loop_ctl_t *)udata;
     if (ctl->stop_at >= 0 && ctl->counter == ctl->stop_at) {
         return SPFG_LOOP_CONTROL_STOP;
     }

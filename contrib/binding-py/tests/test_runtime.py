@@ -62,9 +62,9 @@ def test_reset_run_should_not_raise():
 
 
 def test_reset_run_with_callback_should_not_raise():
-    local = {'called': False}
-    def callback(fn_id, phase, udata):
+    def callback(runtime, fn_id, phase, udata):
         local['called'] = True
+        local['x'] = udata['x']
         return 0
 
     runtime = spfg.Runtime('beta')
@@ -76,10 +76,11 @@ def test_reset_run_with_callback_should_not_raise():
     runtime.set_dp_bool(dp1, True)
     runtime.set_dp_bool(dp2, False)
 
-    local['called'] = False
+    local = {'called': False, 'x': 0}
     runtime.reset()
-    runtime.run(0, callback)
+    runtime.run(0, callback, udata={'x': 2})
     value, emitted = runtime.get_dp_bool(dp2)
     assert(value)
     assert(emitted)
     assert(local['called'])
+    assert(local['x'] == 2)

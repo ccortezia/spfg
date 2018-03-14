@@ -175,7 +175,7 @@ extern spfg_err_t spfg_rt_reset_cycle(spfg_runtime_t *runtime)
 }
 
 
-extern spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *runtime, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+extern spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *runtime, spfg_ts_t ts, spfg_run_cb_t cb, void *udata)
 {
     if (!runtime) {
         return SPFG_ERROR_BAD_PARAM_NULL_POINTER;

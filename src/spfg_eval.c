@@ -132,7 +132,7 @@ spfg_err_t _spfg_rt_reset_cycle(spfg_runtime_pvt_t *rt)
 }
 
 
-spfg_err_t _spfg_rt_run_cycle(spfg_runtime_pvt_t *rt, spfg_ts_t ts, spfg_cycle_cb_t cb, void *udata)
+spfg_err_t _spfg_rt_run_cycle(spfg_runtime_pvt_t *rt, spfg_ts_t ts, spfg_run_cb_t cb, void *udata)
 {
     spfg_err_t err;
     spfg_fnx_t *fnx;
@@ -166,7 +166,7 @@ spfg_err_t _spfg_rt_run_cycle(spfg_runtime_pvt_t *rt, spfg_ts_t ts, spfg_cycle_c
         if (cb) {
 
             // Hands control back to caller passing progress info.
-            err = cb(fnx->fn->id, fnx->fn->phase, udata);
+            err = cb((spfg_runtime_t *)rt, fnx->fn->id, fnx->fn->phase, udata);
 
             // Stop condition: callback explicit stop.
             if (err == SPFG_LOOP_CONTROL_STOP) {
