@@ -27,10 +27,10 @@ def test_create_remove_fn_should_not_raise():
     dp1 = runtime.create_dp(spfg.BOOL, 'dp1')
     dp2 = runtime.create_dp(spfg.BOOL, 'dp2')
     fn0 = runtime.create_fn('and(bool,bool)->bool', 0, [dp0, dp1], [dp2], 'fn0')
+    runtime.remove_fn(fn0)
     runtime.remove_dp(dp0)
     runtime.remove_dp(dp1)
     runtime.remove_dp(dp2)
-    runtime.remove_fn(fn0)
 
 
 def test_get_set_dp_bool_should_not_raise():

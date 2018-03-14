@@ -64,7 +64,7 @@ class Runtime(object):
     def remove_dp(self, dp_id):
         """
         """
-        err = lib_obj().spfg_dp_create(self.runtime_ref, dp_id)
+        err = lib_obj().spfg_dp_remove(self.runtime_ref, dp_id)
         raise_for_spfg_err(err)
 
     def create_fn(self, fn_type, phase, in_dp_ids, out_dp_ids, name):
