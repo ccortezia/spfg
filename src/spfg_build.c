@@ -10,11 +10,11 @@ extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
 
-spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                 spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                 spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-                                 spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
-                                 const char *fn_name) {
+spfg_err_t _fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                                  spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                                  spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
+                                  spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
+                                  const char *fn_name) {
 
     uint8_t cnt = 0;
 
@@ -57,10 +57,10 @@ spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
     return SPFG_ERROR_NO;
 }
 
-spfg_err_t fn_validate(spfg_fn_type_t type,
-                       spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                       spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                       const char *fn_name) {
+spfg_err_t _fn_validate(spfg_fn_type_t type,
+                        spfg_dp_t *in_dps[], uint8_t in_dps_len,
+                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                        const char *fn_name) {
 
     switch (type) {
 
@@ -73,7 +73,7 @@ spfg_err_t fn_validate(spfg_fn_type_t type,
         {
             spfg_dp_type_t in_dp_types[] = {SPFG_DP_BOOL, SPFG_DP_BOOL};
             spfg_dp_type_t out_dp_types[] = {SPFG_DP_BOOL};
-            return fn_signature_validate(
+            return _fn_signature_validate(
                 in_dps, in_dps_len,
                 out_dps, out_dps_len,
                 in_dp_types, 2,
@@ -193,7 +193,7 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    if ((err = fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
+    if ((err = _fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_VALIDATE_FN;
     }
 

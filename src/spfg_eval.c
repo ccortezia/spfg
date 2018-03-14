@@ -5,13 +5,92 @@
 #include "spfg_index.h"
 
 
-spfg_err_t dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
+spfg_err_t _dp_bool_set(spfg_dp_t *dp, spfg_boolean_t value)
 {
     dp->emitted = dp->value.boolean != value;
     dp->value.boolean = value;
     return SPFG_ERROR_NO;
 }
 
+spfg_err_t _exec_and_bool_bool_ret_bool(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
+{
+    *result = p0 && p1;
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t fnx_and_bool_bool_ret_bool_eval(spfg_fnx_t *fnx, spfg_ts_t ts)
+{
+    spfg_boolean_t out;
+    spfg_err_t err;
+
+    if ((err = _exec_and_bool_bool_ret_bool(
+        fnx->in_dps[0]->value.boolean,
+        fnx->in_dps[1]->value.boolean,
+        &out)) != SPFG_ERROR_NO) {
+        return err;
+    }
+
+    if ((err = _dp_bool_set(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
+        return err;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+spfg_err_t _fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts) {
+
+    switch (fnx->fn->type) {
+
+        case SPFG_FN_INVERT_BOOL_RET_BOOL:
+        {
+            return SPFG_ERROR_UNIMPLEMENTED;
+        }
+
+        case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
+        {
+            return fnx_and_bool_bool_ret_bool_eval(fnx, ts);
+        }
+
+        default:
+        {
+            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
+        }
+    }
+}
+
+spfg_err_t _fnx_changed_dps_clear(spfg_fnx_t *fnx)
+{
+    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
+        fnx->in_dps[i]->emitted = false;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _fnx_run(spfg_fnx_t *fnx, spfg_ts_t ts)
+{
+    spfg_err_t err = SPFG_ERROR_NO;
+
+    if ((err = _spfg_find_changed_fnx_in_dp(fnx, NULL)) != SPFG_ERROR_NO) {
+        if (err == SPFG_ERROR_NOT_FOUND) {
+            return SPFG_ERROR_NO;
+        }
+        return SPFG_ERROR_EVAL_FN_FAILURE;
+    }
+
+    if ((err = _fnx_eval(fnx, ts)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_EVAL_FN_FAILURE;
+    }
+
+    if ((err = _fnx_changed_dps_clear(fnx)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_EVAL_FN_FAILURE;
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+// ---
 
 spfg_err_t _spfg_dp_set_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t value)
 {
@@ -21,10 +100,7 @@ spfg_err_t _spfg_dp_set_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_bo
         return SPFG_ERROR_INVALID_DP_ID;
     }
 
-    dp->emitted = dp->value.boolean != value;
-    dp->value.boolean = value;
-
-    return SPFG_ERROR_NO;
+    return _dp_bool_set(dp, value);
 }
 
 spfg_err_t _spfg_dp_get_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_boolean_t *value, spfg_boolean_t *emitted)
@@ -43,86 +119,6 @@ spfg_err_t _spfg_dp_get_bool(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id, spfg_bo
 
     return SPFG_ERROR_NO;
 }
-
-spfg_err_t fn_and_bool_bool_ret_bool_exec(spfg_boolean_t p0, spfg_boolean_t p1, spfg_boolean_t *result)
-{
-    *result = p0 && p1;
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t fn_and_bool_bool_ret_bool_eval(spfg_fnx_t *fnx, spfg_ts_t ts)
-{
-    spfg_boolean_t out;
-    spfg_err_t err;
-
-    if ((err = fn_and_bool_bool_ret_bool_exec(
-        fnx->in_dps[0]->value.boolean,
-        fnx->in_dps[1]->value.boolean,
-        &out)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    if ((err = dp_bool_set(fnx->out_dps[0], out)) != SPFG_ERROR_NO) {
-        return err;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-spfg_err_t fnx_eval(spfg_fnx_t *fnx, spfg_ts_t ts) {
-
-    switch (fnx->fn->type) {
-
-        case SPFG_FN_INVERT_BOOL_RET_BOOL:
-        {
-            return SPFG_ERROR_UNIMPLEMENTED;
-        }
-
-        case SPFG_FN_AND_BOOL_BOOL_RET_BOOL:
-        {
-            return fn_and_bool_bool_ret_bool_eval(fnx, ts);
-        }
-
-        default:
-        {
-            return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-        }
-    }
-}
-
-spfg_err_t fnx_changed_dps_clear(spfg_fnx_t *fnx)
-{
-    for (int i = 0; i < SPFG_MAX_FN_IN_DPS && fnx->in_dps[i]; i++) {
-        fnx->in_dps[i]->emitted = false;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
-
-spfg_err_t grx_fnx_run(spfg_grx_t *grx, spfg_fnx_t *fnx, spfg_ts_t ts)
-{
-    spfg_err_t err = SPFG_ERROR_NO;
-
-    if ((err = _spfg_find_changed_fnx_in_dp(fnx, NULL)) != SPFG_ERROR_NO) {
-        if (err == SPFG_ERROR_NOT_FOUND) {
-            return SPFG_ERROR_NO;
-        }
-        return SPFG_ERROR_EVAL_FN_FAILURE;
-    }
-
-    if ((err = fnx_eval(fnx, ts)) != SPFG_ERROR_NO) {
-        fprintf(stderr, "failed to run fn %s on grid %d: err=[%d]\n", fnx->fn->name.chars, grx->gr->id, err);
-        return SPFG_ERROR_EVAL_FN_FAILURE;
-    }
-
-    if ((err = fnx_changed_dps_clear(fnx)) != SPFG_ERROR_NO) {
-        return SPFG_ERROR_EVAL_FN_FAILURE;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
 
 spfg_err_t _spfg_rt_reset_cycle(spfg_runtime_pvt_t *rt)
 {
@@ -180,7 +176,7 @@ spfg_err_t _spfg_rt_run_cycle(spfg_runtime_pvt_t *rt, spfg_ts_t ts, spfg_run_cb_
         }
 
         // Stop condition: evaluation failure.
-        if ((err = grx_fnx_run(&rt->grx, fnx, ts)) != SPFG_ERROR_NO) {
+        if ((err = _fnx_run(fnx, ts)) != SPFG_ERROR_NO) {
             return SPFG_ERROR_EVAL_FN_FAILURE;
         }
 

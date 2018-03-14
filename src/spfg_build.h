@@ -20,17 +20,6 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
                               spfg_fn_id_t *fn_id);
 spfg_err_t _spfg_fn_remove(spfg_runtime_pvt_t *rt, spfg_fn_id_t fn_id);
 
-// spfg_err_t fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-//                                  spfg_dp_t *out_dps[], uint8_t out_dps_len,
-//                                  spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-//                                  spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
-//                                  const char *fn_name);
-
-// spfg_err_t fn_validate(spfg_fn_type_t type,
-//                        spfg_dp_t *in_dps[], uint8_t in_dps_len,
-//                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
-//                        const char *fn_name);
-
 #ifdef __cplusplus
 }
 #endif

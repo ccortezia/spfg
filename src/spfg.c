@@ -11,7 +11,7 @@
 
 
 // -------------------------------------------------------------------------------------------------
-// Public Grid Composition API (refactoring)
+// Public Grid Composition API
 // -------------------------------------------------------------------------------------------------
 
 extern spfg_err_t spfg_rt_init(spfg_runtime_t *runtime, const char *name)
@@ -107,7 +107,7 @@ extern spfg_err_t spfg_fn_remove(spfg_runtime_t *runtime, spfg_fn_id_t fn_id)
 }
 
 // -------------------------------------------------------------------------------------------------
-// Public Grid Evaluation API (refactoring)
+// Public Grid Evaluation API
 // -------------------------------------------------------------------------------------------------
 
 extern spfg_err_t spfg_dp_set_int(spfg_runtime_t *runtime, spfg_dp_id_t dp_id, spfg_int_t value)
@@ -185,7 +185,7 @@ extern spfg_err_t spfg_rt_run_cycle(spfg_runtime_t *runtime, spfg_ts_t ts, spfg_
 }
 
 // -------------------------------------------------------------------------------------------------
-// Import / Export API (refactoring)
+// Import / Export API
 // -------------------------------------------------------------------------------------------------
 
 extern spfg_err_t spfg_rt_import_bin(spfg_runtime_t *runtime, void *data, uint32_t data_len)
