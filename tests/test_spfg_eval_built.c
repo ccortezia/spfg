@@ -92,7 +92,7 @@ TEST(eval_built, test_spfg_rt_run_cycle_control_should_eval)
 
     spfg_dp_id_t in_dps_fn0p1[] = {dp2, dp3};
     spfg_dp_id_t out_dps_fn0p1[] = {dp4};
-    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 0, in_dps_fn0p1, 2, out_dps_fn0p1, 1, "fn1", &fn1));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps_fn0p1, 2, out_dps_fn0p1, 1, "fn1", &fn1));
 
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_reset_cycle(&runtime));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_rt_run_cycle(&runtime, 0, cycle_callback_stop_ctl, &loop_ctl_1));

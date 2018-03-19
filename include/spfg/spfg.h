@@ -41,6 +41,7 @@ extern "C" {
 #define SPFG_ERROR_BUFFER_OVERFLOW         -17
 #define SPFG_ERROR_FN_INTEGRITY            -18
 #define SPFG_ERROR_ALREADY_EXISTS          -19
+#define SPFG_ERROR_INVALID_FN_CYCLE        -20
 
 // ----------------------------------------------------------------------------
 // Storage sizes

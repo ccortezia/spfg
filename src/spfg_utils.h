@@ -33,6 +33,10 @@ spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp
 spfg_err_t _spfg_resolve_gr_dps(spfg_gr_t *gr, spfg_dp_id_t *dp_ids, spfg_dp_t *dps[], uint8_t length);
 spfg_err_t _spfg_resolve_grx(spfg_gr_id_t gr_id, spfg_grx_t **grx);
 
+spfg_err_t _spfg_ints_have_intersection(int lset[], uint32_t lset_len,
+                                        int rset[], uint32_t rset_len,
+                                        bool *result);
+
 #ifdef __cplusplus
 }
 #endif

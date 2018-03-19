@@ -144,3 +144,25 @@ spfg_err_t _spfg_find_changed_fnx_in_dp(spfg_fnx_t *fnx, uint32_t *idx)
 
     return SPFG_ERROR_NOT_FOUND;
 }
+
+spfg_err_t _spfg_ints_have_intersection(int lset[], uint32_t lset_len,
+                                        int rset[], uint32_t rset_len,
+                                        bool *result)
+{
+    if (result) {
+        *result = false;
+    }
+
+    for (uint32_t i = 0; i < lset_len; i++) {
+        for (uint32_t j = 0; j < rset_len; j++) {
+            if (lset[i] == rset[j]) {
+                if (result) {
+                    *result = true;
+                }
+                return SPFG_ERROR_NO;
+            }
+        }
+    }
+
+    return SPFG_ERROR_NO;
+}

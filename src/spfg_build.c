@@ -9,11 +9,75 @@
 extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
 extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
 
+spfg_err_t _fn_cycle_check(spfg_runtime_pvt_t *rt,
+                           spfg_phase_t ref_phase,
+                           spfg_dp_id_t in_dp_ids[],
+                           spfg_fn_dp_in_cnt_t in_dp_ids_len,
+                           spfg_dp_id_t out_dp_ids[],
+                           spfg_fn_dp_out_cnt_t out_dp_ids_len)
+{
 
-spfg_err_t _fn_signature_validate(spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                                  spfg_dp_t *out_dps[], uint8_t out_dps_len,
-                                  spfg_dp_type_t *in_dp_types, uint8_t in_dp_types_len,
-                                  spfg_dp_type_t *out_dp_types, uint8_t out_dp_types_len,
+    spfg_fn_t *fn;
+    bool has_intersection;
+
+    for (spfg_gr_fn_cnt_t idx = 0; idx <= SPFG_MAX_GRID_FNS; idx++) {
+
+        fn = &rt->gr.fns[idx];
+
+        // Skip empty function definition.
+        if (!fn || !fn->name.chars[0]) {
+            continue;
+        }
+
+        // Forbid an out_dp that is already an in_dp on a function from a prior phase.
+        if (fn->phase < ref_phase) {
+
+            (void) _spfg_ints_have_intersection((int *)fn->in_dp_ids, fn->in_dp_ids_len,
+                                                (int *)out_dp_ids, out_dp_ids_len,
+                                                &has_intersection);
+            if (has_intersection) {
+                return SPFG_ERROR_FAIL;
+            }
+        }
+
+        // Forbid an in_dp that is already an out_dp on a function from a later phase.
+        else if (fn->phase > ref_phase) {
+
+            (void) _spfg_ints_have_intersection((int *)fn->out_dp_ids, fn->out_dp_ids_len,
+                                                (int *)in_dp_ids, in_dp_ids_len,
+                                                &has_intersection);
+            if (has_intersection) {
+                return SPFG_ERROR_FAIL;
+            }
+        }
+
+        // Forbid a dp that is already the in_dp or out_dp of a function from the same phase.
+        else if (fn->phase == ref_phase) {
+
+            (void) _spfg_ints_have_intersection((int *)fn->out_dp_ids, fn->out_dp_ids_len,
+                                                (int *)in_dp_ids, in_dp_ids_len,
+                                                &has_intersection);
+            if (has_intersection) {
+                return SPFG_ERROR_FAIL;
+            }
+
+            (void) _spfg_ints_have_intersection((int *)fn->in_dp_ids, fn->in_dp_ids_len,
+                                                (int *)out_dp_ids, out_dp_ids_len,
+                                                &has_intersection);
+            if (has_intersection) {
+                return SPFG_ERROR_FAIL;
+            }
+        }
+    }
+
+    return SPFG_ERROR_NO;
+}
+
+
+spfg_err_t _fn_signature_validate(spfg_dp_t *in_dps[], spfg_fn_dp_in_cnt_t in_dps_len,
+                                  spfg_dp_t *out_dps[], spfg_fn_dp_out_cnt_t out_dps_len,
+                                  spfg_dp_type_t *in_dp_types, spfg_fn_dp_in_cnt_t in_dp_types_len,
+                                  spfg_dp_type_t *out_dp_types, spfg_fn_dp_out_cnt_t out_dp_types_len,
                                   const char *fn_name) {
 
     uint8_t cnt = 0;
@@ -195,6 +259,11 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
 
     if ((err = _fn_validate(type, in_dps, in_dp_ids_len, out_dps, out_dp_ids_len, name)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_VALIDATE_FN;
+    }
+
+
+    if ((err = _fn_cycle_check(rt, phase, in_dp_ids, in_dp_ids_len, out_dp_ids, out_dp_ids_len)) != SPFG_ERROR_NO) {
+        return SPFG_ERROR_INVALID_FN_CYCLE;
     }
 
     // Evolve grid schema.
