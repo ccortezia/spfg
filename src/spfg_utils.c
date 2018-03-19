@@ -21,28 +21,6 @@ spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
     return SPFG_ERROR_NO;
 }
 
-
-spfg_err_t _spfg_calc_gr_idx(spfg_gr_id_t gr_id, uint32_t *idx)
-{
-    uint32_t gr_idx;
-
-    if (gr_id == 0) {
-        return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;
-    }
-
-    gr_idx = gr_id - SPFG_GR_ID0;
-
-    if (gr_idx >= SPFG_MAX_GRID_CNT) {
-        return SPFG_ERROR_NOT_FOUND;
-    }
-
-    if (idx) {
-        *idx = gr_idx;
-    }
-
-    return SPFG_ERROR_NO;
-}
-
 spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {
     spfg_gr_dp_cnt_t dp_idx = dp_id - SPFG_GR_DP_ID0(gr->id);
