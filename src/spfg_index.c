@@ -5,9 +5,6 @@
 #include "spfg_types.h"
 #include "spfg_utils.h"
 
-extern spfg_gr_t global_grs[SPFG_MAX_GRID_CNT];
-extern spfg_grx_t global_grxs[SPFG_MAX_GRID_CNT];
-
 
 spfg_err_t _spfg_index_clear(spfg_runtime_pvt_t *rt)
 {
