@@ -120,8 +120,8 @@ spfg_err_t _fn_signature_validate(spfg_dp_t *in_dps[], spfg_fn_dp_in_cnt_t in_dp
 }
 
 spfg_err_t _fn_validate(spfg_fn_type_t type,
-                        spfg_dp_t *in_dps[], uint8_t in_dps_len,
-                        spfg_dp_t *out_dps[], uint8_t out_dps_len,
+                        spfg_dp_t *in_dps[], spfg_fn_dp_in_cnt_t in_dps_len,
+                        spfg_dp_t *out_dps[], spfg_fn_dp_out_cnt_t out_dps_len,
                         const char *fn_name) {
 
     switch (type) {
@@ -232,8 +232,10 @@ spfg_err_t _spfg_dp_remove(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id)
 spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
                               spfg_fn_type_t type,
                               spfg_phase_t phase,
-                              spfg_dp_id_t in_dp_ids[], uint8_t in_dp_ids_len,
-                              spfg_dp_id_t out_dp_ids[], uint8_t out_dp_ids_len,
+                              spfg_dp_id_t in_dp_ids[],
+                              spfg_fn_dp_in_cnt_t in_dp_ids_len,
+                              spfg_dp_id_t out_dp_ids[],
+                              spfg_fn_dp_out_cnt_t out_dp_ids_len,
                               const char *name,
                               spfg_fn_id_t *fn_id)
 {
