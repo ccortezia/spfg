@@ -40,7 +40,6 @@ typedef struct spfg_gr_ctl {
 }  spfg_gr_ctl_t;
 
 typedef struct spfg_gr {
-    spfg_gr_id_t id;
     spfg_block_name_t name;
     spfg_dp_t dps[SPFG_MAX_GRID_DPS];
     spfg_gr_dp_cnt_t dps_cnt;

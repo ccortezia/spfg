@@ -23,7 +23,7 @@ spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
 
 spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp)
 {
-    spfg_gr_dp_cnt_t dp_idx = dp_id - SPFG_GR_DP_ID0(gr->id);
+    spfg_gr_dp_cnt_t dp_idx = dp_id - SPFG_GR_DP_ID0;
 
     if (dp_idx >= SPFG_MAX_GRID_DPS) {
         return SPFG_ERROR_NOT_FOUND;
@@ -40,7 +40,7 @@ spfg_err_t _spfg_resolve_gr_dp(spfg_gr_t *gr, spfg_dp_id_t dp_id, spfg_dp_t **dp
 
 spfg_err_t _spfg_resolve_gr_fn(spfg_gr_t *gr, spfg_fn_id_t fn_id, spfg_fn_t **fn)
 {
-    spfg_gr_fn_cnt_t fn_idx = fn_id - SPFG_GR_DP_ID0(gr->id);
+    spfg_gr_fn_cnt_t fn_idx = fn_id - SPFG_GR_DP_ID0;
 
     if (fn_idx >= SPFG_MAX_GRID_FNS) {
         return SPFG_ERROR_NOT_FOUND;

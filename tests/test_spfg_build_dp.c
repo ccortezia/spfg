@@ -10,8 +10,6 @@ TEST_TEAR_DOWN(build_dp) {}
 
 TEST(build_dp, test_spfg_dp_remove_should_keep_data_integrity)
 {
-    spfg_gr_id_t gr_id;
-
     spfg_fn_id_t fn0;
     spfg_dp_id_t dp0;
     spfg_dp_id_t dp1;

@@ -16,7 +16,6 @@ TEST(inspect, test_spfg_info_should_return_compiled_info)
     TEST_ASSERT_EQUAL(VERSION_MAJOR, info.version_major);
     TEST_ASSERT_EQUAL(VERSION_MINOR, info.version_minor);
     TEST_ASSERT_EQUAL(VERSION_PATCH, info.version_patch);
-    TEST_ASSERT_EQUAL(SPFG_MAX_GRID_CNT, info.max_grid_cnt);
     TEST_ASSERT_EQUAL(SPFG_MAX_FN_IN_DPS, info.max_fn_in_dps);
     TEST_ASSERT_EQUAL(SPFG_MAX_FN_OUT_DPS, info.max_fn_out_dps);
     TEST_ASSERT_EQUAL(SPFG_MAX_GRID_FNS, info.max_grid_fns);

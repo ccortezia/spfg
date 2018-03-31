@@ -281,7 +281,6 @@ extern spfg_err_t spfg_info(spfg_info_t *info)
     info->version_major = VERSION_MAJOR;
     info->version_minor = VERSION_MINOR;
     info->version_patch = VERSION_PATCH;
-    info->max_grid_cnt = SPFG_MAX_GRID_CNT;
     info->max_fn_in_dps = SPFG_MAX_FN_IN_DPS;
     info->max_fn_out_dps = SPFG_MAX_FN_OUT_DPS;
     info->max_grid_fns = SPFG_MAX_GRID_FNS;

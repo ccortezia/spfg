@@ -175,11 +175,6 @@ static azjson_spec_t gr_ctl_spec[] = {
 
 static azjson_spec_t gr_spec[] = {
     {
-        .key = "id",
-        .vtype = JSON_INTEGER,
-        .voffset = offsetof(spfg_gr_t, id)
-    },
-    {
         .key = "name",
         .vtype = JSON_STRING,
         .voffset = offsetof(spfg_gr_t, name),
@@ -266,7 +261,6 @@ spfg_err_t _spfg_rt_export_json(spfg_runtime_pvt_t *rt, char *output, uint32_t o
     memset(output, 0, output_len);
 
     sappend(output, output_len, &vcnt, &rcnt, "{");
-    sappend(output, output_len, &vcnt, &rcnt, "\"id\": %d, ", gr->id);
     sappend(output, output_len, &vcnt, &rcnt, "\"name\": \"%s\", ", gr->name.chars);
 
     sappend(output, output_len, &vcnt, &rcnt, "\"fns\": [");

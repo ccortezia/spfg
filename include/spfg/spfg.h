@@ -47,7 +47,6 @@ extern "C" {
 // Storage sizes
 // ----------------------------------------------------------------------------
 
-#define SPFG_MAX_GRID_CNT 2
 #define SPFG_MAX_FN_IN_DPS 3
 #define SPFG_MAX_FN_OUT_DPS 3
 #define SPFG_MAX_GRID_FNS 64
@@ -60,7 +59,6 @@ extern "C" {
 // ----------------------------------------------------------------------------
 
 typedef int8_t spfg_err_t;
-typedef uint32_t spfg_gr_id_t;
 typedef uint32_t spfg_dp_id_t;
 typedef uint32_t spfg_fn_id_t;
 typedef uint32_t spfg_phase_t;
@@ -86,7 +84,6 @@ typedef enum spfg_fn_type_e {
     SPFG_FN_AND_BOOL_BOOL_RET_BOOL = 2,
  } spfg_fn_type_t;
 
-typedef spfg_gr_id_t spfg_gr_cnt_t;
 typedef spfg_dp_id_t spfg_gr_dp_cnt_t;
 typedef spfg_fn_id_t spfg_gr_fn_cnt_t;
 typedef spfg_phase_t spfg_gr_phase_cnt_t;
@@ -99,7 +96,6 @@ typedef struct spfg_info_s {
     uint16_t version_patch;
     spfg_fn_dp_in_cnt_t max_fn_in_dps;
     spfg_fn_dp_out_cnt_t max_fn_out_dps;
-    spfg_gr_cnt_t max_grid_cnt;
     spfg_gr_dp_cnt_t max_grid_fns;
     spfg_gr_fn_cnt_t max_grid_dps;
     spfg_gr_phase_cnt_t max_phases;
@@ -142,10 +138,9 @@ typedef struct spfg_info_s {
     ESTIMATED_SIZE_BLOCK_NAME + \
     ((ESTIMATED_SIZE_DP) * (SPFG_MAX_GRID_DPS)) + \
     ((ESTIMATED_SIZE_FN) * (SPFG_MAX_GRID_FNS)) + \
-    sizeof(spfg_gr_id_t) + \
     sizeof(spfg_gr_dp_cnt_t) + \
     sizeof(spfg_gr_fn_cnt_t) + \
-    4 // padding
+    8 // padding
 
 #define ESTIMATED_SIZE_FNX \
     sizeof(void *) + \

@@ -159,8 +159,6 @@ spfg_err_t _spfg_rt_init(spfg_runtime_pvt_t *rt, const char *name)
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
-    rt->gr.id = SPFG_GR_ID0;
-
     (void) _spfg_index_clear(rt);
 
     return SPFG_ERROR_NO;
@@ -182,7 +180,7 @@ spfg_err_t _spfg_dp_create(spfg_runtime_pvt_t *rt, spfg_dp_type_t dp_type, const
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
-    dp->id = SPFG_DP_ID(rt->gr.id, dp_idx);
+    dp->id = SPFG_DP_ID(dp_idx);
     dp->type = dp_type;
 
     (void) _spfg_index_clear(rt);
@@ -281,7 +279,7 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
 
     fn->type = type;
     fn->phase = phase;
-    fn->id = SPFG_FN_ID(rt->gr.id, fn_idx);
+    fn->id = SPFG_FN_ID(fn_idx);
 
     memcpy(fn->in_dp_ids, in_dp_ids, in_dp_ids_len * sizeof(spfg_dp_id_t));
     fn->in_dp_ids_len = in_dp_ids_len;
