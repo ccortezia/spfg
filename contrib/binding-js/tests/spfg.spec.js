@@ -244,7 +244,7 @@ describe("SPFG grid import/export", function(){
   });
 
   it("should not fail", function(){
-    var original = {id: 1, name: 'runtime', fns: [], dps: [], ctl: {curr_fn_idx: 0}};
+    var original = {name: 'runtime', fns: [], dps: [], ctl: {curr_fn_idx: 0}};
     expect(runtime.import.bind(null, original)).not.toThrow;
     var exported = runtime.export();
     expect(exported).toEqual(original);
