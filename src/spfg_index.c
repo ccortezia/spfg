@@ -6,7 +6,7 @@
 #include "spfg_utils.h"
 
 
-spfg_err_t _spfg_index_clear(spfg_runtime_pvt_t *rt)
+spfg_err_t _spfg_index_clear(spfg_rt_t *rt)
 {
     memset(&rt->grx, 0, sizeof(spfg_grx_t));
 
@@ -35,7 +35,7 @@ static int fnx_cmp(const void *p1, const void *p2)
     return phase_cmp;
 }
 
-spfg_err_t _spfg_index_rebuild(spfg_runtime_pvt_t *rt)
+spfg_err_t _spfg_index_rebuild(spfg_rt_t *rt)
 {
     // Capture scheme information into an array optimized for evaluation.
     // The resulting array may be sparse, thus not safe for plain sequential evaluation.

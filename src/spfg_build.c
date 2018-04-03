@@ -7,7 +7,7 @@
 #include "spfg_index.h"
 
 
-spfg_err_t _fn_cycle_check(spfg_runtime_pvt_t *rt,
+spfg_err_t _fn_cycle_check(spfg_rt_t *rt,
                            spfg_phase_t ref_phase,
                            spfg_dp_id_t in_dp_ids[],
                            spfg_fn_dp_in_cnt_t in_dp_ids_len,
@@ -153,7 +153,7 @@ spfg_err_t _fn_validate(spfg_fn_type_t type,
 
 // ------------------------------------------------------------------------------------------------
 
-spfg_err_t _spfg_rt_init(spfg_runtime_pvt_t *rt, const char *name)
+spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
 {
     if (_spfg_block_name_set(&rt->gr.name, name) != SPFG_ERROR_NO) {
         return SPFG_ERROR_BAD_BLOCK_NAME;
@@ -165,7 +165,7 @@ spfg_err_t _spfg_rt_init(spfg_runtime_pvt_t *rt, const char *name)
 }
 
 
-spfg_err_t _spfg_dp_create(spfg_runtime_pvt_t *rt, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
+spfg_err_t _spfg_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char *name, spfg_dp_id_t *dp_id)
 {
     unsigned int dp_idx;
     spfg_dp_t *dp;
@@ -193,7 +193,7 @@ spfg_err_t _spfg_dp_create(spfg_runtime_pvt_t *rt, spfg_dp_type_t dp_type, const
 }
 
 
-spfg_err_t _spfg_dp_remove(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id)
+spfg_err_t _spfg_dp_remove(spfg_rt_t *rt, spfg_dp_id_t dp_id)
 {
     spfg_dp_t *dp;
 
@@ -227,7 +227,7 @@ spfg_err_t _spfg_dp_remove(spfg_runtime_pvt_t *rt, spfg_dp_id_t dp_id)
 }
 
 
-spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
+spfg_err_t _spfg_fn_create(spfg_rt_t *rt,
                               spfg_fn_type_t type,
                               spfg_phase_t phase,
                               spfg_dp_id_t in_dp_ids[],
@@ -299,7 +299,7 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
 }
 
 
-spfg_err_t _spfg_fn_remove(spfg_runtime_pvt_t *rt, spfg_fn_id_t fn_id)
+spfg_err_t _spfg_fn_remove(spfg_rt_t *rt, spfg_fn_id_t fn_id)
 {
     spfg_fn_t *fn;
 

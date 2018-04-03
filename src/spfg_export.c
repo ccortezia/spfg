@@ -13,7 +13,7 @@
 // Binary Import / Export API
 // -------------------------------------------------------------------------------------------------
 
-spfg_err_t _spfg_rt_import_bin(spfg_runtime_pvt_t *rt, void *data, uint32_t data_len)
+spfg_err_t _spfg_rt_import_bin(spfg_rt_t *rt, void *data, uint32_t data_len)
 {
     spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)data;
 
@@ -27,7 +27,7 @@ spfg_err_t _spfg_rt_import_bin(spfg_runtime_pvt_t *rt, void *data, uint32_t data
 }
 
 
-spfg_err_t _spfg_rt_export_bin(spfg_runtime_pvt_t *rt, void *outbuf, uint32_t outbuf_len)
+spfg_err_t _spfg_rt_export_bin(spfg_rt_t *rt, void *outbuf, uint32_t outbuf_len)
 {
     spfg_gr_exp_t *grxp = (spfg_gr_exp_t *)outbuf;
 
@@ -214,9 +214,9 @@ static azjson_spec_t root_spec[] = {
 };
 
 
-spfg_err_t _spfg_rt_import_json(spfg_runtime_pvt_t *rt, char *json_str, uint32_t len)
+spfg_err_t _spfg_rt_import_json(spfg_rt_t *rt, char *json_str, uint32_t len)
 {
-    memset(rt, 0, sizeof(spfg_runtime_pvt_t));
+    memset(rt, 0, sizeof(spfg_rt_t));
 
     memset(&rt->gr, 0, sizeof(spfg_gr_t));
 
@@ -251,7 +251,7 @@ static spfg_err_t sappend(char *output, size_t output_len, uint32_t *vcnt, uint3
 }
 
 
-spfg_err_t _spfg_rt_export_json(spfg_runtime_pvt_t *rt, char *output, uint32_t output_len, uint32_t *slen)
+spfg_err_t _spfg_rt_export_json(spfg_rt_t *rt, char *output, uint32_t output_len, uint32_t *slen)
 {
     uint32_t rcnt = 0;
     uint32_t vcnt = 0;

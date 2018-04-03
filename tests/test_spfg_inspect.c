@@ -37,8 +37,8 @@ TEST(inspect, test_spfg_print_runtime_sizes)
     printf("sizeof(spfg_grx_t):         %lu / %lu\n",
            (unsigned long)sizeof(spfg_grx_t),
            (unsigned long)ESTIMATED_SIZE_GRX);
-    printf("sizeof(spfg_runtime_pvt_t): %lu / %lu\n",
-           (unsigned long)sizeof(spfg_runtime_pvt_t),
+    printf("sizeof(spfg_rt_t):          %lu / %lu\n",
+           (unsigned long)sizeof(spfg_rt_t),
            (unsigned long)sizeof(spfg_runtime_t));
     TEST_ASSERT_TRUE(sizeof(spfg_block_name_t) <= ESTIMATED_SIZE_BLOCK_NAME);
     TEST_ASSERT_TRUE(sizeof(spfg_dp_value_t) <=  ESTIMATED_SIZE_DP_VALUE);
@@ -48,7 +48,7 @@ TEST(inspect, test_spfg_print_runtime_sizes)
     TEST_ASSERT_TRUE(sizeof(spfg_gr_t) <= ESTIMATED_SIZE_GR);
     TEST_ASSERT_TRUE(sizeof(spfg_fnx_t) <= ESTIMATED_SIZE_FNX);
     TEST_ASSERT_TRUE(sizeof(spfg_grx_t) <= ESTIMATED_SIZE_GRX);
-    TEST_ASSERT_TRUE(sizeof(spfg_runtime_pvt_t) <= sizeof(spfg_runtime_t));
+    TEST_ASSERT_TRUE(sizeof(spfg_rt_t) <= sizeof(spfg_runtime_t));
 }
 
 

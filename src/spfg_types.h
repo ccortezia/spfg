@@ -74,7 +74,7 @@ typedef struct spfg_gr_exp {
 typedef struct spfg_runtime_pvt {
     spfg_gr_t gr;
     spfg_grx_t grx;
-} spfg_runtime_pvt_t;
+} spfg_rt_t;
 
 
 #ifdef __cplusplus
