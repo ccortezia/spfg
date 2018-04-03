@@ -15,14 +15,14 @@
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
 
 
-#define ESTIMATED_SIZE_BLOCK_NAME \
+#define ESTIMATED_SIZE_NAME \
     SPFG_BLOCK_NAME_MAX_LENGTH
 
 #define ESTIMATED_SIZE_DP_VALUE \
     sizeof(spfg_real_t)
 
 #define ESTIMATED_SIZE_DP \
-    ESTIMATED_SIZE_BLOCK_NAME + \
+    ESTIMATED_SIZE_NAME + \
     ESTIMATED_SIZE_DP_VALUE + \
     sizeof(spfg_dp_id_t) + \
     sizeof(spfg_dp_type_t) + \
@@ -30,7 +30,7 @@
     5 // padding
 
 #define ESTIMATED_SIZE_FN \
-    ESTIMATED_SIZE_BLOCK_NAME + \
+    ESTIMATED_SIZE_NAME + \
     sizeof(spfg_fn_id_t) + \
     sizeof(spfg_fn_type_t) + \
     sizeof(spfg_phase_t) + \
@@ -45,7 +45,7 @@
 
 #define ESTIMATED_SIZE_GR \
     ESTIMATED_SIZE_GR_CTL + \
-    ESTIMATED_SIZE_BLOCK_NAME + \
+    ESTIMATED_SIZE_NAME + \
     ((ESTIMATED_SIZE_DP) * (SPFG_MAX_GRID_DPS)) + \
     ((ESTIMATED_SIZE_FN) * (SPFG_MAX_GRID_FNS)) + \
     sizeof(spfg_gr_dp_cnt_t) + \
@@ -72,7 +72,7 @@
 extern "C" {
 #endif
 
-spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii);
+spfg_err_t _spfg_name_set(spfg_name_t *name, const char *ascii);
 
 spfg_err_t _spfg_find_free_gr_dp(spfg_gr_t *gr, uint32_t *idx, spfg_dp_t **dp);
 spfg_err_t _spfg_find_free_gr_fn(spfg_gr_t *gr, uint32_t *idx, spfg_fn_t **fn);

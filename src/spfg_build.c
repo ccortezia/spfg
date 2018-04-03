@@ -155,7 +155,7 @@ spfg_err_t _fn_validate(spfg_fn_type_t type,
 
 spfg_err_t _spfg_rt_init(spfg_rt_t *rt, const char *name)
 {
-    if (_spfg_block_name_set(&rt->gr.name, name) != SPFG_ERROR_NO) {
+    if (_spfg_name_set(&rt->gr.name, name) != SPFG_ERROR_NO) {
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
@@ -176,7 +176,7 @@ spfg_err_t _spfg_dp_create(spfg_rt_t *rt, spfg_dp_type_t dp_type, const char *na
 
     // TODO: dp type validation
 
-    if (_spfg_block_name_set(&dp->name, name) != SPFG_ERROR_NO) {
+    if (_spfg_name_set(&dp->name, name) != SPFG_ERROR_NO) {
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 
@@ -275,7 +275,7 @@ spfg_err_t _spfg_fn_create(spfg_rt_t *rt,
         return SPFG_ERROR_OUT_OF_SLOTS;
     }
 
-    if (_spfg_block_name_set(&fn->name, name) != SPFG_ERROR_NO) {
+    if (_spfg_name_set(&fn->name, name) != SPFG_ERROR_NO) {
         return SPFG_ERROR_BAD_BLOCK_NAME;
     }
 

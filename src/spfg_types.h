@@ -7,7 +7,7 @@ extern "C" {
 
 typedef struct spfg_block_name {
     char chars[SPFG_BLOCK_NAME_MAX_LENGTH];
-} spfg_block_name_t;
+} spfg_name_t;
 
 typedef union {
     spfg_real_t real;
@@ -18,7 +18,7 @@ typedef union {
 typedef struct spfg_dp {
     spfg_dp_id_t id;
     spfg_dp_type_t type;
-    spfg_block_name_t name;
+    spfg_name_t name;
     spfg_boolean_t emitted;
     spfg_dp_value_t value;
 } spfg_dp_t;
@@ -26,7 +26,7 @@ typedef struct spfg_dp {
 typedef struct spfg_fn {
     spfg_fn_id_t id;
     spfg_fn_type_t type;
-    spfg_block_name_t name;
+    spfg_name_t name;
     spfg_phase_t phase;
     spfg_dp_id_t in_dp_ids[SPFG_MAX_FN_IN_DPS];
     spfg_fn_dp_in_cnt_t in_dp_ids_len;
@@ -40,7 +40,7 @@ typedef struct spfg_gr_ctl {
 }  spfg_gr_ctl_t;
 
 typedef struct spfg_gr {
-    spfg_block_name_t name;
+    spfg_name_t name;
     spfg_dp_t dps[SPFG_MAX_GRID_DPS];
     spfg_gr_dp_cnt_t dps_cnt;
     spfg_fn_t fns[SPFG_MAX_GRID_FNS];

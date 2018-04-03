@@ -5,7 +5,7 @@
 #include "spfg_utils.h"
 
 
-spfg_err_t _spfg_block_name_set(spfg_block_name_t *name, const char *ascii)
+spfg_err_t _spfg_name_set(spfg_name_t *name, const char *ascii)
 {
     if (!*ascii) {
         return SPFG_ERROR_BAD_PARAM_INVALID_VALUE;

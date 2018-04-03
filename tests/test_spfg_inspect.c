@@ -13,9 +13,9 @@ TEST_TEAR_DOWN(inspect) {}
 TEST(inspect, test_spfg_print_runtime_sizes)
 {
     printf("Type sizes (compiled x estimates)\n");
-    printf("sizeof(spfg_block_name_t):  %lu / %lu\n",
-           (unsigned long)sizeof(spfg_block_name_t),
-           (unsigned long)ESTIMATED_SIZE_BLOCK_NAME);
+    printf("sizeof(spfg_name_t):        %lu / %lu\n",
+           (unsigned long)sizeof(spfg_name_t),
+           (unsigned long)ESTIMATED_SIZE_NAME);
     printf("sizeof(spfg_dp_value_t):    %lu / %lu\n",
            (unsigned long)sizeof(spfg_dp_value_t),
            (unsigned long) ESTIMATED_SIZE_DP_VALUE);
@@ -40,7 +40,7 @@ TEST(inspect, test_spfg_print_runtime_sizes)
     printf("sizeof(spfg_rt_t):          %lu / %lu\n",
            (unsigned long)sizeof(spfg_rt_t),
            (unsigned long)sizeof(spfg_runtime_t));
-    TEST_ASSERT_TRUE(sizeof(spfg_block_name_t) <= ESTIMATED_SIZE_BLOCK_NAME);
+    TEST_ASSERT_TRUE(sizeof(spfg_name_t) <= ESTIMATED_SIZE_NAME);
     TEST_ASSERT_TRUE(sizeof(spfg_dp_value_t) <=  ESTIMATED_SIZE_DP_VALUE);
     TEST_ASSERT_TRUE(sizeof(spfg_dp_t) <= ESTIMATED_SIZE_DP);
     TEST_ASSERT_TRUE(sizeof(spfg_fn_t) <= ESTIMATED_SIZE_FN);
