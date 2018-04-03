@@ -23,10 +23,10 @@ TEST(build_fn, test_spfg_fn_create_should_validate_input_cohesion)
 
     spfg_dp_id_t in_dps[] = {dp0, dp1, dp1};
     spfg_dp_id_t out_dps[] = {dp2, dp2};
-    TEST_ASSERT_EQUAL(SPFG_ERROR_VALIDATE_FN, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 3, out_dps, 1, "fn0", &fn0));
     TEST_ASSERT_EQUAL(SPFG_ERROR_VALIDATE_FN, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 1, out_dps, 1, "fn0", &fn0));
     TEST_ASSERT_EQUAL(SPFG_ERROR_VALIDATE_FN, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 0, "fn0", &fn0));
-    TEST_ASSERT_EQUAL(SPFG_ERROR_VALIDATE_FN, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 2, "fn0", &fn0));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 3, out_dps, 1, "fn0", &fn0));
+    TEST_ASSERT_EQUAL(SPFG_ERROR_BUFFER_OVERFLOW, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 2, "fn0", &fn0));
     TEST_ASSERT_EQUAL(SPFG_ERROR_NO, spfg_fn_create(&runtime, SPFG_FN_AND_BOOL_BOOL_RET_BOOL, 1, in_dps, 2, out_dps, 1, "fn0", &fn0));
 }
 

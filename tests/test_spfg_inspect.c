@@ -1,11 +1,55 @@
 #include <string.h>
 #include "unity/unity_fixture.h"
 #include "spfg/spfg.h"
+#include "spfg_types.h"
+#include "spfg_utils.h"
 
 
 TEST_GROUP(inspect);
 TEST_SETUP(inspect) {}
 TEST_TEAR_DOWN(inspect) {}
+
+
+TEST(inspect, test_spfg_print_runtime_sizes)
+{
+    printf("Type sizes (compiled x estimates)\n");
+    printf("sizeof(spfg_block_name_t):  %lu / %lu\n",
+           (unsigned long)sizeof(spfg_block_name_t),
+           (unsigned long)ESTIMATED_SIZE_BLOCK_NAME);
+    printf("sizeof(spfg_dp_value_t):    %lu / %lu\n",
+           (unsigned long)sizeof(spfg_dp_value_t),
+           (unsigned long) ESTIMATED_SIZE_DP_VALUE);
+    printf("sizeof(spfg_dp_t):          %lu / %lu\n",
+           (unsigned long)sizeof(spfg_dp_t),
+           (unsigned long)ESTIMATED_SIZE_DP);
+    printf("sizeof(spfg_fn_t):          %lu / %lu\n",
+           (unsigned long)sizeof(spfg_fn_t),
+           (unsigned long)ESTIMATED_SIZE_FN);
+    printf("sizeof(spfg_gr_ctl_t):      %lu / %lu\n",
+           (unsigned long)sizeof(spfg_gr_ctl_t),
+           (unsigned long)ESTIMATED_SIZE_GR_CTL);
+    printf("sizeof(spfg_gr_t):          %lu / %lu\n",
+           (unsigned long)sizeof(spfg_gr_t),
+           (unsigned long)ESTIMATED_SIZE_GR);
+    printf("sizeof(spfg_fnx_t):         %lu / %lu\n",
+           (unsigned long)sizeof(spfg_fnx_t),
+           (unsigned long)ESTIMATED_SIZE_FNX);
+    printf("sizeof(spfg_grx_t):         %lu / %lu\n",
+           (unsigned long)sizeof(spfg_grx_t),
+           (unsigned long)ESTIMATED_SIZE_GRX);
+    printf("sizeof(spfg_runtime_pvt_t): %lu / %lu\n",
+           (unsigned long)sizeof(spfg_runtime_pvt_t),
+           (unsigned long)sizeof(spfg_runtime_t));
+    TEST_ASSERT_TRUE(sizeof(spfg_block_name_t) <= ESTIMATED_SIZE_BLOCK_NAME);
+    TEST_ASSERT_TRUE(sizeof(spfg_dp_value_t) <=  ESTIMATED_SIZE_DP_VALUE);
+    TEST_ASSERT_TRUE(sizeof(spfg_dp_t) <= ESTIMATED_SIZE_DP);
+    TEST_ASSERT_TRUE(sizeof(spfg_fn_t) <= ESTIMATED_SIZE_FN);
+    TEST_ASSERT_TRUE(sizeof(spfg_gr_ctl_t) <= ESTIMATED_SIZE_GR_CTL);
+    TEST_ASSERT_TRUE(sizeof(spfg_gr_t) <= ESTIMATED_SIZE_GR);
+    TEST_ASSERT_TRUE(sizeof(spfg_fnx_t) <= ESTIMATED_SIZE_FNX);
+    TEST_ASSERT_TRUE(sizeof(spfg_grx_t) <= ESTIMATED_SIZE_GRX);
+    TEST_ASSERT_TRUE(sizeof(spfg_runtime_pvt_t) <= sizeof(spfg_runtime_t));
+}
 
 
 TEST(inspect, test_spfg_info_should_return_compiled_info)
@@ -34,4 +78,5 @@ TEST(inspect, test_spfg_runtime_size_should_return_proper_size)
 TEST_GROUP_RUNNER(inspect) {
     RUN_TEST_CASE(inspect, test_spfg_info_should_return_compiled_info);
     RUN_TEST_CASE(inspect, test_spfg_runtime_size_should_return_proper_size);
+    RUN_TEST_CASE(inspect, test_spfg_print_runtime_sizes);
 }

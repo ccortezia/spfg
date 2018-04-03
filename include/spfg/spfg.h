@@ -47,12 +47,16 @@ extern "C" {
 // Storage sizes
 // ----------------------------------------------------------------------------
 
-#define SPFG_MAX_FN_IN_DPS 3
-#define SPFG_MAX_FN_OUT_DPS 3
-#define SPFG_MAX_GRID_FNS 64
-#define SPFG_MAX_GRID_DPS 256
+#define SPFG_MAX_FN_IN_DPS 2
+#define SPFG_MAX_FN_OUT_DPS 1
+#define SPFG_MAX_GRID_FNS 20
+#define SPFG_MAX_GRID_DPS 60
 #define SPFG_MAX_PHASES SPFG_MAX_GRID_FNS
-#define SPFG_BLOCK_NAME_MAX_LENGTH 20
+#define SPFG_BLOCK_NAME_MAX_LENGTH 10
+
+// Fixed value for small usage profile, should provide some margin for internal
+// expansion without changes to the public ABI.
+#define SPFG_RUNTIME_SIZE 1024 * 4
 
 // ----------------------------------------------------------------------------
 // Type definitions
@@ -101,71 +105,11 @@ typedef struct spfg_info_s {
     spfg_gr_phase_cnt_t max_phases;
 } spfg_info_t;
 
-// ----------------------------------------------------------------------------
-// Opaque runtime memory definition
-// ----------------------------------------------------------------------------
-
-#define ESTIMATED_SIZE_BLOCK_NAME \
-    SPFG_BLOCK_NAME_MAX_LENGTH
-
-#define ESTIMATED_SIZE_DP_VALUE \
-    sizeof(spfg_real_t)
-
-#define ESTIMATED_SIZE_DP \
-    ESTIMATED_SIZE_BLOCK_NAME + \
-    ESTIMATED_SIZE_DP_VALUE + \
-    sizeof(spfg_dp_id_t) + \
-    sizeof(spfg_dp_type_t) + \
-    sizeof(spfg_boolean_t) + \
-    3 // padding
-
-#define ESTIMATED_SIZE_FN \
-    ESTIMATED_SIZE_BLOCK_NAME + \
-    sizeof(spfg_fn_id_t) + \
-    sizeof(spfg_fn_type_t) + \
-    sizeof(spfg_phase_t) + \
-    ((sizeof(spfg_dp_id_t)) * (SPFG_MAX_FN_IN_DPS)) + \
-    sizeof(spfg_fn_dp_in_cnt_t) + \
-    ((sizeof(spfg_dp_id_t)) * (SPFG_MAX_FN_OUT_DPS)) + \
-    sizeof(spfg_fn_dp_out_cnt_t) + \
-    6 // padding
-
-#define ESTIMATED_SIZE_GR_CTL \
-    sizeof(spfg_gr_fn_cnt_t)
-
-#define ESTIMATED_SIZE_GR \
-    ESTIMATED_SIZE_GR_CTL + \
-    ESTIMATED_SIZE_BLOCK_NAME + \
-    ((ESTIMATED_SIZE_DP) * (SPFG_MAX_GRID_DPS)) + \
-    ((ESTIMATED_SIZE_FN) * (SPFG_MAX_GRID_FNS)) + \
-    sizeof(spfg_gr_dp_cnt_t) + \
-    sizeof(spfg_gr_fn_cnt_t) + \
-    8 // padding
-
-#define ESTIMATED_SIZE_FNX \
-    sizeof(void *) + \
-    ((sizeof(void *)) * (SPFG_MAX_FN_IN_DPS)) + \
-    ((sizeof(void *)) * (SPFG_MAX_FN_OUT_DPS))
-
-#define ESTIMATED_SIZE_GRX \
-    ((ESTIMATED_SIZE_FNX) * (SPFG_MAX_GRID_FNS)) + \
-    sizeof(void *) + \
-    sizeof(bool) + \
-    7 // padding
-
-#define ESTIMATED_RUNTIME_MEMORY \
-    ESTIMATED_SIZE_GR + \
-    ESTIMATED_SIZE_GRX
-
 typedef struct spfg_runtime {
-    uint8_t _[ESTIMATED_RUNTIME_MEMORY];
+    uint8_t _[SPFG_RUNTIME_SIZE];
 } spfg_runtime_t;
 
-
-typedef spfg_err_t (*spfg_run_cb_t)(spfg_runtime_t *,
-                                    spfg_fn_id_t,
-                                    spfg_phase_t,
-                                    void * /* udata */);
+typedef spfg_err_t (*spfg_run_cb_t)(spfg_runtime_t *, spfg_fn_id_t, spfg_phase_t, void * /* udata */);
 
 // -------------------------------------------------------------------------------------------------
 // Grid Composition API

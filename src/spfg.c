@@ -7,8 +7,6 @@
 #include "spfg_eval.h"
 #include "spfg_export.h"
 
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-
 
 // -------------------------------------------------------------------------------------------------
 // Public Grid Composition API
@@ -25,6 +23,11 @@ extern spfg_err_t spfg_rt_init(spfg_runtime_t *runtime, const char *name)
     }
 
     memset(runtime, 0, sizeof(spfg_runtime_t));
+
+    // Ensure the public runtime type can be safely casted into the private one.
+    // In case the compilation fails at this point, comment this line, recompile and run the
+    // test suite to inspect the types and determine where the storage size estimates failed.
+    // BUILD_BUG_ON(sizeof(spfg_runtime_t) < sizeof(spfg_runtime_pvt_t));
 
     return _spfg_rt_init((spfg_runtime_pvt_t *)runtime, name);
 }

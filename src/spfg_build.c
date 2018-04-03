@@ -259,6 +259,8 @@ spfg_err_t _spfg_fn_create(spfg_runtime_pvt_t *rt,
         return SPFG_ERROR_VALIDATE_FN;
     }
 
+    // TODO: Block an in_dp that is already an in_dp in any existing function.
+    // TODO: Block an out_dp that is already an out_dp in any existing function.
 
     if ((err = _fn_cycle_check(rt, phase, in_dp_ids, in_dp_ids_len, out_dp_ids, out_dp_ids_len)) != SPFG_ERROR_NO) {
         return SPFG_ERROR_INVALID_FN_CYCLE;
